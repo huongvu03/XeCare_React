@@ -25,12 +25,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check if user is logged in on mount
-    const savedUser = localStorage.getItem("user")
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser))
-      } catch (error) {
-        localStorage.removeItem("user")
+    if (typeof window !== "undefined") {
+      const savedUser = localStorage.getItem("user")
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser))
+        } catch (error) {
+          localStorage.removeItem("user")
+        }
       }
     }
     setIsLoading(false)
@@ -38,14 +40,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (userData: User) => {
     setUser(userData)
-    localStorage.setItem("user", JSON.stringify(userData))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(userData))
+    }
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("user")
-    // Chuyển hướng về trang chủ sau khi đăng xuất
     if (typeof window !== "undefined") {
+      localStorage.removeItem("user")
+      // Chuyển hướng về trang chủ sau khi đăng xuất
       window.location.href = "/"
     }
   }

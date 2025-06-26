@@ -37,9 +37,8 @@ function AuthButtons() {
               <p className="text-xs text-slate-500">{user.email}</p>
               <div className="flex items-center space-x-1">
                 <div
-                  className={`w-2 h-2 rounded-full ${
-                    user.role === "admin" ? "bg-red-500" : user.role === "garage" ? "bg-green-500" : "bg-blue-500"
-                  }`}
+                  className={`w-2 h-2 rounded-full ${user.role === "admin" ? "bg-red-500" : user.role === "garage" ? "bg-green-500" : "bg-blue-500"
+                    }`}
                 />
                 <span className="text-xs text-slate-500 capitalize">{user.role}</span>
               </div>
@@ -104,21 +103,23 @@ export function Header() {
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg">
-              <Wrench className="h-6 w-6 text-white" />
+          <a href="#" >
+            <div className="flex items-center space-x-2">
+              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg">
+                <Wrench className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                XeCare
+              </span>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              XeCare
-            </span>
-          </div>
-
+          </a>
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-slate-600 hover:text-blue-600 transition-colors">
-              Tính năng
+            <a href="#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
+              Giới thiệu
             </a>
             <a href="#services" className="text-slate-600 hover:text-blue-600 transition-colors">
               Dịch vụ
@@ -146,8 +147,8 @@ export function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-blue-100">
             <nav className="flex flex-col space-y-4">
-              <a href="#features" className="text-slate-600 hover:text-blue-600 transition-colors">
-                Tính năng
+              <a href="#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
+                Giới thiệu
               </a>
               <a href="#services" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Dịch vụ

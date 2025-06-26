@@ -3,11 +3,20 @@
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { TrendingUp, Users, Calendar, Star, DollarSign, Activity, Target } from "lucide-react"
 
 export default function AdminAnalyticsPage() {
   const [timeRange, setTimeRange] = useState("30d")
+  const [fromDate, setFromDate] = useState(() => {
+    const date = new Date()
+    date.setDate(date.getDate() - 30)
+    return date.toISOString().split("T")[0]
+  })
+  const [toDate, setToDate] = useState(() => {
+    const date = new Date()
+    return date.toISOString().split("T")[0]
+  })
 
   // Mock data for charts
   const userGrowthData = [
@@ -35,26 +44,81 @@ export default function AdminAnalyticsPage() {
     { service: "Khác", count: 360, percentage: 10 },
   ]
 
+  // Handle time range selection
+  useEffect(() => {
+    if (timeRange !== "custom") {
+      const today = new Date()
+      const endDate = today.toISOString().split("T")[0]
+      setToDate(endDate)
+
+      const startDate = new Date()
+      switch (timeRange) {
+        case "7d":
+          startDate.setDate(today.getDate() - 7)
+          break
+        case "30d":
+          startDate.setDate(today.getDate() - 30)
+          break
+        case "90d":
+          startDate.setDate(today.getDate() - 90)
+          break
+        case "1y":
+          startDate.setFullYear(today.getFullYear() - 1)
+          break
+      }
+      setFromDate(startDate.toISOString().split("T")[0])
+    }
+  }, [timeRange])
+
   return (
     <DashboardLayout
       allowedRoles={["admin"]}
       title="Phân tích & Thống kê"
       description="Báo cáo chi tiết về hoạt động của hệ thống"
     >
-      {/* Time Range Selector */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-slate-900">Tổng quan hệ thống</h2>
-        <Select value={timeRange} onValueChange={setTimeRange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">7 ngày qua</SelectItem>
-            <SelectItem value="30d">30 ngày qua</SelectItem>
-            <SelectItem value="90d">3 tháng qua</SelectItem>
-            <SelectItem value="1y">1 năm qua</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Time Range and Date Filter Selector */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900">Tổng quan hệ thống</h2>
+          <p className="text-sm text-slate-600 mt-1">
+            Dữ liệu từ {new Date(fromDate).toLocaleDateString("vi-VN")} đến{" "}
+            {new Date(toDate).toLocaleDateString("vi-VN")}
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Date Range Inputs */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-600">Từ ngày:</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-600">Đến ngày:</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          {/* Quick Time Range Selector */}
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">7 ngày qua</SelectItem>
+              <SelectItem value="30d">30 ngày qua</SelectItem>
+              <SelectItem value="90d">3 tháng qua</SelectItem>
+              <SelectItem value="1y">1 năm qua</SelectItem>
+              <SelectItem value="custom">Tùy chỉnh</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Key Metrics */}
@@ -113,31 +177,91 @@ export default function AdminAnalyticsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
-        {/* User Growth Chart */}
+        {/* User & Garage Growth Chart */}
         <Card className="border-blue-100">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <TrendingUp className="h-5 w-5 text-blue-600" />
-              <span>Tăng trưởng người dùng</span>
+              <span>Biểu đồ tăng trưởng người dùng & garage</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {userGrowthData.map((data, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-600">{data.month}</span>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm text-slate-600">{data.users} users</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-sm text-slate-600">{data.garages} garages</span>
-                    </div>
+            <div className="h-80 w-full">
+              {/* Chart Container */}
+              <div className="relative h-full">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-slate-500 py-4">
+                  <span>6000</span>
+                  <span>5000</span>
+                  <span>4000</span>
+                  <span>3000</span>
+                  <span>2000</span>
+                  <span>1000</span>
+                  <span>0</span>
+                </div>
+
+                {/* Chart area */}
+                <div className="ml-12 h-full relative">
+                  {/* Grid lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between">
+                    {[...Array(7)].map((_, i) => (
+                      <div key={i} className="border-t border-slate-200"></div>
+                    ))}
+                  </div>
+
+                  {/* Data visualization */}
+                  <div className="absolute inset-0 flex items-end justify-between px-4">
+                    {userGrowthData.map((data, index) => {
+                      const userHeight = (data.users / 6000) * 100
+                      const garageHeight = (data.garages / 150) * 100
+
+                      return (
+                        <div key={index} className="flex flex-col items-center space-y-2 flex-1">
+                          {/* Bars */}
+                          <div className="flex items-end space-x-1 h-64">
+                            {/* User bar */}
+                            <div className="relative group">
+                              <div
+                                className="w-8 bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all hover:from-blue-600 hover:to-blue-500"
+                                style={{ height: `${userHeight}%` }}
+                              ></div>
+                              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                {data.users} users
+                              </div>
+                            </div>
+
+                            {/* Garage bar */}
+                            <div className="relative group">
+                              <div
+                                className="w-8 bg-gradient-to-t from-green-500 to-green-400 rounded-t transition-all hover:from-green-600 hover:to-green-500"
+                                style={{ height: `${garageHeight}%` }}
+                              ></div>
+                              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                {data.garages} garages
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Month label */}
+                          <span className="text-xs font-medium text-slate-600">{data.month}</span>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
-              ))}
+
+                {/* Legend */}
+                <div className="absolute bottom-0 right-0 flex items-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                    <span className="text-slate-600">Người dùng</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-500 rounded"></div>
+                    <span className="text-slate-600">Garage</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

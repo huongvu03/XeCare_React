@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { MapPin, Search, Clock, Star, Phone, Navigation } from "lucide-react"
+import { MapPin, Search, Navigation } from "lucide-react"
 import Link from "next/link"
+import { FeaturedGarageCarousel } from "@/components/featured-garage-carousel"
 
 export function Hero() {
   return (
@@ -87,100 +88,8 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right content - Featured garage cards */}
-          <div className="relative">
-            <div className="space-y-4">
-              {/* Featured garage card 1 */}
-              <div className="bg-white rounded-2xl p-6 shadow-xl border border-blue-100">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold">TC</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900">Garage Thành Công</h3>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-slate-600">4.9 (245 đánh giá)</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center space-x-2 text-sm text-slate-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>123 Lê Lợi, Q1, TP.HCM - 1.2km</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-slate-600">
-                    <Clock className="h-4 w-4" />
-                    <span>Mở cửa: 7:00 - 19:00 • Đang mở</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-slate-600">
-                    <Phone className="h-4 w-4" />
-                    <span>Hotline: 0909 123 456</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1 mb-4">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">Thay nhớt</span>
-                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Sửa phanh</span>
-                  <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">Bảo dưỡng</span>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700" asChild>
-                    <Link href="/booking">Đặt lịch ngay</Link>
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    Xem chi tiết
-                  </Button>
-                </div>
-              </div>
-
-              {/* Featured garage card 2 */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 ml-8">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold">24</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900">Garage 24/7</h3>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-slate-600">4.7 (189 đánh giá)</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center space-x-2 text-sm text-slate-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>456 Nguyễn Huệ, Q1, TP.HCM - 2.1km</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-green-600">
-                    <Clock className="h-4 w-4" />
-                    <span>Mở cửa 24/7 • Cứu hộ khẩn cấp</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1 mb-4">
-                  <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">Cứu hộ</span>
-                  <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">Sửa chữa</span>
-                </div>
-
-                <Button size="sm" className="w-full bg-green-600 hover:bg-green-700" asChild>
-                  <Link href="/emergency">Gọi cứu hộ ngay</Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Floating elements */}
-            <div className="absolute -top-4 -right-4 bg-white rounded-full p-3 shadow-lg animate-bounce">
-              <MapPin className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="absolute -bottom-4 -left-4 bg-white rounded-full p-3 shadow-lg">
-              <Clock className="h-6 w-6 text-cyan-600" />
-            </div>
-          </div>
+          {/* Right content - Featured garage carousel */}
+          <FeaturedGarageCarousel />
         </div>
       </div>
     </section>

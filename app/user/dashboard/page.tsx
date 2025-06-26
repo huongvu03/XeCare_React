@@ -1,11 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Star, Clock, Car } from "lucide-react"
+import { VehicleManagement } from "@/components/vehicle-management"
 
 export default function UserDashboard() {
+  const [showAddVehicle, setShowAddVehicle] = useState(false)
+
   return (
     <DashboardLayout
       allowedRoles={["user"]}
@@ -57,6 +61,28 @@ export default function UserDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Vehicle Management */}
+      <Card className="border-blue-100">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Car className="h-5 w-5 text-blue-600" />
+              <span>Quản lý xe của tôi</span>
+            </div>
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-blue-600 to-cyan-600"
+              onClick={() => setShowAddVehicle(true)}
+            >
+              Thêm xe mới
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <VehicleManagement />
+        </CardContent>
+      </Card>
 
       {/* Recent Activities */}
       <div className="grid lg:grid-cols-2 gap-6">
