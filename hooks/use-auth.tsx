@@ -3,11 +3,14 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 interface User {
-  id: string
+  id: number
   email: string
   name: string
   role: "admin" | "user" | "garage"
   phone?: string
+  imageUrl?: string
+  address?: string
+  createdAt?: string 
 }
 
 interface AuthContextType {
@@ -53,6 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.location.href = "/"
     }
   }
+
+
 
   return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
 }

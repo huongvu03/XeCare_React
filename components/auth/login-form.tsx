@@ -11,6 +11,8 @@ import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 
+import { loginApi } from "@/lib/api/AuthApi"
+
 // Demo accounts
 const DEMO_ACCOUNTS = [
   {
@@ -46,48 +48,47 @@ export function LoginForm() {
   const router = useRouter()
   const { login } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsLoading(true)
+  setError("")
 
-    try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+  try {
+    const response = await loginApi({ email, password })
+    const user = response.data
 
-      // Check demo accounts
-      const account = DEMO_ACCOUNTS.find((acc) => acc.email === email && acc.password === password)
+    login({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role.toLowerCase() as "admin" | "user" | "garage",
+      phone: user.phone,
+      imageUrl: user.imageUrl,
+      address: user.address,
+      createdAt: user.createdAt,
+    })
 
-      if (account) {
-        // Login successful
-        login({
-          id: account.email,
-          email: account.email,
-          name: account.name,
-          role: account.role as "admin" | "user" | "garage",
-          phone: account.phone,
-        })
-
-        // Redirect based on role
-        switch (account.role) {
-          case "admin":
-            router.push("/admin/dashboard")
-            break
-          case "garage":
-            router.push("/garage/dashboard")
-            break
-          default:
-            router.push("/user/dashboard")
-        }
-      } else {
-        setError("Email hoặc mật khẩu không đúng")
-      }
-    } catch (err) {
-      setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
-    } finally {
-      setIsLoading(false)
+    // Chuyển hướng
+    switch (user.role.toLowerCase()) {
+      case "admin":
+        router.push("/admin/dashboard")
+        break
+      case "garage":
+        router.push("/garage/dashboard")
+        break
+      default:
+        router.push("/user/dashboard")
     }
+  } catch (err: any) {
+    if (err.response?.status === 403) {
+      setError("Email hoặc mật khẩu không đúng.")
+    } else {
+      setError("Lỗi máy chủ. Vui lòng thử lại.")
+    }
+  } finally {
+    setIsLoading(false)
   }
+}
 
   const handleDemoLogin = (account: (typeof DEMO_ACCOUNTS)[0]) => {
     setEmail(account.email)

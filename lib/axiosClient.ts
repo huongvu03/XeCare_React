@@ -1,4 +1,4 @@
-// src/api/axiosClient.ts
+// lib/axiosClient.ts
 import axios from "axios";
 
 const axiosClient = axios.create({

@@ -12,6 +12,10 @@ import { useAuth } from "@/hooks/use-auth"
 import { useState } from "react"
 import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Save, X, Camera } from "lucide-react"
 
+import { updateUserInfoApi,updateUserImageApi } from "@/lib/api/UserApi"
+import { getUserById } from "@/lib/api/UserApi"
+import { getImageUrl } from "@/utils/getImageUrl"
+
 export default function ProfilePage() {
   const { user } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
@@ -19,11 +23,15 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
 
+
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
-    address: "",
+    //image: user?.imageUrl || "",
+    image: null as File | null,
+    createdAt: user?.createdAt || "",
+    address: user?.address || "",
     bio: "",
     website: "",
     emergencyContact: "",
@@ -34,43 +42,55 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
-    setIsLoading(true)
-    setError("")
-    setSuccess("")
+  setIsLoading(true)
+  setError("")
+  setSuccess("")
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Validation
-      if (!formData.name.trim()) {
-        setError("Tên không được để trống")
-        return
-      }
-
-      if (!formData.email.trim()) {
-        setError("Email không được để trống")
-        return
-      }
-
-      setSuccess("Cập nhật thông tin thành công!")
-      setIsEditing(false)
-
-      // Here you would update the user context with new data
-      // updateUser(formData)
-    } catch (err) {
-      setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
-    } finally {
-      setIsLoading(false)
+  try {
+    if (!formData.name.trim()) {
+      setError("Tên không được để trống")
+      return
     }
+    if (!formData.email.trim()) {
+      setError("Email không được để trống")
+      return
+    }
+
+    // Gọi API cập nhật thông tin
+    await updateUserInfoApi(user!.id, {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      imageUrl: user?.imageUrl, // giữ nguyên imageUrl hiện tại
+    })
+
+    // Nếu có ảnh mới → upload riêng
+    if (formData.image) {
+      await updateUserImageApi(user!.id, formData.image)
+    }
+
+    // Lấy lại user sau cập nhật
+    // const { data: updatedUser } = await getUserById(user!.id)
+    // updateUser(updatedUser)
+
+    setSuccess("Cập nhật thông tin thành công!")
+    setIsEditing(false)
+  } catch (err) {
+    setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+  } finally {
+    setIsLoading(false)
   }
+}
 
   const handleCancel = () => {
     setFormData({
       name: user?.name || "",
       email: user?.email || "",
       phone: user?.phone || "",
-      address: "",
+      image: null as File | null,
+      address: user?.address || "",
+      createdAt: user?.createdAt || "",
       bio: "",
       website: "",
       emergencyContact: "",
@@ -104,12 +124,39 @@ export default function ProfilePage() {
             <div className="space-y-4">
               {/* Avatar */}
               <div className="relative mx-auto w-24 h-24">
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">{user?.name.charAt(0).toUpperCase()}</span>
-                </div>
-                <button className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full shadow-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
+                <label className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full shadow-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors cursor-pointer">
                   <Camera className="h-4 w-4 text-slate-600" />
-                </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setFormData((prev) => ({ ...prev, image: file }))
+                      }
+                    }}
+                  />
+                </label>
+                {formData.image ? (
+                  <img
+                    src={URL.createObjectURL(formData.image)}
+                    alt="avatar"
+                    className="w-24 h-24 object-cover rounded-full"
+                  />
+                ) : user?.imageUrl ? (
+                  <img
+                    src={getImageUrl(user?.imageUrl)}
+                    alt="avatar"
+                    className="w-24 h-24 object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-2xl font-bold">
+                      {user?.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Basic Info */}
@@ -328,7 +375,7 @@ export default function ProfilePage() {
                   <Label>Ngày tạo tài khoản</Label>
                   <div className="flex items-center space-x-2 text-slate-600">
                     <Calendar className="h-4 w-4" />
-                    <span>15/12/2024</span>
+                    <span>{formData.createdAt}</span>
                   </div>
                 </div>
 
