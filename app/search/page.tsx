@@ -1,5 +1,6 @@
 "use client"
-
+import {Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -580,6 +581,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Search Header */}
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-100 mb-8">
@@ -1802,6 +1804,7 @@ export default function SearchPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Footer />
     </div>
   )
 }

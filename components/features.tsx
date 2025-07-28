@@ -6,7 +6,7 @@ export function Features() {
     <section id="about-us" className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">Về GarageFinder</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">Về XeCare</h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
             Nền tảng công nghệ kết nối người dùng với mạng lưới garage uy tín hàng đầu Việt Nam
           </p>

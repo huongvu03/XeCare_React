@@ -151,7 +151,7 @@ export default function AdminDashboard() {
           <CardContent>
             <p className="text-slate-600 text-sm mb-4">Phân tích xu hướng và hiệu suất</p>
             <Button variant="outline" className="w-full border-blue-200 text-blue-600" asChild>
-              <Link href="/admin/analytics">Phân tích</Link>
+              <Link href="/admin/data-analysis">Phân tích</Link>
             </Button>
           </CardContent>
         </Card>

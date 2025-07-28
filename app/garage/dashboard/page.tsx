@@ -3,7 +3,8 @@
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, Users, Star, TrendingUp, Settings, Bell } from "lucide-react"
+import Link from "next/link"
+import { Calendar, Users, Star, TrendingUp, Settings, Wrench } from "lucide-react"
 
 export default function GarageDashboard() {
   return (
@@ -70,21 +71,8 @@ export default function GarageDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 text-sm mb-4">Xem và xử lý lịch hẹn từ khách hàng</p>
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600">Xem lịch hẹn</Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-blue-100 hover:shadow-lg transition-shadow">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center space-x-2 text-lg">
-              <Settings className="h-5 w-5 text-blue-600" />
-              <span>Cài đặt garage</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Cập nhật thông tin và dịch vụ</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600">
-              Cài đặt
+            <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600">
+              <Link href="/garage/appointments">Xem lịch hẹn</Link>
             </Button>
           </CardContent>
         </Card>
@@ -92,14 +80,29 @@ export default function GarageDashboard() {
         <Card className="border-blue-100 hover:shadow-lg transition-shadow">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center space-x-2 text-lg">
-              <Bell className="h-5 w-5 text-blue-600" />
-              <span>Thông báo</span>
+              <Settings className="h-5 w-5 text-blue-600" />
+              <span>Thông tin garage</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Xem thông báo và tin nhắn mới</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600">
-              Xem thông báo
+            <p className="text-slate-600 text-sm mb-4">Cập nhật thông tin và cài đặt garage</p>
+            <Button variant="outline" className="w-full border-blue-200 text-blue-600 bg-transparent" asChild>
+              <Link href="/garage/info">Quản lý thông tin</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-100 hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-lg">
+              <Wrench className="h-5 w-5 text-blue-600" />
+              <span>Quản lý dịch vụ</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-600 text-sm mb-4">Thêm, sửa, xóa các dịch vụ</p>
+            <Button variant="outline" className="w-full border-blue-200 text-blue-600 bg-transparent" asChild>
+              <Link href="/garage/services">Quản lý dịch vụ</Link>
             </Button>
           </CardContent>
         </Card>

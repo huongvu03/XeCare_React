@@ -10,13 +10,14 @@ interface User {
   phone?: string
   imageUrl?: string
   address?: string
-  createdAt?: string 
+  createdAt?: string
 }
 
 interface AuthContextType {
   user: User | null
   login: (user: User) => void
   logout: () => void
+  updateUser: (userData: User) => void
   isLoading: boolean
 }
 
@@ -27,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is logged in on mount
     if (typeof window !== "undefined") {
       const savedUser = localStorage.getItem("user")
       if (savedUser) {
@@ -37,11 +37,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.removeItem("user")
         }
       }
+
+      setIsLoading(false) // ✅ Đặt bên trong điều kiện client
     }
-    setIsLoading(false)
   }, [])
 
   const login = (userData: User) => {
+    setUser(userData)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(userData))
+    }
+  }
+  const updateUser = (userData: User) => {
     setUser(userData)
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(userData))
@@ -59,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, login, logout, updateUser, isLoading }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

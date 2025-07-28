@@ -1,95 +1,103 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { MapPin, Search, Navigation } from "lucide-react"
+import { Search, MapPin, Phone } from "lucide-react"
 import Link from "next/link"
-import { FeaturedGarageCarousel } from "@/components/featured-garage-carousel"
+import { FeaturedGarageCarousel } from "./featured-garage-carousel"
+import { EmergencyRescueSlider } from "./emergency-rescue-slider"
 
 export function Hero() {
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-cyan-500/5 to-slate-100/50" />
+    <section className="relative bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 py-8 md:py-16 lg:py-20 overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=1200')] opacity-5"></div>
+      <div className="absolute top-10 left-10 w-20 h-20 md:w-32 md:h-32 bg-blue-200 rounded-full blur-xl opacity-30"></div>
+      <div className="absolute bottom-10 right-10 w-24 h-24 md:w-40 md:h-40 bg-cyan-200 rounded-full blur-xl opacity-30"></div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left content */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-4xl lg:text-6xl font-bold text-slate-900 leading-tight">
-                Tìm garage sửa xe{" "}
-                <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">uy tín</span>{" "}
-                gần bạn nhất
+          <div className="space-y-6 md:space-y-8 text-center lg:text-left">
+            <div className="space-y-4 md:space-y-6">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-tight">
+                Tìm kiếm{" "}
+                <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Garage</span>{" "}
+                gần bạn
               </h1>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Kết nối với hơn 1,000+ garage chất lượng cao trên toàn quốc. Đặt lịch online, theo dõi tiến độ sửa chữa
-                và nhận hỗ trợ cứu hộ 24/7.
+              <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0">
+                Kết nối với hàng nghìn garage uy tín, đặt lịch sửa chữa xe nhanh chóng và tiện lợi. Dịch vụ chất lượng,
+                giá cả hợp lý.
               </p>
             </div>
 
-            {/* Search bar */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-100">
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1 relative">
-                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input
-                      type="text"
-                      placeholder="Nhập địa chỉ: VD: Quận 1, TP.HCM"
-                      className="pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <Button
-                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 px-8 py-3"
-                    asChild
-                  >
-                    <Link href="/search">
-                      <Search className="h-5 w-5 mr-2" />
-                      Tìm garage
-                    </Link>
-                  </Button>
-                </div>
-
-                {/* Quick location buttons */}
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" className="text-xs">
-                    <Navigation className="h-3 w-3 mr-1" />
-                    Vị trí hiện tại
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-xs text-blue-600">
-                    Quận 1
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-xs text-blue-600">
-                    Quận 3
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-xs text-blue-600">
-                    Bình Thạnh
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-xs text-blue-600">
-                    Tân Bình
-                  </Button>
-                </div>
+            {/* Search bar - responsive */}
+            <div className="relative max-w-md md:max-w-lg mx-auto lg:mx-0">
+              <div className="relative">
+                <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4 md:h-5 md:w-5" />
+                <input
+                  type="text"
+                  placeholder="Tìm garage theo địa điểm..."
+                  className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm md:text-base"
+                />
               </div>
+              <Button
+                className="absolute right-1 md:right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 px-4 md:px-6 py-2 md:py-3 text-sm md:text-base"
+                asChild
+              >
+                <Link href="/search">Tìm kiếm</Link>
+              </Button>
             </div>
 
-            {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-6">
+            {/* Quick actions - responsive */}
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-md md:max-w-lg mx-auto lg:mx-0">
+              <Button
+                size="lg"
+                className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-sm md:text-base py-3 md:py-4"
+                asChild
+              >
+                <Link href="/booking">
+                  <MapPin className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                  Đặt lịch ngay
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="flex-1 border-blue-200 text-blue-600 hover:bg-blue-50 text-sm md:text-base py-3 md:py-4 bg-transparent"
+                asChild
+              >
+                <Link href="/emergency">
+                  <Phone className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                  Cứu hộ 24/7
+                </Link>
+              </Button>
+            </div>
+
+            {/* Stats - responsive */}
+            <div className="grid grid-cols-3 gap-4 md:gap-6 pt-4 md:pt-6 border-t border-slate-200">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">1,200+</div>
-                <div className="text-sm text-slate-600">Garage đối tác</div>
+                <div className="text-xl md:text-2xl lg:text-3xl font-bold text-blue-600">500+</div>
+                <div className="text-xs md:text-sm text-slate-600">Garage</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">85K+</div>
-                <div className="text-sm text-slate-600">Lượt đặt lịch</div>
+                <div className="text-xl md:text-2xl lg:text-3xl font-bold text-cyan-600">10K+</div>
+                <div className="text-xs md:text-sm text-slate-600">Khách hàng</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">4.8★</div>
-                <div className="text-sm text-slate-600">Đánh giá TB</div>
+                <div className="text-xl md:text-2xl lg:text-3xl font-bold text-green-600">4.8★</div>
+                <div className="text-xs md:text-sm text-slate-600">Đánh giá</div>
               </div>
             </div>
           </div>
 
-          {/* Right content - Featured garage carousel */}
-          <FeaturedGarageCarousel />
+          {/* Right content - responsive */}
+          <div className="relative space-y-4 md:space-y-6">
+            {/* Emergency Rescue Slider */}
+            <EmergencyRescueSlider />
+
+            {/* Featured garage carousel */}
+            <FeaturedGarageCarousel />
+          </div>
         </div>
       </div>
     </section>

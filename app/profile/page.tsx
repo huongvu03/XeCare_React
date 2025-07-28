@@ -1,5 +1,4 @@
 "use client"
-
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,15 +8,16 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/hooks/use-auth"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Save, X, Camera } from "lucide-react"
 
-import { updateUserInfoApi,updateUserImageApi } from "@/lib/api/UserApi"
+import { updateUserInfoApi, updateUserImageApi } from "@/lib/api/UserApi"
 import { getUserById } from "@/lib/api/UserApi"
 import { getImageUrl } from "@/utils/getImageUrl"
 
+
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading, updateUser } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState("")
@@ -37,51 +37,72 @@ export default function ProfilePage() {
     emergencyContact: "",
   })
 
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user?.name || "",
+        email: user?.email || "",
+        phone: user?.phone || "",
+        //image: user?.imageUrl || "",
+        image: null as File | null,
+        createdAt: user?.createdAt || "",
+        address: user?.address || "",
+        bio: "",
+        website: "",
+        emergencyContact: "",
+      })
+    }
+  }, [user])
+
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleSave = async () => {
-  setIsLoading(true)
-  setError("")
-  setSuccess("")
+    setIsLoading(true)
+    setError("")
+    setSuccess("")
 
-  try {
-    if (!formData.name.trim()) {
-      setError("Tên không được để trống")
-      return
+    try {
+      if (!formData.name.trim()) {
+        setError("Tên không được để trống")
+        return
+      }
+      if (!formData.email.trim()) {
+        setError("Email không được để trống")
+        return
+      }
+
+      // Gọi API cập nhật thông tin
+      await updateUserInfoApi(user!.id, {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        imageUrl: user?.imageUrl, // giữ nguyên imageUrl hiện tại
+      })
+
+      // Nếu có ảnh mới → upload riêng
+      if (formData.image) {
+        await updateUserImageApi(user!.id, formData.image)
+      }
+
+      // Lấy lại user sau cập nhật
+      // const { data: updatedUser } = await getUserById(user!.id)
+      // updateUser(updatedUser)
+      // Lấy lại thông tin mới từ server
+      const { data: updatedUser } = await getUserById(user!.id)
+      updateUser(updatedUser)
+
+      setSuccess("Cập nhật thông tin thành công!")
+      setIsEditing(false)
+    } catch (err) {
+      setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+    } finally {
+      setIsLoading(false)
     }
-    if (!formData.email.trim()) {
-      setError("Email không được để trống")
-      return
-    }
-
-    // Gọi API cập nhật thông tin
-    await updateUserInfoApi(user!.id, {
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      address: formData.address,
-      imageUrl: user?.imageUrl, // giữ nguyên imageUrl hiện tại
-    })
-
-    // Nếu có ảnh mới → upload riêng
-    if (formData.image) {
-      await updateUserImageApi(user!.id, formData.image)
-    }
-
-    // Lấy lại user sau cập nhật
-    // const { data: updatedUser } = await getUserById(user!.id)
-    // updateUser(updatedUser)
-
-    setSuccess("Cập nhật thông tin thành công!")
-    setIsEditing(false)
-  } catch (err) {
-    setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
-  } finally {
-    setIsLoading(false)
   }
-}
 
   const handleCancel = () => {
     setFormData({
@@ -110,8 +131,41 @@ export default function ProfilePage() {
         return <Badge className="bg-blue-100 text-blue-700">Người dùng</Badge>
     }
   }
+  if (authLoading) {
+    return (
+      <DashboardLayout
+        allowedRoles={["admin", "user", "garage"]}
+        title="Thông tin cá nhân"
+        description="Quản lý thông tin tài khoản và cài đặt cá nhân"
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-slate-600">Đang tải thông tin...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
+  if (!user) {
+    return (
+      <DashboardLayout
+        allowedRoles={["admin", "user", "garage"]}
+        title="Thông tin cá nhân"
+        description="Quản lý thông tin tài khoản và cài đặt cá nhân"
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <p className="text-red-600">Không thể tải thông tin người dùng</p>
+            <Button onClick={() => window.location.reload()}>Thử lại</Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
   return (
+
     <DashboardLayout
       allowedRoles={["admin", "user", "garage"]}
       title="Thông tin cá nhân"
@@ -123,7 +177,7 @@ export default function ProfilePage() {
           <CardContent className="p-6 text-center">
             <div className="space-y-4">
               {/* Avatar */}
-              <div className="relative mx-auto w-24 h-24">
+              {/* <div className="relative mx-auto w-24 h-24">
                 <label className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full shadow-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors cursor-pointer">
                   <Camera className="h-4 w-4 text-slate-600" />
                   <input
@@ -157,7 +211,43 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 )}
+              </div> */}
+              <div className="relative mx-auto w-24 h-24">
+                <label className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full shadow-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors cursor-pointer">
+                  <Camera className="h-4 w-4 text-slate-600" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setFormData((prev) => ({ ...prev, image: file }))
+                      }
+                    }}
+                  />
+                </label>
+                {formData.image ? (
+                  <img
+                    src={URL.createObjectURL(formData.image)}
+                    alt="avatar"
+                    className="w-24 h-24 object-cover rounded-full"
+                  />
+                ) : user?.imageUrl ? (
+                  <img
+                    src={getImageUrl(user.imageUrl)}
+                    alt="avatar"
+                    className="w-24 h-24 object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-2xl font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
+
 
               {/* Basic Info */}
               <div className="space-y-2">

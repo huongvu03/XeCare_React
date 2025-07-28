@@ -106,7 +106,7 @@ export function Header() {
 
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <a href="#" >
+          <a href="/" >
             <div className="flex items-center space-x-2">
               <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg">
                 <Wrench className="h-6 w-6 text-white" />
@@ -118,16 +118,16 @@ export function Header() {
           </a>
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
+            <a href="/#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
               Giới thiệu
             </a>
-            <a href="#services" className="text-slate-600 hover:text-blue-600 transition-colors">
+            <a href="/#services" className="text-slate-600 hover:text-blue-600 transition-colors">
               Dịch vụ
             </a>
-            <a href="#how-it-works" className="text-slate-600 hover:text-blue-600 transition-colors">
+            <a href="/#how-it-works" className="text-slate-600 hover:text-blue-600 transition-colors">
               Cách hoạt động
             </a>
-            <a href="#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
+            <a href="/#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
               Liên hệ
             </a>
           </nav>
@@ -147,16 +147,16 @@ export function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-blue-100">
             <nav className="flex flex-col space-y-4">
-              <a href="#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
+              <a href="/#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Giới thiệu
               </a>
-              <a href="#services" className="text-slate-600 hover:text-blue-600 transition-colors">
+              <a href="/#services" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Dịch vụ
               </a>
-              <a href="#how-it-works" className="text-slate-600 hover:text-blue-600 transition-colors">
+              <a href="/#how-it-works" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Cách hoạt động
               </a>
-              <a href="#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
+              <a href="/#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Liên hệ
               </a>
               <div className="pt-4">

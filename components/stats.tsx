@@ -127,7 +127,7 @@ export function Stats() {
               ))}
             </div>
             <blockquote className="text-xl text-white italic">
-              "GarageFinder đã thay đổi cách tôi chăm sóc xe. Tìm garage uy tín dễ dàng, đặt lịch nhanh chóng, và luôn
+              "XeCare đã thay đổi cách tôi chăm sóc xe. Tìm garage uy tín dễ dàng, đặt lịch nhanh chóng, và luôn
               được hỗ trợ tận tình."
             </blockquote>
             <div className="text-blue-200">

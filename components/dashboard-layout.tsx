@@ -1,5 +1,5 @@
 "use client"
-
+import {Footer} from "@/components/footer"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { useEffect, type ReactNode } from "react"
@@ -163,6 +163,7 @@ export function DashboardLayout({ children, allowedRoles, title, description }: 
         {/* Page Content */}
         {children}
       </div>
+      <Footer />
     </div>
   )
 }
