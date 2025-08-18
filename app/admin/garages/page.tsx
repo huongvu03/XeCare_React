@@ -8,111 +8,158 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useState } from "react"
-import { Search, MoreHorizontal, Eye, Check, X, Star, MapPin, Building } from "lucide-react"
-
-// Mock data
-const mockGarages = [
-  {
-    id: 1,
-    name: "Garage Thành Công",
-    email: "thanhcong@garage.com",
-    phone: "0909123456",
-    address: "123 Lê Lợi, Q1, TP.HCM",
-    rating: 4.8,
-    reviewCount: 120,
-    status: "active",
-    createdAt: "2024-01-15",
-    services: ["Thay nhớt", "Sửa phanh", "Bảo dưỡng"],
-  },
-  {
-    id: 2,
-    name: "Garage ABC",
-    email: "abc@garage.com",
-    phone: "0909234567",
-    address: "456 Nguyễn Huệ, Q1, TP.HCM",
-    rating: 4.5,
-    reviewCount: 85,
-    status: "pending",
-    createdAt: "2024-12-18",
-    services: ["Sửa động cơ", "Thay lốp"],
-  },
-  {
-    id: 3,
-    name: "Garage XYZ",
-    email: "xyz@garage.com",
-    phone: "0909345678",
-    address: "789 Trần Hưng Đạo, Q5, TP.HCM",
-    rating: 4.2,
-    reviewCount: 65,
-    status: "locked",
-    createdAt: "2024-03-10",
-    services: ["Sơn xe", "Rửa xe"],
-  },
-  {
-    id: 4,
-    name: "Garage 24/7",
-    email: "support@garage247.com",
-    phone: "0909456789",
-    address: "321 Võ Văn Tần, Q3, TP.HCM",
-    rating: 4.9,
-    reviewCount: 200,
-    status: "active",
-    createdAt: "2024-02-20",
-    services: ["Cứu hộ", "Sửa chữa tổng quát"],
-  },
-]
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState, useEffect } from "react"
+import { Search, MoreHorizontal, Eye, Check, X, Star, MapPin, Building, AlertCircle, Loader2 } from "lucide-react"
+import { getAllGarages, approveGarage, type GarageInfo, type GarageApprovalData } from "@/lib/api/AdminApi"
+import { toast } from "sonner"
 
 export default function AdminGaragesPage() {
-  const [garages, setGarages] = useState(mockGarages)
+  const [garages, setGarages] = useState<GarageInfo[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+  const [approvingGarage, setApprovingGarage] = useState<number | null>(null)
 
+  // Fetch garages from API
+  const fetchGarages = async () => {
+    try {
+      setLoading(true)
+      setError("")
+      
+      const status = statusFilter === "all" ? undefined : statusFilter.toUpperCase()
+      const response = await getAllGarages(status, currentPage, 10)
+      console.log("Frontend - API Response:", response.data)
+      console.log("Frontend - Garages:", response.data.content)
+      
+      setGarages(response.data.content)
+      setTotalPages(response.data.totalPages)
+      setTotalElements(response.data.totalElements)
+    } catch (err: any) {
+      console.error("Error fetching garages:", err)
+      setError("Không thể tải danh sách garage. Vui lòng thử lại.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch garages when component mounts or filters change
+  useEffect(() => {
+    fetchGarages()
+  }, [currentPage, statusFilter])
+
+  // Filter garages based on search term
   const filteredGarages = garages.filter((garage) => {
     const matchesSearch =
       garage.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      garage.address.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || garage.status === statusFilter
-
-    return matchesSearch && matchesStatus
+      garage.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      garage.owner.name.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesSearch
   })
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
+      case "ACTIVE":
         return <Badge className="bg-green-100 text-green-700">Hoạt động</Badge>
-      case "locked":
+      case "INACTIVE":
         return <Badge className="bg-red-100 text-red-700">Bị khóa</Badge>
-      case "pending":
+      case "PENDING":
         return <Badge className="bg-yellow-100 text-yellow-700">Chờ duyệt</Badge>
+      case "PENDING_UPDATE":
+        return <Badge className="bg-orange-100 text-orange-700">Chờ cập nhật</Badge>
       default:
         return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
     }
   }
 
-  const handleApprove = (garageId: number) => {
-    setGarages(garages.map((garage) => (garage.id === garageId ? { ...garage, status: "active" } : garage)))
+  const handleApprove = async (garageId: number) => {
+    try {
+      setApprovingGarage(garageId)
+      
+      const approvalData: GarageApprovalData = {
+        isApproved: true
+      }
+      
+      await approveGarage(garageId, approvalData)
+      
+      toast.success("Phê duyệt garage thành công!")
+      
+      // Refresh the garage list
+      fetchGarages()
+    } catch (err: any) {
+      console.error("Error approving garage:", err)
+      toast.error("Có lỗi xảy ra khi phê duyệt garage. Vui lòng thử lại.")
+    } finally {
+      setApprovingGarage(null)
+    }
   }
 
-  const handleReject = (garageId: number) => {
-    if (confirm("Bạn có chắc chắn muốn từ chối garage này?")) {
-      setGarages(garages.map((garage) => (garage.id === garageId ? { ...garage, status: "locked" } : garage)))
+  const handleReject = async (garageId: number) => {
+    const rejectionReason = prompt("Lý do từ chối (tùy chọn):")
+    
+    if (rejectionReason === null) return // User cancelled
+    
+    try {
+      setApprovingGarage(garageId)
+      
+      const approvalData: GarageApprovalData = {
+        isApproved: false,
+        rejectionReason: rejectionReason || undefined
+      }
+      
+      await approveGarage(garageId, approvalData)
+      
+      toast.success("Từ chối garage thành công!")
+      
+      // Refresh the garage list
+      fetchGarages()
+    } catch (err: any) {
+      console.error("Error rejecting garage:", err)
+      toast.error("Có lỗi xảy ra khi từ chối garage. Vui lòng thử lại.")
+    } finally {
+      setApprovingGarage(null)
     }
   }
 
   const stats = {
-    total: garages.length,
-    active: garages.filter((g) => g.status === "active").length,
-    pending: garages.filter((g) => g.status === "pending").length,
-    locked: garages.filter((g) => g.status === "locked").length,
+    total: totalElements,
+    active: garages.filter((g) => g.status === "ACTIVE").length,
+    pending: garages.filter((g) => g.status === "PENDING" || g.status === "PENDING_UPDATE").length,
+    inactive: garages.filter((g) => g.status === "INACTIVE").length,
+  }
+
+  if (loading && garages.length === 0) {
+    return (
+      <DashboardLayout
+        allowedRoles={["ADMIN"]}
+        title="Quản lý garage"
+        description="Duyệt và quản lý các garage trong hệ thống"
+      >
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <span className="ml-2 text-slate-600">Đang tải danh sách garage...</span>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (
     <DashboardLayout
-      allowedRoles={["admin"]}
+      allowedRoles={["ADMIN"]}
       title="Quản lý garage"
       description="Duyệt và quản lý các garage trong hệ thống"
     >
+      {error && (
+        <Alert className="mb-6 border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">{error}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Stats Cards */}
       <div className="grid md:grid-cols-4 gap-6 mb-6">
         <Card className="border-blue-100">
@@ -142,7 +189,7 @@ export default function AdminGaragesPage() {
         <Card className="border-red-100">
           <CardContent className="p-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">{stats.locked}</p>
+              <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
               <p className="text-sm text-slate-600">Bị khóa</p>
             </div>
           </CardContent>
@@ -163,7 +210,7 @@ export default function AdminGaragesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Tìm kiếm theo tên hoặc địa chỉ..."
+                placeholder="Tìm kiếm theo tên, địa chỉ hoặc chủ sở hữu..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -179,9 +226,24 @@ export default function AdminGaragesPage() {
                 <SelectItem value="all">Tất cả trạng thái</SelectItem>
                 <SelectItem value="active">Hoạt động</SelectItem>
                 <SelectItem value="pending">Chờ duyệt</SelectItem>
-                <SelectItem value="locked">Bị khóa</SelectItem>
+                <SelectItem value="pending_update">Chờ cập nhật</SelectItem>
+                <SelectItem value="inactive">Bị khóa</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Refresh Button */}
+            <Button
+              variant="outline"
+              onClick={fetchGarages}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Làm mới"
+              )}
+            </Button>
           </div>
 
           {/* Garages Table */}
@@ -190,10 +252,11 @@ export default function AdminGaragesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Garage</TableHead>
+                  <TableHead>Chủ sở hữu</TableHead>
                   <TableHead>Địa chỉ</TableHead>
-                  <TableHead>Đánh giá</TableHead>
                   <TableHead>Dịch vụ</TableHead>
                   <TableHead>Trạng thái</TableHead>
+                  <TableHead>Ngày tạo</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
@@ -202,32 +265,31 @@ export default function AdminGaragesPage() {
                   <TableRow key={garage.id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-slate-900">{garage.name}</p>
-                        <p className="text-sm text-slate-500">{garage.email}</p>
-                        <p className="text-sm text-slate-500">{garage.phone}</p>
+                        <p className="font-medium text-slate-900">{garage.name || 'N/A'}</p>
+                        <p className="text-sm text-slate-500">{garage.email || 'N/A'}</p>
+                        <p className="text-sm text-slate-500">{garage.phone || 'N/A'}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-slate-900">{garage.owner?.name || 'N/A'}</p>
+                        <p className="text-sm text-slate-500">{garage.owner?.email || 'N/A'}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-start space-x-1">
                         <MapPin className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-slate-600">{garage.address}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                        <span className="font-medium">{garage.rating}</span>
-                        <span className="text-sm text-slate-500">({garage.reviewCount})</span>
+                        <span className="text-sm text-slate-600">{garage.address || 'N/A'}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {garage.services.slice(0, 2).map((service, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {service}
+                        {garage.services?.slice(0, 2).map((service) => (
+                          <Badge key={service.id} variant="secondary" className="text-xs">
+                            {service.name}
                           </Badge>
                         ))}
-                        {garage.services.length > 2 && (
+                        {garage.services && garage.services.length > 2 && (
                           <Badge variant="secondary" className="text-xs">
                             +{garage.services.length - 2}
                           </Badge>
@@ -235,19 +297,38 @@ export default function AdminGaragesPage() {
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(garage.status)}</TableCell>
+                    <TableCell>
+                      <span className="text-sm text-slate-600">
+                        {new Date(garage.createdAt).toLocaleDateString("vi-VN")}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
-                        {garage.status === "pending" && (
+                        {(garage.status === "PENDING" || garage.status === "PENDING_UPDATE") && (
                           <>
                             <Button
                               size="sm"
                               onClick={() => handleApprove(garage.id)}
+                              disabled={approvingGarage === garage.id}
                               className="bg-green-600 hover:bg-green-700"
                             >
-                              <Check className="h-4 w-4" />
+                              {approvingGarage === garage.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Check className="h-4 w-4" />
+                              )}
                             </Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleReject(garage.id)}>
-                              <X className="h-4 w-4" />
+                            <Button 
+                              size="sm" 
+                              variant="destructive" 
+                              onClick={() => handleReject(garage.id)}
+                              disabled={approvingGarage === garage.id}
+                            >
+                              {approvingGarage === garage.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <X className="h-4 w-4" />
+                              )}
                             </Button>
                           </>
                         )}
@@ -274,9 +355,39 @@ export default function AdminGaragesPage() {
             </Table>
           </div>
 
-          {filteredGarages.length === 0 && (
+          {filteredGarages.length === 0 && !loading && (
             <div className="text-center py-8">
               <p className="text-slate-500">Không tìm thấy garage nào</p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6">
+              <p className="text-sm text-slate-600">
+                Hiển thị {garages.length} trong tổng số {totalElements} garage
+              </p>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                  disabled={currentPage === 0}
+                >
+                  Trước
+                </Button>
+                <span className="flex items-center px-3 text-sm">
+                  Trang {currentPage + 1} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                  disabled={currentPage === totalPages - 1}
+                >
+                  Sau
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

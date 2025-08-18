@@ -13,12 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, LogOut, User, Settings, LayoutDashboard, Home } from "lucide-react"
+import { ChevronDown, LogOut, User, Settings, LayoutDashboard, Home, Calendar, Building2 } from "lucide-react"
 import Link from "next/link"
 
 interface DashboardLayoutProps {
   children: ReactNode
-  allowedRoles: ("admin" | "user" | "garage")[]
+  allowedRoles: ("ADMIN" | "USER" | "GARAGE" | "USER_AND_GARAGE")[]
   title: string
   description: string
 }
@@ -71,11 +71,11 @@ function DashboardHeader() {
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          user.role === "admin" ? "bg-red-500" : user.role === "garage" ? "bg-green-500" : "bg-blue-500"
+                          user.role === "ADMIN" ? "bg-red-500" : user.role === "GARAGE" || user.role === "USER_AND_GARAGE" ? "bg-green-500" : "bg-blue-500"
                         }`}
                       />
                       <span className="text-xs text-slate-500 capitalize">
-                        {user.role === "admin" ? "Quản trị viên" : user.role === "garage" ? "Chủ garage" : "Người dùng"}
+                        {user.role === "ADMIN" ? "Quản trị viên" : user.role === "GARAGE" || user.role === "USER_AND_GARAGE" ? "Chủ garage" : "Người dùng"}
                       </span>
                     </div>
                   </div>
@@ -84,11 +84,9 @@ function DashboardHeader() {
                 <DropdownMenuItem asChild>
                   <Link
                     href={
-                      user.role === "admin"
+                      user.role === "ADMIN"
                         ? "/admin/dashboard"
-                        : user.role === "garage"
-                          ? "/garage/dashboard"
-                          : "/user/dashboard"
+                        : "/dashboard"
                     }
                     className="flex items-center space-x-2"
                   >
@@ -96,6 +94,43 @@ function DashboardHeader() {
                     <span>Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
+                
+                {/* User Features - Show for USER and USER_AND_GARAGE */}
+                {(user.role === "USER" || user.role === "USER_AND_GARAGE") && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/user/appointments" className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Lịch hẹn của tôi</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/search" className="flex items-center space-x-2">
+                        <Building2 className="h-4 w-4" />
+                        <span>Tìm garage</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+
+                {/* Garage Features - Show for GARAGE and USER_AND_GARAGE */}
+                {(user.role === "GARAGE" || user.role === "USER_AND_GARAGE") && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/garage/appointments" className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Quản lý lịch hẹn</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/garage/edit" className="flex items-center space-x-2">
+                        <Settings className="h-4 w-4" />
+                        <span>Cập nhật thông tin</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center space-x-2">
                     <User className="h-4 w-4" />

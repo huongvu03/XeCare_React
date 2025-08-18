@@ -2,15 +2,32 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
+export interface GarageInfo {
+  id: number
+  name: string
+  address: string
+  phone: string
+  email: string
+  description: string
+  imageUrl: string
+  status: "ACTIVE" | "INACTIVE" | "PENDING" | "PENDING_UPDATE"
+  isVerified: boolean
+  createdAt: string
+  rejectionReason?: string
+  rejectedAt?: string
+  approvedAt?: string
+}
+
 interface User {
   id: number
   email: string
   name: string
-  role: "admin" | "user" | "garage"
+  role: "ADMIN" | "USER" | "GARAGE" | "USER_AND_GARAGE"
   phone?: string
   imageUrl?: string
   address?: string
   createdAt?: string
+  garages?: GarageInfo[]
 }
 
 interface AuthContextType {
@@ -19,6 +36,12 @@ interface AuthContextType {
   logout: () => void
   updateUser: (userData: User) => void
   isLoading: boolean
+  // Helper methods for unified account
+  isUser: () => boolean
+  isGarageOwner: () => boolean
+  isAdmin: () => boolean
+  hasGarages: () => boolean
+  hasActiveGarages: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -48,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("user", JSON.stringify(userData))
     }
   }
+  
   const updateUser = (userData: User) => {
     setUser(userData)
     if (typeof window !== "undefined") {
@@ -64,9 +88,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Helper methods for unified account
+  const isUser = () => {
+    return user?.role === "USER" || user?.role === "USER_AND_GARAGE"
+  }
 
+  const isGarageOwner = () => {
+    return user?.role === "GARAGE" || user?.role === "USER_AND_GARAGE"
+  }
 
-  return <AuthContext.Provider value={{ user, login, logout, updateUser, isLoading }}>{children}</AuthContext.Provider>
+  const isAdmin = () => {
+    return user?.role === "ADMIN"
+  }
+
+  const hasGarages = () => {
+    return user?.garages && user.garages.length > 0
+  }
+
+  const hasActiveGarages = () => {
+    return user?.garages && user.garages.some(garage => garage.status === "ACTIVE")
+  }
+
+  return (
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        login, 
+        logout, 
+        updateUser, 
+        isLoading,
+        isUser,
+        isGarageOwner,
+        isAdmin,
+        hasGarages,
+        hasActiveGarages
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

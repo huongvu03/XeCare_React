@@ -451,7 +451,7 @@ export default function AdminAnalyticsPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["admin"]}
+      allowedRoles={["ADMIN"]}
       title="Phân tích & Thống kê"
       description="Báo cáo chi tiết về hoạt động của hệ thống"
     >

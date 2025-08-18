@@ -8,7 +8,7 @@ import Link from "next/link"
 
 export default function AdminDashboard() {
   return (
-    <DashboardLayout allowedRoles={["admin"]} title="Admin Dashboard" description="Quản lý toàn bộ hệ thống XeCare">
+    <DashboardLayout allowedRoles={["ADMIN"]} title="Admin Dashboard" description="Quản lý toàn bộ hệ thống XeCare">
       {/* System Stats */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-blue-100">

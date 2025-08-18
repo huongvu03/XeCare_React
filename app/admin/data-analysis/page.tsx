@@ -113,7 +113,7 @@ export default function DataAnalysisPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["admin"]}
+      allowedRoles={["ADMIN"]}
       title="Phân tích dữ liệu"
       description="Phân tích xu hướng và hiệu suất chi tiết"
     >

@@ -121,7 +121,7 @@ export default function AdminReviewsPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["admin"]}
+      allowedRoles={["ADMIN"]}
       title="Quản lý đánh giá"
       description="Kiểm duyệt và quản lý đánh giá từ người dùng"
     >

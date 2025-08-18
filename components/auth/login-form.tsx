@@ -57,29 +57,50 @@ export function LoginForm() {
     const response = await loginApi({ email, password })
     const user = response.data
 
+    console.log("Debug - Login response:", user)
+    console.log("Debug - User token:", user.token)
+
+    // Lưu token vào localStorage
+    if (user.token) {
+      localStorage.setItem("token", user.token);
+      console.log("Debug - Token saved to localStorage")
+    } else {
+      console.error("Debug - No token in response")
+    }
+
     login({
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role.toLowerCase() as "admin" | "user" | "garage",
+      role: user.role as "ADMIN" | "USER" | "GARAGE" | "USER_AND_GARAGE", // Removed .toLowerCase()
       phone: user.phone,
       imageUrl: user.imageUrl,
       address: user.address,
       createdAt: user.createdAt,
+      garages: user.garages, // Added garages
     })
 
+    console.log("Debug - User logged in successfully")
+    console.log("Debug - User role:", user.role)
+    console.log("Debug - About to redirect...")
+
     // Chuyển hướng
-    switch (user.role.toLowerCase()) {
-      case "admin":
-        router.push("/admin/dashboard")
+    switch (user.role) { // Used user.role directly
+      case "ADMIN":
+        console.log("Debug - Redirecting to admin dashboard")
+        await router.push("/admin/dashboard")
         break
-      case "garage":
-        router.push("/garage/dashboard")
-        break
+      case "GARAGE":
+      case "USER_AND_GARAGE":
+      case "USER":
       default:
-        router.push("/user/dashboard")
+        console.log("Debug - Redirecting to user dashboard")
+        await router.push("/dashboard") // Redirect to unified dashboard
     }
+    
+    console.log("Debug - Redirect completed")
   } catch (err: any) {
+    console.error("Debug - Login error:", err)
     if (err.response?.status === 403) {
       setError("Email hoặc mật khẩu không đúng.")
     } else {

@@ -126,7 +126,7 @@ export default function AdminUsersPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["admin"]}
+      allowedRoles={["ADMIN"]}
       title="Quản lý người dùng"
       description="Xem và quản lý tất cả người dùng trong hệ thống"
     >

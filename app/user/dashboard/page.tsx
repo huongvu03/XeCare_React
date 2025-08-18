@@ -1,18 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, MapPin, Star, Clock, Car } from "lucide-react"
+import { Calendar, MapPin, Star, Clock, Car, Building2 } from "lucide-react"
 import { VehicleManagement } from "@/components/vehicle-management"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function UserDashboard() {
   const [showAddVehicle, setShowAddVehicle] = useState(false)
+  const router = useRouter()
+  const { user } = useAuth()
+
+  // Redirect to unified dashboard
+  useEffect(() => {
+    router.replace("/dashboard")
+  }, [router])
 
   return (
     <DashboardLayout
-      allowedRoles={["user"]}
+      allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]}
       title="Dashboard Người dùng"
       description="Quản lý lịch hẹn và tìm kiếm garage sửa xe"
     >
@@ -27,7 +36,12 @@ export default function UserDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 text-sm mb-4">Tìm garage sửa xe gần bạn</p>
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600">Tìm kiếm ngay</Button>
+            <Button 
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600"
+              onClick={() => router.push("/search")}
+            >
+              Tìm kiếm ngay
+            </Button>
           </CardContent>
         </Card>
 
@@ -40,7 +54,11 @@ export default function UserDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 text-sm mb-4">Đặt lịch sửa xe trực tuyến</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600">
+            <Button 
+              variant="outline" 
+              className="w-full border-blue-200 text-blue-600"
+              onClick={() => router.push("/search")}
+            >
               Đặt lịch mới
             </Button>
           </CardContent>
@@ -60,6 +78,26 @@ export default function UserDashboard() {
             </Button>
           </CardContent>
         </Card>
+
+        {(user?.role === "USER" || user?.role === "USER_AND_GARAGE") && !user?.garages?.length && (
+          <Card className="border-green-100 hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center space-x-2 text-lg">
+                <Building2 className="h-5 w-5 text-green-600" />
+                <span>Đăng ký Garage</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600 text-sm mb-4">Đăng ký garage của bạn để nhận lịch hẹn</p>
+              <Button 
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600"
+                onClick={() => router.push("/garage/register")}
+              >
+                Đăng ký ngay
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Vehicle Management */}
