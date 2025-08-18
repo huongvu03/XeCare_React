@@ -1,6 +1,4 @@
 "use client"
-import {Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,6 +35,8 @@ import {
   Copy,
   MessageSquare,
   Info,
+  Settings,
+  ExternalLink,
 } from "lucide-react"
 import {
   Dialog,
@@ -314,6 +314,10 @@ export default function SearchPage() {
   const [isMapFullscreen, setIsMapFullscreen] = useState(false)
   const [isFiltered, setIsFiltered] = useState(false)
 
+  // Google Maps API status
+  const [hasGoogleMapsAPI, setHasGoogleMapsAPI] = useState<boolean | null>(null)
+  const [showAPISetup, setShowAPISetup] = useState(false)
+
   // Booking modal states
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
@@ -339,6 +343,15 @@ export default function SearchPage() {
   const [minRating, setMinRating] = useState([0])
   const [priceRange, setPriceRange] = useState("all")
   const [openNow, setOpenNow] = useState(false)
+
+  // Check Google Maps API availability
+  useEffect(() => {
+    const checkAPI = () => {
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || localStorage.getItem("google_maps_api_key")
+      setHasGoogleMapsAPI(!!apiKey)
+    }
+    checkAPI()
+  }, [])
 
   // Get user location
   const getCurrentLocation = () => {
@@ -581,7 +594,6 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Search Header */}
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-100 mb-8">
@@ -591,6 +603,22 @@ export default function SearchPage() {
             <Alert className="mb-4 border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-700">{locationError}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Google Maps API Status */}
+          {hasGoogleMapsAPI === false && (
+            <Alert className="mb-4 border-amber-200 bg-amber-50">
+              <Settings className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-700">
+                <div className="flex items-center justify-between">
+                  <span>Google Maps API chưa được cấu hình. Đang sử dụng chế độ mô phỏng.</span>
+                  <Button size="sm" variant="outline" onClick={() => setShowAPISetup(true)} className="ml-2">
+                    <Settings className="h-3 w-3 mr-1" />
+                    Cài đặt
+                  </Button>
+                </div>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -663,7 +691,7 @@ export default function SearchPage() {
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
                 >
                   <RefreshCw className="h-4 w-4" />
                 </Button>
@@ -795,7 +823,7 @@ export default function SearchPage() {
                   variant="outline"
                   size="sm"
                   onClick={clearFilters}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
                 >
                   Xóa tất cả bộ lọc
                 </Button>
@@ -866,7 +894,7 @@ export default function SearchPage() {
                             variant="outline"
                             size="sm"
                             onClick={clearFilters}
-                            className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                            className="border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
                           >
                             Xóa tất cả
                           </Button>
@@ -1073,7 +1101,7 @@ export default function SearchPage() {
                         <Card key={garage.id} className="border-blue-100 hover:shadow-lg transition-shadow">
                           <CardContent className="p-6">
                             <div className="grid md:grid-cols-4 gap-6">
-                              {/* Results */}
+                              {/* Image */}
                               <div className="md:col-span-1 relative">
                                 <img
                                   src={garage.image || "/placeholder.svg"}
@@ -1167,7 +1195,7 @@ export default function SearchPage() {
                                 </Button>
                                 <Button
                                   variant="outline"
-                                  className="border-blue-200 text-blue-600"
+                                  className="border-blue-200 text-blue-600 bg-transparent"
                                   onClick={() => handleViewDetails(garage)}
                                 >
                                   <Info className="h-4 w-4 mr-2" />
@@ -1242,7 +1270,7 @@ export default function SearchPage() {
                     onGarageSelect={setSelectedGarage}
                     selectedGarage={selectedGarage}
                     isFullscreen={isMapFullscreen}
-                    onToggleFullscreen={setIsMapFullscreen}
+                    onToggleFullscreen={() => setIsMapFullscreen(!isMapFullscreen)}
                   />
                 </div>
               </TabsContent>
@@ -1325,7 +1353,7 @@ export default function SearchPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex-1 border-blue-200 text-blue-600"
+                                className="flex-1 border-blue-200 text-blue-600 bg-transparent"
                                 onClick={() => handleViewDetails(garage)}
                               >
                                 Chi tiết
@@ -1361,6 +1389,98 @@ export default function SearchPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Google Maps API Setup Modal */}
+      <Dialog open={showAPISetup} onOpenChange={setShowAPISetup}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Settings className="h-5 w-5 text-blue-600" />
+              <span>Cài đặt Google Maps API</span>
+            </DialogTitle>
+            <DialogDescription>
+              Để sử dụng Google Maps đầy đủ tính năng, bạn cần cung cấp API key hợp lệ.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="text-sm text-blue-800">
+                <p className="font-medium mb-2">Hiện tại đang sử dụng:</p>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                    Chế độ mô phỏng
+                  </Badge>
+                  <span>- Hiển thị vị trí garage cơ bản</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-lg border text-sm">
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-medium">Hướng dẫn lấy API key</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => {
+                    const instructions = `
+1. Truy cập Google Cloud Console: https://console.cloud.google.com/
+2. Tạo project mới hoặc chọn project hiện có
+3. Bật Google Maps JavaScript API
+4. Tạo API key với các hạn chế phù hợp
+5. Thêm API key vào biến môi trường NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+`
+                    navigator.clipboard.writeText(instructions)
+                    toast({
+                      title: "Đã sao chép!",
+                      description: "Hướng dẫn đã được sao chép vào clipboard",
+                    })
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <ol className="list-decimal list-inside space-y-1 text-slate-700">
+                <li>Truy cập Google Cloud Console</li>
+                <li>Tạo project mới hoặc chọn project hiện có</li>
+                <li>Bật Google Maps JavaScript API</li>
+                <li>Tạo API key với các hạn chế phù hợp</li>
+                <li>
+                  Thêm vào biến môi trường{" "}
+                  <code className="bg-slate-200 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>
+                </li>
+              </ol>
+            </div>
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="text-sm text-green-800">
+                <p className="font-medium mb-2">Với Google Maps API, bạn sẽ có:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Bản đồ thực tế với đầy đủ tính năng</li>
+                  <li>Chỉ đường GPS chính xác</li>
+                  <li>Thông tin giao thông real-time</li>
+                  <li>Tìm kiếm địa điểm nâng cao</li>
+                  <li>Nhiều chế độ xem bản đồ</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAPISetup(false)}>
+              Đóng
+            </Button>
+            <Button
+              onClick={() => window.open("https://console.cloud.google.com/", "_blank")}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Mở Google Cloud Console
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Booking Modal */}
       <Dialog open={bookingModalOpen} onOpenChange={setBookingModalOpen}>
@@ -1804,7 +1924,6 @@ export default function SearchPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Footer />
     </div>
   )
 }

@@ -180,13 +180,13 @@ export function Footer() {
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-slate-400">
               <p>© 2024 XeCare. Tất cả quyền được bảo lưu.</p>
               <div className="flex space-x-4">
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="/terms" className="hover:text-white transition-colors">
                   Điều khoản sử dụng
                 </a>
                 <a href="#" className="hover:text-white transition-colors">
                   Chính sách bảo mật
                 </a>
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="/privacy" className="hover:text-white transition-colors">
                   Cookie
                 </a>
               </div>
