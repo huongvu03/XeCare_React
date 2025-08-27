@@ -12,9 +12,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Clock, Phone, Car, Upload, Building2, CheckCircle, Search, AlertCircle } from "lucide-react"
 import { registerGarage } from "@/lib/api/UserApi"
-import { uploadTempGarageImage } from "@/lib/api/GarageApi"
+import { uploadTempGarageImage, OperatingHours, checkAddressAvailability } from "@/lib/api/GarageApi"
 import { useAuth } from "@/hooks/use-auth"
 import { useGeocoding } from "@/hooks/use-geocoding"
+import { OperatingHoursForm } from "@/components/operating-hours-form"
+import { createDefaultOperatingHours } from "@/lib/utils/operatingHours"
 
 // Mock data for services and vehicle types (sẽ được lấy từ API)
 const availableServices = [
@@ -34,7 +36,7 @@ const availableVehicleTypes = [
 
 export default function GarageRegistrationPage() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, updateUser, refreshUser } = useAuth()
   
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -58,6 +60,18 @@ export default function GarageRegistrationPage() {
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<number[]>([])
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
+  const [operatingHours, setOperatingHours] = useState<OperatingHours>(createDefaultOperatingHours())
+  
+  // Address validation state
+  const [addressValidation, setAddressValidation] = useState<{
+    isValidating: boolean
+    isTaken: boolean
+    message: string
+  }>({
+    isValidating: false,
+    isTaken: false,
+    message: ""
+  })
 
   // Get current location
   const getCurrentLocation = () => {
@@ -80,10 +94,37 @@ export default function GarageRegistrationPage() {
     }
   }
 
-  // Handle address change with geocoding
-  const handleAddressChange = (newAddress: string) => {
+  // Handle address change with geocoding and validation
+  const handleAddressChange = async (newAddress: string) => {
     setAddress(newAddress)
     geocodeAddress(newAddress)
+    
+    // Validate address if it's not empty
+    if (newAddress.trim().length > 0) {
+      setAddressValidation(prev => ({ ...prev, isValidating: true }))
+      
+      try {
+        const response = await checkAddressAvailability(newAddress.trim())
+        setAddressValidation({
+          isValidating: false,
+          isTaken: response.data.isTaken,
+          message: response.data.message
+        })
+      } catch (error) {
+        console.error("Error checking address availability:", error)
+        setAddressValidation({
+          isValidating: false,
+          isTaken: false,
+          message: "Không thể kiểm tra địa chỉ"
+        })
+      }
+    } else {
+      setAddressValidation({
+        isValidating: false,
+        isTaken: false,
+        message: ""
+      })
+    }
   }
 
   // Auto-fill coordinates when geocoding result is available
@@ -149,6 +190,12 @@ export default function GarageRegistrationPage() {
       return
     }
 
+    // Check if address is already taken
+    if (addressValidation.isTaken) {
+      setError("Địa chỉ này đã được sử dụng bởi một garage khác. Vui lòng chọn địa chỉ khác.")
+      return
+    }
+
     setSubmitting(true)
     setError("")
 
@@ -175,6 +222,7 @@ export default function GarageRegistrationPage() {
         imageUrl: imageUrl || undefined, // Thêm imageUrl
         serviceIds: selectedServices,
         vehicleTypeIds: selectedVehicleTypes,
+        operatingHours: operatingHours, // Thêm operating hours
       }
 
       console.log("Debug - Garage data:", garageData)
@@ -185,10 +233,19 @@ export default function GarageRegistrationPage() {
       
       setSuccess("Đăng ký garage thành công! Vui lòng chờ admin phê duyệt.")
       
-      // Redirect to unified dashboard after 3 seconds
-      setTimeout(() => {
-        router.push("/dashboard")
-      }, 3000)
+      // Update user role to GARAGE immediately in frontend
+      if (user) {
+        const updatedUser = { ...user, role: "GARAGE" as const }
+        updateUser(updatedUser)
+      }
+      
+      // Refresh user data to get updated garage information
+      await refreshUser()
+      
+                     // Redirect to dashboard with garage tab after 3 seconds
+               setTimeout(() => {
+                 router.push("/dashboard?tab=garage")
+               }, 3000)
 
     } catch (err: any) {
       console.error("Debug - Error details:", err)
@@ -201,7 +258,7 @@ export default function GarageRegistrationPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["USER", "USER_AND_GARAGE"]}
+      allowedRoles={["USER", "GARAGE"]}
       title="Đăng ký Garage"
       description="Đăng ký garage của bạn để bắt đầu nhận lịch hẹn"
     >
@@ -303,6 +360,27 @@ export default function GarageRegistrationPage() {
                     <span>Đã tìm thấy: {geocodingResult.display_name}</span>
                   </div>
                 )}
+                
+                {/* Address validation message */}
+                {addressValidation.isValidating && (
+                  <div className="flex items-center space-x-2 text-sm text-blue-600 mt-1">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <span>Đang kiểm tra địa chỉ...</span>
+                  </div>
+                )}
+                
+                {!addressValidation.isValidating && addressValidation.message && (
+                  <div className={`flex items-center space-x-2 text-sm mt-1 ${
+                    addressValidation.isTaken ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {addressValidation.isTaken ? (
+                      <AlertCircle className="h-4 w-4" />
+                    ) : (
+                      <CheckCircle className="h-4 w-4" />
+                    )}
+                    <span>{addressValidation.message}</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -318,26 +396,15 @@ export default function GarageRegistrationPage() {
               </div>
 
               {/* Operating Hours */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="openTime">Giờ mở cửa</Label>
-                  <Input
-                    id="openTime"
-                    type="time"
-                    value={openTime}
-                    onChange={(e) => setOpenTime(e.target.value)}
-                  />
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-lg font-semibold">Giờ làm việc</h3>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="closeTime">Giờ đóng cửa</Label>
-                  <Input
-                    id="closeTime"
-                    type="time"
-                    value={closeTime}
-                    onChange={(e) => setCloseTime(e.target.value)}
-                  />
-                </div>
+                <OperatingHoursForm
+                  value={operatingHours}
+                  onChange={setOperatingHours}
+                />
               </div>
 
               {/* Location */}

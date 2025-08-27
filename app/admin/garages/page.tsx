@@ -10,16 +10,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Search, MoreHorizontal, Eye, Check, X, Star, MapPin, Building, AlertCircle, Loader2 } from "lucide-react"
 import { getAllGarages, approveGarage, type GarageInfo, type GarageApprovalData } from "@/lib/api/AdminApi"
 import { toast } from "sonner"
 
 export default function AdminGaragesPage() {
+  const router = useRouter()
   const [garages, setGarages] = useState<GarageInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("pending")
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
@@ -57,7 +59,7 @@ export default function AdminGaragesPage() {
     const matchesSearch =
       garage.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       garage.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      garage.owner.name.toLowerCase().includes(searchTerm.toLowerCase())
+      garage.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesSearch
   })
 
@@ -128,7 +130,8 @@ export default function AdminGaragesPage() {
   const stats = {
     total: totalElements,
     active: garages.filter((g) => g.status === "ACTIVE").length,
-    pending: garages.filter((g) => g.status === "PENDING" || g.status === "PENDING_UPDATE").length,
+    pending: garages.filter((g) => g.status === "PENDING").length,
+    pendingUpdate: garages.filter((g) => g.status === "PENDING_UPDATE").length,
     inactive: garages.filter((g) => g.status === "INACTIVE").length,
   }
 
@@ -161,7 +164,7 @@ export default function AdminGaragesPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6 mb-6">
+      <div className="grid md:grid-cols-5 gap-6 mb-6">
         <Card className="border-blue-100">
           <CardContent className="p-6">
             <div className="text-center">
@@ -183,6 +186,14 @@ export default function AdminGaragesPage() {
             <div className="text-center">
               <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
               <p className="text-sm text-slate-600">Chờ duyệt</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-orange-100">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-orange-600">{stats.pendingUpdate}</p>
+              <p className="text-sm text-slate-600">Chờ cập nhật</p>
             </div>
           </CardContent>
         </Card>
@@ -272,8 +283,8 @@ export default function AdminGaragesPage() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-slate-900">{garage.owner?.name || 'N/A'}</p>
-                        <p className="text-sm text-slate-500">{garage.owner?.email || 'N/A'}</p>
+                        <p className="font-medium text-slate-900">{garage.ownerName || 'N/A'}</p>
+                        <p className="text-sm text-slate-500">{garage.ownerEmail || 'N/A'}</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -286,7 +297,7 @@ export default function AdminGaragesPage() {
                       <div className="flex flex-wrap gap-1">
                         {garage.services?.slice(0, 2).map((service) => (
                           <Badge key={service.id} variant="secondary" className="text-xs">
-                            {service.name}
+                            {service.serviceName}
                           </Badge>
                         ))}
                         {garage.services && garage.services.length > 2 && (
@@ -303,51 +314,19 @@ export default function AdminGaragesPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        {(garage.status === "PENDING" || garage.status === "PENDING_UPDATE") && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleApprove(garage.id)}
-                              disabled={approvingGarage === garage.id}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              {approvingGarage === garage.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Check className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="destructive" 
-                              onClick={() => handleReject(garage.id)}
-                              disabled={approvingGarage === garage.id}
-                            >
-                              {approvingGarage === garage.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <X className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </>
-                        )}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Xem chi tiết
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>Chỉnh sửa thông tin</DropdownMenuItem>
-                            <DropdownMenuItem>Xem đánh giá</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => router.push(`/admin/garages/${garage.id}/approval`)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Phê duyệt
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

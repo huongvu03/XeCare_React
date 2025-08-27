@@ -1,6 +1,21 @@
 // lib/api/GarageApi.ts
 import axiosClient from "../axiosClient"
 
+export interface DaySchedule {
+  isOpen: boolean
+  openTime: string
+  closeTime: string
+}
+
+export interface OperatingHours {
+  defaultOpenTime: string
+  defaultCloseTime: string
+  useCustomSchedule: boolean
+  customSchedule?: {
+    [key: string]: DaySchedule
+  }
+}
+
 export interface Garage {
   id: number
   name: string
@@ -20,6 +35,7 @@ export interface Garage {
   services?: GarageService[]
   vehicleTypes?: GarageVehicleType[]
   ownerId: number
+  operatingHours?: OperatingHours
 }
 
 export interface GarageService {
@@ -68,6 +84,16 @@ export const getAllGarages = (params?: { page?: number; size?: number; status?: 
 export const getGarageById = (id: number) =>
   axiosClient.get<Garage>(`/apis/garage/${id}`)
 
+// Check address availability
+export interface AddressValidationResponse {
+  address: string
+  isTaken: boolean
+  message: string
+}
+
+export const checkAddressAvailability = (address: string) =>
+  axiosClient.get<AddressValidationResponse>(`/apis/garage/validation/address?address=${encodeURIComponent(address)}`)
+
 // Đăng ký garage (cho user có role garage)
 export const registerGarage = (data: {
   name: string
@@ -81,6 +107,7 @@ export const registerGarage = (data: {
   longitude?: number
   services: number[]
   vehicleTypes: number[]
+  operatingHours?: OperatingHours
 }) =>
   axiosClient.post<Garage>("/apis/garage/register", data)
 
@@ -95,6 +122,7 @@ export const updateGarage = (id: number, data: {
   closeTime?: string
   latitude?: number
   longitude?: number
+  operatingHours?: OperatingHours
 }) =>
   axiosClient.put<Garage>(`/apis/garage/${id}`, data)
 
@@ -119,3 +147,11 @@ export const uploadTempGarageImage = (file: File) => {
     },
   })
 }
+
+// Lấy thông tin garage của user hiện tại
+export const getMyGarage = () =>
+  axiosClient.get<Garage>("/apis/garage/my-garage")
+
+// Lấy danh sách tất cả garage của user hiện tại
+export const getGaragesByOwner = () =>
+  axiosClient.get<Garage[]>("/apis/garage/my-garages")

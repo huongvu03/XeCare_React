@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -26,22 +26,32 @@ import {
 } from "lucide-react"
 import { VehicleManagement } from "@/components/vehicle-management"
 import { useAuth } from "@/hooks/use-auth"
-import { getUserProfile, getUserGarages } from "@/lib/api/UserApi"
-import type { UserProfile } from "@/lib/api/UserApi"
-import type { GarageInfo } from "@/lib/api/AuthApi"
+import { getUserProfile } from "@/lib/api/UserApi"
+import { getGaragesByOwner } from "@/lib/api/GarageApi"
+import type { User } from "@/lib/api/UserApi"
+import type { Garage } from "@/lib/api/GarageApi"
 
 export default function UnifiedDashboard() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, updateUser, isUser, isGarageOwner, hasGarages } = useAuth()
   const [activeTab, setActiveTab] = useState("user")
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [userProfile, setUserProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   
   // My Garages Tab
-  const [myGarages, setMyGarages] = useState<GarageInfo[]>([])
+  const [myGarages, setMyGarages] = useState<Garage[]>([])
   const [myGaragesLoading, setMyGaragesLoading] = useState(true)
   const [myGaragesError, setMyGaragesError] = useState("")
+
+  // Set active tab based on URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam === 'garage' && user && user.garages && user.garages.length > 0) {
+      setActiveTab('garage')
+    }
+  }, [searchParams, user])
 
   // Load user profile with garage information - only once when component mounts
   useEffect(() => {
@@ -69,7 +79,7 @@ export default function UnifiedDashboard() {
         try {
           setMyGaragesLoading(true)
           setMyGaragesError("")
-          const response = await getUserGarages()
+          const response = await getGaragesByOwner()
           setMyGarages(response.data)
         } catch (err: any) {
           console.error("Error loading my garages:", err)
@@ -89,7 +99,7 @@ export default function UnifiedDashboard() {
   if (loading) {
     return (
       <DashboardLayout
-        allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]}
+        allowedRoles={["USER", "GARAGE"]}
         title="Dashboard"
         description="Đang tải..."
       >
@@ -107,7 +117,7 @@ export default function UnifiedDashboard() {
   if (error) {
     return (
       <DashboardLayout
-        allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]}
+        allowedRoles={["USER", "GARAGE"]}
         title="Dashboard"
         description="Có lỗi xảy ra"
       >
@@ -136,7 +146,7 @@ export default function UnifiedDashboard() {
 
   return (
     <DashboardLayout
-      allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]}
+      allowedRoles={["USER", "GARAGE"]}
       title="Dashboard"
       description="Quản lý tài khoản và garage của bạn"
     >
@@ -169,7 +179,7 @@ export default function UnifiedDashboard() {
                 <p className="text-slate-600 text-sm mb-4">Tìm garage sửa xe gần bạn</p>
                 <Button 
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600"
-                  onClick={() => router.push("/search")}
+                  onClick={() => router.push("/search/page1")}
                 >
                   Tìm kiếm ngay
                 </Button>
@@ -188,7 +198,7 @@ export default function UnifiedDashboard() {
                 <Button 
                   variant="outline" 
                   className="w-full border-blue-200 text-blue-600"
-                  onClick={() => router.push("/search")}
+                  onClick={() => router.push("/search/page1")}
                 >
                   Đặt lịch mới
                 </Button>
@@ -354,13 +364,15 @@ export default function UnifiedDashboard() {
                     <p className="text-slate-600 mb-4">
                       Bạn chưa đăng ký garage nào. Hãy đăng ký garage đầu tiên của bạn!
                     </p>
-                    <Button
-                      onClick={() => router.push("/garage/register")}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Đăng ký Garage
-                    </Button>
+                    {(user?.role === "USER" || user?.role === "GARAGE") && (
+                      <Button
+                        onClick={() => router.push("/garage/register")}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Đăng ký Garage
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -394,11 +406,11 @@ export default function UnifiedDashboard() {
                             </div>
                           )}
                           
-                          {garage.status === "INACTIVE" && garage.rejectionReason && (
+                          {garage.status === "INACTIVE" && (
                             <Alert className="border-red-200 bg-red-50 mb-3">
                               <XCircle className="h-4 w-4" />
                               <AlertDescription className="text-red-700">
-                                {garage.rejectionReason}
+                                Garage không hoạt động
                               </AlertDescription>
                             </Alert>
                           )}

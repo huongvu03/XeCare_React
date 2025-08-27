@@ -6,6 +6,20 @@ export interface SignInRequest {
   password: string
 }
 
+export interface ApprovalItem {
+  status: "PENDING" | "APPROVED" | "REJECTED"
+  rejectionReason?: string
+  approvedBy?: string
+  approvedAt?: string
+}
+
+export interface ApprovalDetails {
+  overallStatus: "PENDING" | "APPROVED" | "REJECTED"
+  approvalDetails: {
+    [key: string]: ApprovalItem
+  }
+}
+
 export interface GarageInfo {
   id: number
   name: string
@@ -20,6 +34,40 @@ export interface GarageInfo {
   rejectionReason?: string
   rejectedAt?: string
   approvedAt?: string
+  approvalDetails?: ApprovalDetails
+  openTime?: string
+  closeTime?: string
+  latitude?: number
+  longitude?: number
+  operatingHours?: string
+  services?: Array<{
+    id: number
+    serviceId: number
+    serviceName: string
+    serviceDescription?: string
+    basePrice?: number
+    estimatedTimeMinutes?: number
+    isActive?: boolean
+  }>
+  vehicleTypes?: Array<{
+    id: number
+    vehicleTypeId: number
+    vehicleTypeName: string
+    vehicleTypeDescription?: string
+    isActive?: boolean
+  }>
+}
+
+export interface User {
+  id: number
+  email: string
+  name: string
+  role: "ADMIN" | "USER" | "GARAGE"
+  phone?: string
+  imageUrl?: string
+  address?: string
+  createdAt?: string
+  garages?: GarageInfo[]
 }
 
 export interface SignInResponse {

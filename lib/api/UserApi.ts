@@ -1,17 +1,15 @@
 import axiosClient from "../axiosClient"
 import { GarageInfo } from "./AuthApi"
 
-export interface UserProfile {
+export interface User {
   id: number
   name: string
   email: string
   phone?: string
   address?: string
   imageUrl?: string
-  latitude?: number
-  longitude?: number
-  createdAt: string
-  role: "ADMIN" | "USER" | "GARAGE" | "USER_AND_GARAGE"
+  role: "ADMIN" | "USER" | "GARAGE"
+  createdAt?: string
   garages?: GarageInfo[]
 }
 
@@ -52,7 +50,7 @@ export interface GarageRegistrationData {
 
 // Get user profile with garage information
 export const getUserProfile = () =>
-  axiosClient.get<UserProfile>("/apis/user/profile")
+  axiosClient.get<User>("/apis/user/profile")
 
 // Register a new garage for the current user
 export const registerGarage = (data: GarageRegistrationData) =>

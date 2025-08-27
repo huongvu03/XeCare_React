@@ -11,8 +11,12 @@ axiosClient.interceptors.request.use(
     console.log("Frontend - Request URL:", config.url)
     console.log("Frontend - Full URL:", config.baseURL + config.url)
     console.log("Frontend - Token:", token ? token.substring(0, 50) + "..." : "No token")
+    console.log("Frontend - Headers:", config.headers)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log("Frontend - Authorization header set:", config.headers.Authorization)
+    } else {
+      console.log("Frontend - No token found in localStorage")
     }
     return config;
   },

@@ -1,12 +1,40 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, Building, Calendar, Star, TrendingUp, Shield, Settings, BarChart3 } from "lucide-react"
+import { Users, Building, Calendar, Star, TrendingUp, Shield, Settings, BarChart3, AlertTriangle } from "lucide-react"
 import Link from "next/link"
+import { getGarageStats } from "@/lib/api/AdminApi"
 
 export default function AdminDashboard() {
+  const [garageStats, setGarageStats] = useState({
+    totalGarages: 0,
+    activeGarages: 0,
+    pendingGarages: 0,
+    inactiveGarages: 0
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchGarageStats = async () => {
+      try {
+        const response = await getGarageStats()
+        setGarageStats(response.data)
+      } catch (error) {
+        console.error("Error fetching garage stats:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGarageStats()
+  }, [])
+
+  // Số đơn chờ duyệt (PENDING)
+  const totalPendingRequests = garageStats.pendingGarages
+
   return (
     <DashboardLayout allowedRoles={["ADMIN"]} title="Admin Dashboard" description="Quản lý toàn bộ hệ thống XeCare">
       {/* System Stats */}
@@ -83,15 +111,38 @@ export default function AdminDashboard() {
 
         <Card className="border-blue-100 hover:shadow-lg transition-shadow">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center space-x-2 text-lg">
-              <Building className="h-5 w-5 text-blue-600" />
-              <span>Quản lý garage</span>
+            <CardTitle className="flex items-center justify-between text-lg">
+              <div className="flex items-center space-x-2">
+                <Building className="h-5 w-5 text-blue-600" />
+                <span>Quản lý garage</span>
+              </div>
+              {totalPendingRequests > 0 && (
+                <div className="flex items-center space-x-1">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <span className="text-sm font-medium text-orange-600">
+                    {totalPendingRequests} đơn chờ
+                  </span>
+                </div>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Duyệt đăng ký và quản lý garage</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600" asChild>
-              <Link href="/admin/garages">Quản lý Garages</Link>
+                         <p className="text-slate-600 text-sm mb-4">
+               Duyệt đăng ký và quản lý garage
+               {totalPendingRequests > 0 && (
+                 <span className="text-orange-600 font-medium">
+                   {" "}- {totalPendingRequests} đơn chờ duyệt
+                 </span>
+               )}
+             </p>
+            <Button 
+              variant={totalPendingRequests > 0 ? "default" : "outline"} 
+              className={`w-full ${totalPendingRequests > 0 ? "bg-orange-600 hover:bg-orange-700" : "border-blue-200 text-blue-600"}`} 
+              asChild
+            >
+                             <Link href="/admin/garages">
+                 {totalPendingRequests > 0 ? `Xử lý ${totalPendingRequests} đơn` : "Quản lý Garages"}
+               </Link>
             </Button>
           </CardContent>
         </Card>

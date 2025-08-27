@@ -18,7 +18,7 @@ import Link from "next/link"
 
 interface DashboardLayoutProps {
   children: ReactNode
-  allowedRoles: ("ADMIN" | "USER" | "GARAGE" | "USER_AND_GARAGE")[]
+  allowedRoles: ("ADMIN" | "USER" | "GARAGE")[]
   title: string
   description: string
 }
@@ -71,11 +71,11 @@ function DashboardHeader() {
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          user.role === "ADMIN" ? "bg-red-500" : user.role === "GARAGE" || user.role === "USER_AND_GARAGE" ? "bg-green-500" : "bg-blue-500"
+                          user.role === "ADMIN" ? "bg-red-500" : user.role === "GARAGE" ? "bg-green-500" : "bg-blue-500"
                         }`}
                       />
                       <span className="text-xs text-slate-500 capitalize">
-                        {user.role === "ADMIN" ? "Quản trị viên" : user.role === "GARAGE" || user.role === "USER_AND_GARAGE" ? "Chủ garage" : "Người dùng"}
+                        {user.role === "ADMIN" ? "Quản trị viên" : user.role === "GARAGE" ? "Chủ garage" : "Người dùng"}
                       </span>
                     </div>
                   </div>
@@ -95,8 +95,8 @@ function DashboardHeader() {
                   </Link>
                 </DropdownMenuItem>
                 
-                {/* User Features - Show for USER and USER_AND_GARAGE */}
-                {(user.role === "USER" || user.role === "USER_AND_GARAGE") && (
+                {/* User Features - Show for USER and GARAGE */}
+                {(user.role === "USER" || user.role === "GARAGE") && (
                   <>
                     <DropdownMenuItem asChild>
                       <Link href="/user/appointments" className="flex items-center space-x-2">
@@ -113,9 +113,15 @@ function DashboardHeader() {
                   </>
                 )}
 
-                {/* Garage Features - Show for GARAGE and USER_AND_GARAGE */}
-                {(user.role === "GARAGE" || user.role === "USER_AND_GARAGE") && (
+                {/* Garage Features - Show for GARAGE */}
+                {user.role === "GARAGE" && (
                   <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard?tab=garage" className="flex items-center space-x-2">
+                        <Building2 className="h-4 w-4" />
+                        <span>My Garages</span>
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/garage/appointments" className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4" />

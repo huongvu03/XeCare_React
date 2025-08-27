@@ -9,6 +9,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
 import { MapPin, Phone, Clock, Star, Save, Edit } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { getPublicGarageById, type PublicGarageInfo } from "@/lib/api/UserApi"
+import { OperatingHoursDisplay } from "@/components/operating-hours-display"
+import { formatOperatingHours } from "@/lib/utils/operatingHours"
 
 export default function GarageInfoPage() {
   const { toast } = useToast()
@@ -199,20 +202,27 @@ export default function GarageInfoPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Thứ 2 - Thứ 6:</span>
-                  <span className="font-medium">
-                    {garageInfo.openTime} - {garageInfo.closeTime}
-                  </span>
+              {'operatingHours' in garageInfo && garageInfo.operatingHours ? (
+                <OperatingHoursDisplay
+                  operatingHours={garageInfo.operatingHours as any}
+                  showDetails={true}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Thứ 2 - Thứ 6:</span>
+                    <span className="font-medium">
+                      {garageInfo.openTime} - {garageInfo.closeTime}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Thứ 7 - Chủ nhật:</span>
+                    <span className="font-medium">
+                      {garageInfo.openTime} - {garageInfo.closeTime}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Thứ 7 - Chủ nhật:</span>
-                  <span className="font-medium">
-                    {garageInfo.openTime} - {garageInfo.closeTime}
-                  </span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 

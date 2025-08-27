@@ -14,6 +14,8 @@ import { Calendar, Clock, MapPin, Phone, Car, Upload, ArrowLeft } from "lucide-r
 import { getGarageById, type Garage } from "@/lib/api/GarageApi"
 import { createAppointment, type CreateAppointmentRequest } from "@/lib/api/AppointmentApi"
 import { useAuth } from "@/hooks/use-auth"
+import { getPublicGarageById, type PublicGarageInfo } from "@/lib/api/UserApi"
+import { formatOperatingHours } from "@/lib/utils/operatingHours"
 
 export default function BookingPage() {
   const params = useParams()
@@ -205,7 +207,12 @@ export default function BookingPage() {
 
               <div className="flex items-center space-x-2 text-sm text-slate-600">
                 <Clock className="h-4 w-4" />
-                <span>{garage.openTime} - {garage.closeTime}</span>
+                <span>
+                  {'operatingHours' in garage && garage.operatingHours 
+                    ? formatOperatingHours(garage.operatingHours as any)
+                    : `${garage.openTime} - ${garage.closeTime}`
+                  }
+                </span>
               </div>
 
               {garage.description && (

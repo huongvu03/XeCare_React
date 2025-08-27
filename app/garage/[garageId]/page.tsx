@@ -26,6 +26,7 @@ import {
 import { useAuth } from "@/hooks/use-auth"
 import { getPublicGarageById, getMyGarageById, type PublicGarageInfo } from "@/lib/api/UserApi"
 import type { GarageInfo } from "@/hooks/use-auth"
+import { ApprovalStatusCard } from "@/components/ApprovalStatusCard"
 
 export default function GarageDetailPage() {
   const router = useRouter()
@@ -45,11 +46,11 @@ export default function GarageDetailPage() {
       try {
         // Kiểm tra xem user có phải là owner của garage này không
         const userIsOwner = user && user.garages && user.garages.some(g => g.id === garageId)
-        setIsOwner(userIsOwner || false)
+        setIsOwner(userIsOwner || isOwnerView)
         
         let response
-        if (userIsOwner) {
-          // Nếu là owner, lấy thông tin chi tiết
+        if (userIsOwner || isOwnerView) {
+          // Nếu là owner hoặc có parameter owner=true, lấy thông tin chi tiết
           response = await getMyGarageById(garageId)
         } else {
           // Nếu không phải owner, lấy thông tin public
@@ -72,15 +73,15 @@ export default function GarageDetailPage() {
     if (garageId) {
       loadGarage()
     }
-  }, [garageId, user])
+  }, [garageId, user, isOwnerView])
 
   if (loading) {
     return (
-      <DashboardLayout
-        allowedRoles={["USER", "USER_AND_GARAGE", "GARAGE", "ADMIN"]}
-        title="Chi tiết Garage"
-        description="Đang tải..."
-      >
+              <DashboardLayout
+          allowedRoles={["USER", "GARAGE", "ADMIN"]}
+          title="Chi tiết Garage"
+          description="Đang tải..."
+        >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -94,7 +95,7 @@ export default function GarageDetailPage() {
   if (error || !garage) {
     return (
       <DashboardLayout
-        allowedRoles={["USER", "USER_AND_GARAGE", "GARAGE", "ADMIN"]}
+        allowedRoles={["USER", "GARAGE", "ADMIN"]}
         title="Lỗi"
         description="Không tìm thấy garage"
       >
@@ -110,7 +111,7 @@ export default function GarageDetailPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["USER", "USER_AND_GARAGE", "GARAGE", "ADMIN"]}
+      allowedRoles={["USER", "GARAGE", "ADMIN"]}
       title={`Garage: ${garage.name}`}
       description="Thông tin chi tiết garage"
     >
@@ -119,11 +120,11 @@ export default function GarageDetailPage() {
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/dashboard?tab=garage")}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Quay lại Dashboard</span>
+            <span>Quay lại My Garages</span>
           </Button>
           
           <div className="flex items-center space-x-2">
@@ -200,32 +201,49 @@ export default function GarageDetailPage() {
                          {/* Status Information - Only for owner */}
              {isOwner && (
                <>
-                 {garage.status === "PENDING" && (
-                   <Alert className="border-yellow-200 bg-yellow-50">
-                     <ClockIcon className="h-4 w-4" />
-                     <AlertDescription className="text-yellow-700">
-                       <strong>Đang chờ phê duyệt:</strong> Garage của bạn đang được admin xem xét. 
-                       Bạn sẽ nhận được thông báo khi có kết quả.
-                     </AlertDescription>
-                   </Alert>
+                 {/* Approval Status Card - Show detailed approval information */}
+                 {'approvalDetails' in garage && 
+                  garage.approvalDetails && 
+                  typeof garage.approvalDetails === 'object' && 
+                  garage.approvalDetails !== null && (
+                   <ApprovalStatusCard
+                     approvalDetails={garage.approvalDetails as any}
+                     garageId={garageId}
+                     onEditClick={() => router.push(`/garage/${garageId}/edit`)}
+                   />
                  )}
                  
-                 {garage.status === "INACTIVE" && 'rejectionReason' in garage && garage.rejectionReason && (
-                   <Alert className="border-red-200 bg-red-50">
-                     <XCircle className="h-4 w-4" />
-                     <AlertDescription className="text-red-700">
-                       <strong>Bị từ chối:</strong> {garage.rejectionReason}
-                     </AlertDescription>
-                   </Alert>
-                 )}
-                 
-                 {garage.status === "ACTIVE" && (
-                   <Alert className="border-green-200 bg-green-50">
-                     <CheckCircle className="h-4 w-4" />
-                     <AlertDescription className="text-green-700">
-                       <strong>Đã được phê duyệt:</strong> Garage của bạn đã hoạt động và có thể nhận lịch hẹn từ khách hàng.
-                     </AlertDescription>
-                   </Alert>
+                 {/* Fallback status alerts for backward compatibility */}
+                 {(!('approvalDetails' in garage) || !garage.approvalDetails) && (
+                   <>
+                     {garage.status === "PENDING" && (
+                       <Alert className="border-yellow-200 bg-yellow-50">
+                         <ClockIcon className="h-4 w-4" />
+                         <AlertDescription className="text-yellow-700">
+                           <strong>Đang chờ phê duyệt:</strong> Garage của bạn đang được admin xem xét. 
+                           Bạn sẽ nhận được thông báo khi có kết quả.
+                         </AlertDescription>
+                       </Alert>
+                     )}
+                     
+                     {garage.status === "INACTIVE" && 'rejectionReason' in garage && garage.rejectionReason && (
+                       <Alert className="border-red-200 bg-red-50">
+                         <XCircle className="h-4 w-4" />
+                         <AlertDescription className="text-red-700">
+                           <strong>Bị từ chối:</strong> {garage.rejectionReason}
+                         </AlertDescription>
+                       </Alert>
+                     )}
+                     
+                     {garage.status === "ACTIVE" && (
+                       <Alert className="border-green-200 bg-green-50">
+                         <CheckCircle className="h-4 w-4" />
+                         <AlertDescription className="text-green-700">
+                           <strong>Đã được phê duyệt:</strong> Garage của bạn đã hoạt động và có thể nhận lịch hẹn từ khách hàng.
+                         </AlertDescription>
+                       </Alert>
+                     )}
+                   </>
                  )}
                </>
              )}

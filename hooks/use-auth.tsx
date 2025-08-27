@@ -22,7 +22,7 @@ interface User {
   id: number
   email: string
   name: string
-  role: "ADMIN" | "USER" | "GARAGE" | "USER_AND_GARAGE"
+  role: "ADMIN" | "USER" | "GARAGE"
   phone?: string
   imageUrl?: string
   address?: string
@@ -35,6 +35,7 @@ interface AuthContextType {
   login: (user: User) => void
   logout: () => void
   updateUser: (userData: User) => void
+  refreshUser: () => Promise<void>
   isLoading: boolean
   // Helper methods for unified account
   isUser: () => boolean
@@ -90,23 +91,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Helper methods for unified account
   const isUser = () => {
-    return user?.role === "USER" || user?.role === "USER_AND_GARAGE"
+    return user?.role === "USER" || user?.role === "GARAGE" || false
   }
 
   const isGarageOwner = () => {
-    return user?.role === "GARAGE" || user?.role === "USER_AND_GARAGE"
+    return user?.role === "GARAGE" || false
   }
 
   const isAdmin = () => {
-    return user?.role === "ADMIN"
+    return user?.role === "ADMIN" || false
   }
 
   const hasGarages = () => {
-    return user?.garages && user.garages.length > 0
+    return (user?.garages && user.garages.length > 0) || false
   }
 
   const hasActiveGarages = () => {
-    return user?.garages && user.garages.some(garage => garage.status === "ACTIVE")
+    return (user?.garages && user.garages.some(garage => garage.status === "ACTIVE")) || false
+  }
+
+  const refreshUser = async () => {
+    try {
+      // Call API to get updated user data
+      const response = await fetch("/apis/user/profile", {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(userData))
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error)
+      // Fallback to localStorage
+      if (typeof window !== "undefined") {
+        const savedUser = localStorage.getItem("user")
+        if (savedUser) {
+          try {
+            setUser(JSON.parse(savedUser))
+          } catch (error) {
+            localStorage.removeItem("user")
+          }
+        }
+      }
+    }
   }
 
   return (
@@ -116,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login, 
         logout, 
         updateUser, 
+        refreshUser,
         isLoading,
         isUser,
         isGarageOwner,

@@ -36,9 +36,9 @@ export default function UserDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 text-sm mb-4">Tìm garage sửa xe gần bạn</p>
-            <Button 
+                        <Button
               className="w-full bg-gradient-to-r from-blue-600 to-cyan-600"
-              onClick={() => router.push("/search")}
+              onClick={() => router.push("/search/page1")}
             >
               Tìm kiếm ngay
             </Button>
@@ -57,7 +57,7 @@ export default function UserDashboard() {
             <Button 
               variant="outline" 
               className="w-full border-blue-200 text-blue-600"
-              onClick={() => router.push("/search")}
+              onClick={() => router.push("/search/page1")}
             >
               Đặt lịch mới
             </Button>
@@ -79,7 +79,7 @@ export default function UserDashboard() {
           </CardContent>
         </Card>
 
-        {(user?.role === "USER" || user?.role === "USER_AND_GARAGE") && !user?.garages?.length && (
+        {(user?.role === "USER" || user?.role === "GARAGE") && !user?.garages?.length && (
           <Card className="border-green-100 hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center space-x-2 text-lg">
