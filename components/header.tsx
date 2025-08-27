@@ -37,7 +37,7 @@ function AuthButtons() {
               <p className="text-xs text-slate-500">{user.email}</p>
               <div className="flex items-center space-x-1">
                 <div
-                  className={`w-2 h-2 rounded-full ${user.role === "ADMIN" ? "bg-red-500" : user.role === "garage" ? "bg-green-500" : "bg-blue-500"
+                  className={`w-2 h-2 rounded-full ${user.role === "ADMIN" ? "bg-red-500" : user.role === "GARAGE" ? "bg-green-500" : "bg-blue-500"
                     }`}
                 />
                 <span className="text-xs text-slate-500 capitalize">{user.role}</span>
@@ -48,9 +48,9 @@ function AuthButtons() {
           <DropdownMenuItem asChild>
             <Link
               href={
-                user.role === "admin"
+                user.role === "ADMIN"
                   ? "/admin/dashboard"
-                  : user.role === "garage"
+                  : user.role === "GARAGE"
                     ? "/garage/dashboard"
                     : "/user/dashboard"
               }

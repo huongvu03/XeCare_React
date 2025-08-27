@@ -92,6 +92,14 @@ export const registerApi = (data: {
   email: string
   password: string
   phone: string
-  address: string
+  // address: string
 }) =>
-  axiosClient.post<SignInResponse>("/apis/user/register", data)
+  axiosClient.post<SignInResponse>("/apis/v1/auth/register", data)
+  
+// Xác thực OTP
+export const verifyOtpApi = (data: { email: string; otp: string }) =>
+  axiosClient.post("/apis/v1/auth/verify-otp", data)
+
+// Gửi lại OTP
+export const resendOtpApi = (data: { email: string }) =>
+  axiosClient.post("/apis/v1/auth/resend-otp", data)

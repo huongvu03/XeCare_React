@@ -56,7 +56,11 @@ export default function UnifiedDashboard() {
   // Load user profile with garage information - only once when component mounts
   useEffect(() => {
     const loadUserProfile = async () => {
-      if (!user) return
+      if (user) {
+      setUserProfile(userProfile)
+      setLoading(false)
+    }
+      //if (!user) return
       
       try {
         const response = await getUserProfile()
@@ -70,7 +74,7 @@ export default function UnifiedDashboard() {
     }
 
     loadUserProfile()
-  }, []) // Empty dependency array - only run once
+  }, [user?.id]) // Empty dependency array - only run once
 
   // Load my garages if user has garages - only once when user changes
   useEffect(() => {
