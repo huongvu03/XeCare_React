@@ -1,4 +1,4 @@
-export type AccountType = 'user' | 'admin' | 'garage';
+export type AccountType = 'USER' | 'ADMIN' | 'GARAGE';
 
 export interface UserList {
   id: number;

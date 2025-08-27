@@ -13,30 +13,7 @@ import { useAuth } from "@/hooks/use-auth"
 
 import { loginApi } from "@/lib/api/AuthApi"
 
-// Demo accounts
-const DEMO_ACCOUNTS = [
-  {
-    email: "admin@demo.com",
-    password: "admin123",
-    role: "admin",
-    name: "Admin System",
-    phone: "0909000001",
-  },
-  {
-    email: "user@demo.com",
-    password: "user123",
-    role: "user",
-    name: "Nguyễn Văn A",
-    phone: "0909000002",
-  },
-  {
-    email: "garage@demo.com",
-    password: "garage123",
-    role: "garage",
-    name: "Garage Thành Công",
-    phone: "0909000003",
-  },
-]
+
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -111,11 +88,6 @@ export function LoginForm() {
   }
 }
 
-  const handleDemoLogin = (account: (typeof DEMO_ACCOUNTS)[0]) => {
-    setEmail(account.email)
-    setPassword(account.password)
-  }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
@@ -181,24 +153,6 @@ export function LoginForm() {
         )}
       </Button>
 
-      {/* Quick login buttons */}
-      <div className="space-y-2">
-        <p className="text-sm text-slate-600 text-center">Đăng nhập nhanh:</p>
-        <div className="grid grid-cols-3 gap-2">
-          {DEMO_ACCOUNTS.map((account) => (
-            <Button
-              key={account.email}
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleDemoLogin(account)}
-              className="text-xs"
-            >
-              {account.role === "admin" ? "Admin" : account.role === "garage" ? "Garage" : "User"}
-            </Button>
-          ))}
-        </div>
-      </div>
 
       <div className="text-center">
         <a href="#" className="text-sm text-blue-600 hover:text-blue-700">

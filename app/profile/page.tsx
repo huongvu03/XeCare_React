@@ -123,10 +123,10 @@ export default function ProfilePage() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "admin":
+      case "ADMIN":
         return <Badge className="bg-red-100 text-red-700">Quản trị viên</Badge>
-      case "garage":
-        return <Badge className="bg-green-100 text-green-700">Chủ garage</Badge>
+      case "GARAGE":
+        return <Badge className="bg-green-100 text-green-700">Chủ GARAGE</Badge>
       default:
         return <Badge className="bg-blue-100 text-blue-700">Người dùng</Badge>
     }
@@ -134,7 +134,7 @@ export default function ProfilePage() {
   if (authLoading) {
     return (
       <DashboardLayout
-        allowedRoles={["admin", "user", "garage"]}
+        allowedRoles={["ADMIN", "USER", "GARAGE"]}
         title="Thông tin cá nhân"
         description="Quản lý thông tin tài khoản và cài đặt cá nhân"
       >
@@ -151,7 +151,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <DashboardLayout
-        allowedRoles={["admin", "user", "garage"]}
+        allowedRoles={["ADMIN", "USER", "GARAGE"]}
         title="Thông tin cá nhân"
         description="Quản lý thông tin tài khoản và cài đặt cá nhân"
       >
@@ -167,7 +167,7 @@ export default function ProfilePage() {
   return (
 
     <DashboardLayout
-      allowedRoles={["admin", "user", "garage"]}
+      allowedRoles={["ADMIN", "USER", "GARAGE"]}
       title="Thông tin cá nhân"
       description="Quản lý thông tin tài khoản và cài đặt cá nhân"
     >
@@ -260,18 +260,18 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-blue-600">
-                    {user?.role === "garage" ? "156" : user?.role === "admin" ? "1,234" : "12"}
+                    {user?.role === "GARAGE" ? "156" : user?.role === "ADMIN" ? "1,234" : "12"}
                   </p>
                   <p className="text-sm text-slate-600">
-                    {user?.role === "garage" ? "Khách hàng" : user?.role === "admin" ? "Người dùng" : "Lịch hẹn"}
+                    {user?.role === "GARAGE" ? "Khách hàng" : user?.role === "ADMIN" ? "Người dùng" : "Lịch hẹn"}
                   </p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-green-600">
-                    {user?.role === "garage" ? "4.8" : user?.role === "admin" ? "98%" : "5"}
+                    {user?.role === "GARAGE" ? "4.8" : user?.role === "ADMIN" ? "98%" : "5"}
                   </p>
                   <p className="text-sm text-slate-600">
-                    {user?.role === "garage" ? "Đánh giá" : user?.role === "admin" ? "Uptime" : "Đánh giá"}
+                    {user?.role === "GARAGE" ? "Đánh giá" : user?.role === "ADMIN" ? "Uptime" : "Đánh giá"}
                   </p>
                 </div>
               </div>
@@ -341,7 +341,7 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">{user?.role === "garage" ? "Tên garage" : "Họ và tên"}</Label>
+                  <Label htmlFor="name">{user?.role === "GARAGE" ? "Tên GARAGE" : "Họ và tên"}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
@@ -415,7 +415,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {user?.role === "garage" && (
+              {user?.role === "GARAGE" && (
                 <div className="space-y-2">
                   <Label htmlFor="website">Website</Label>
                   <Input
@@ -429,7 +429,7 @@ export default function ProfilePage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="bio">{user?.role === "garage" ? "Mô tả garage" : "Giới thiệu bản thân"}</Label>
+                <Label htmlFor="bio">{user?.role === "GARAGE" ? "Mô tả GARAGE" : "Giới thiệu bản thân"}</Label>
                 <Textarea
                   id="bio"
                   value={formData.bio}
@@ -437,8 +437,8 @@ export default function ProfilePage() {
                   disabled={!isEditing}
                   className="min-h-[100px]"
                   placeholder={
-                    user?.role === "garage"
-                      ? "Mô tả về garage, dịch vụ và kinh nghiệm..."
+                    user?.role === "GARAGE"
+                      ? "Mô tả về GARAGE, dịch vụ và kinh nghiệm..."
                       : "Viết vài dòng giới thiệu về bản thân..."
                   }
                 />
@@ -485,14 +485,14 @@ export default function ProfilePage() {
           </Card>
 
           {/* Activity Summary */}
-          {user?.role !== "admin" && (
+          {user?.role !== "ADMIN" && (
             <Card className="border-blue-100">
               <CardHeader>
                 <CardTitle>Hoạt động gần đây</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {user?.role === "garage" ? (
+                  {user?.role === "GARAGE" ? (
                     <>
                       <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                         <span className="text-sm text-slate-600">Lịch hẹn mới từ Nguyễn Văn A</span>
@@ -506,11 +506,11 @@ export default function ProfilePage() {
                   ) : (
                     <>
                       <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Đặt lịch sửa xe tại Garage Thành Công</span>
+                        <span className="text-sm text-slate-600">Đặt lịch sửa xe tại GARAGE Thành Công</span>
                         <span className="text-xs text-blue-600">3 ngày trước</span>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Đánh giá 5 sao cho Garage ABC</span>
+                        <span className="text-sm text-slate-600">Đánh giá 5 sao cho GARAGE ABC</span>
                         <span className="text-xs text-blue-600">1 tuần trước</span>
                       </div>
                     </>

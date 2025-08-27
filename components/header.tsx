@@ -37,7 +37,7 @@ function AuthButtons() {
               <p className="text-xs text-slate-500">{user.email}</p>
               <div className="flex items-center space-x-1">
                 <div
-                  className={`w-2 h-2 rounded-full ${user.role === "admin" ? "bg-red-500" : user.role === "garage" ? "bg-green-500" : "bg-blue-500"
+                  className={`w-2 h-2 rounded-full ${user.role === "ADMIN" ? "bg-red-500" : user.role === "garage" ? "bg-green-500" : "bg-blue-500"
                     }`}
                 />
                 <span className="text-xs text-slate-500 capitalize">{user.role}</span>
