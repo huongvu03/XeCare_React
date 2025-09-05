@@ -22,7 +22,10 @@ import {
   Plus,
   Eye,
   Settings,
-  Loader2
+  Loader2,
+  Heart,
+  Bell,
+  Gift
 } from "lucide-react"
 import { VehicleManagement } from "@/components/vehicle-management"
 import { useAuth } from "@/hooks/use-auth"
@@ -218,7 +221,8 @@ export default function UnifiedDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600 text-sm mb-4">Gọi cứu hộ khẩn cấp 24/7</p>
-                <Button variant="destructive" className="w-full">
+                <Button variant="destructive" className="w-full"
+                 onClick={() => router.push("/emergency")}>
                   Gọi cứu hộ
                 </Button>
               </CardContent>
@@ -245,6 +249,66 @@ export default function UnifiedDashboard() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Favorites Card */}
+            <Card className="border-red-100 hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <Heart className="h-5 w-5 text-red-600" />
+                  <span>Garage Yêu Thích</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-600 text-sm mb-4">Quản lý danh sách garage yêu thích</p>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-red-200 text-red-600"
+                  onClick={() => router.push("/favorites")}
+                >
+                  Xem yêu thích
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Notifications Card */}
+            <Card className="border-blue-100 hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <Bell className="h-5 w-5 text-blue-600" />
+                  <span>Thông Báo</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-600 text-sm mb-4">Xem tất cả thông báo của bạn</p>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-blue-200 text-blue-600"
+                  onClick={() => router.push("/notifications")}
+                >
+                  Xem thông báo
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Reward Points Card */}
+            <Card className="border-yellow-100 hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <Gift className="h-5 w-5 text-yellow-600" />
+                  <span>Điểm Thưởng</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-600 text-sm mb-4">Theo dõi điểm thưởng và lịch sử giao dịch</p>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-yellow-200 text-yellow-600"
+                  onClick={() => router.push("/reward-points")}
+                >
+                  Xem điểm thưởng
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Vehicle Management */}

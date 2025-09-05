@@ -76,6 +76,12 @@ export interface GarageSearchResponse {
 export const findNearbyGarages = (params: NearbyGarageRequest) =>
   axiosClient.get<GarageSearchResponse>("/apis/garage/nearby/paginated", { params })
 
+// Tìm garage gần nhất (simple version)
+export const getNearbyGarages = (latitude: number, longitude: number, radius: number = 10) =>
+  axiosClient.get<Garage[]>("/apis/garage/nearby", { 
+    params: { latitude, longitude, radius } 
+  })
+
 // Lấy danh sách tất cả garage
 export const getAllGarages = (params?: { page?: number; size?: number; status?: string }) =>
   axiosClient.get<GarageSearchResponse>("/apis/garage", { params })

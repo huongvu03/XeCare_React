@@ -7,6 +7,7 @@ import { getFullImageUrl, isPlaceholderImage } from '@/utils/imageUtils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
 
 interface GarageCardProps {
   garage: PublicGarageResponseDto;
@@ -121,6 +122,11 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
               <Badge className={`${getStatusColor(garage.status)} border shadow-sm`}>
                 {garage.status}
               </Badge>
+            </div>
+
+            {/* Favorite button */}
+            <div className="absolute top-3 left-3">
+              <FavoriteButton garageId={garage.id} size="sm" />
             </div>
 
             {/* Rating badge */}

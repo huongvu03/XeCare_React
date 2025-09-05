@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { InteractiveMap } from "@/components/interactive-map"
+import { FavoriteButton } from "@/components/ui/FavoriteButton"
 import {
   MapPin,
   Search,
@@ -303,7 +304,7 @@ const timeSlots = [
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [location, setLocation] = useState("")
-  const [filteredGarages, setFilteredGarages] = useState(mockGarages)
+  const [filteredGarages, setFilteredGarages] = useState<ProcessedGarage[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [locationLoading, setLocationLoading] = useState(false)
@@ -426,6 +427,9 @@ export default function SearchPage() {
 
     return processed
   }
+
+  // Type for processed garages with distance
+  type ProcessedGarage = typeof mockGarages[0] & { distance: number }
 
   // Check if any filters are active
   useEffect(() => {
@@ -591,6 +595,11 @@ export default function SearchPage() {
 
   const allServices = ["Thay nhớt", "Sửa phanh", "Bảo dưỡng", "Sửa động cơ", "Cứu hộ", "Sơn xe", "Rửa xe", "Kiểm định"]
   const allVehicles = ["Xe máy", "Ô tô", "Xe tải"]
+
+  // Initialize filteredGarages on mount
+  useEffect(() => {
+    setFilteredGarages(processGarages(mockGarages))
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -1055,7 +1064,11 @@ export default function SearchPage() {
 
                           {/* Open Now */}
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="openNow" checked={openNow} onCheckedChange={setOpenNow} />
+                            <Checkbox 
+                              id="openNow" 
+                              checked={openNow} 
+                              onCheckedChange={(checked) => setOpenNow(checked === true)} 
+                            />
                             <label htmlFor="openNow" className="text-sm">
                               Chỉ hiển thị garage đang mở
                             </label>
@@ -1186,6 +1199,26 @@ export default function SearchPage() {
                               </div>
 
                               <div className="md:col-span-1 flex flex-col space-y-2">
+                                {/* Favorite Button */}
+                                <div className="flex justify-center mb-2">
+                                  <FavoriteButton 
+                                    garageId={garage.id} 
+                                    size="sm" 
+                                    variant="ghost"
+                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                    onFavoriteChange={(isFavorited) => {
+                                      // Cập nhật favorite state trong garage list
+                                      setFilteredGarages(prevGarages => 
+                                        prevGarages.map(g => 
+                                          g.id === garage.id 
+                                            ? { ...g, isFavorited } 
+                                            : g
+                                        )
+                                      );
+                                    }}
+                                  />
+                                </div>
+                                
                                 <Button
                                   className="bg-gradient-to-r from-blue-600 to-cyan-600"
                                   onClick={() => handleBookNow(garage)}
@@ -1341,6 +1374,26 @@ export default function SearchPage() {
                           </div>
 
                           <div className="flex flex-col space-y-2">
+                            {/* Favorite Button */}
+                            <div className="flex justify-center mb-2">
+                              <FavoriteButton 
+                                garageId={garage.id} 
+                                size="sm" 
+                                variant="ghost"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                onFavoriteChange={(isFavorited) => {
+                                  // Cập nhật favorite state trong garage list
+                                  setFilteredGarages(prevGarages => 
+                                    prevGarages.map(g => 
+                                      g.id === garage.id 
+                                        ? { ...g, isFavorited } 
+                                        : g
+                                    )
+                                  );
+                                }}
+                              />
+                            </div>
+                            
                             <Button
                               size="sm"
                               className="bg-gradient-to-r from-blue-600 to-cyan-600"
@@ -1810,6 +1863,20 @@ export default function SearchPage() {
 
               {/* Action Buttons */}
               <div className="flex space-x-3 pt-4 border-t">
+                {/* Favorite Button */}
+                <div className="flex items-center">
+                  <FavoriteButton 
+                    garageId={selectedGarage.id} 
+                    size="default" 
+                    variant="ghost"
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    onFavoriteChange={(isFavorited) => {
+                      // Cập nhật favorite state trong selected garage
+                      setSelectedGarage((prev: any) => ({ ...prev, isFavorited }));
+                    }}
+                  />
+                </div>
+                
                 <Button
                   className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600"
                   onClick={() => {

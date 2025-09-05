@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Menu, X, Wrench } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, LogOut, User, Settings, LayoutDashboard } from "lucide-react"
+import { ChevronDown, LogOut, User, Settings, LayoutDashboard, Heart, Gift, Bell } from "lucide-react"
+import { NotificationBell } from "@/components/ui/NotificationBell"
 
 function AuthButtons() {
   const { user, logout } = useAuth()
@@ -67,6 +69,24 @@ function AuthButtons() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
+            <Link href="/favorites" className="flex items-center space-x-2">
+              <Heart className="h-4 w-4" />
+              <span>Garage yêu thích</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/notifications" className="flex items-center space-x-2">
+              <Bell className="h-4 w-4" />
+              <span>Thông báo</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/reward-points" className="flex items-center space-x-2">
+              <Gift className="h-4 w-4" />
+              <span>Điểm thưởng</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <Link href="/settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
               <span>Cài đặt</span>
@@ -99,6 +119,7 @@ function AuthButtons() {
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { user } = useAuth()
 
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
@@ -134,6 +155,7 @@ export function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            {user && <NotificationBell />}
             <AuthButtons />
           </div>
 
@@ -159,6 +181,22 @@ export function Header() {
               <a href="/#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Liên hệ
               </a>
+              {user && (
+                <>
+                  <a href="/favorites" className="text-slate-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                    <Heart className="h-4 w-4" />
+                    <span>Garage yêu thích</span>
+                  </a>
+                  <a href="/notifications" className="text-slate-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                    <Bell className="h-4 w-4" />
+                    <span>Thông báo</span>
+                  </a>
+                  <a href="/reward-points" className="text-slate-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
+                    <Gift className="h-4 w-4" />
+                    <span>Điểm thưởng</span>
+                  </a>
+                </>
+              )}
               <div className="pt-4">
                 <AuthButtons />
               </div>
