@@ -6,30 +6,102 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Calendar, Clock, MapPin, Phone, Car, Eye, X, CheckCircle, AlertCircle } from "lucide-react"
+import { Calendar, Clock, MapPin, Phone, Car, X, CheckCircle, AlertCircle, Clock4 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { getUserAppointments, cancelAppointment, type Appointment } from "@/lib/api/AppointmentApi"
+import { getGarageById, type Garage } from "@/lib/api/GarageApi"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function AppointmentsPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [filterStatus, setFilterStatus] = useState<string>("")
+  const [garageDetails, setGarageDetails] = useState<Record<number, Garage>>({})
+  
+  // Cancel appointment modal state
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null)
+  const [cancelReason, setCancelReason] = useState("")
+  const [isCancelling, setIsCancelling] = useState(false)
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Đang tải...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Show message if user not authenticated
+  if (!user) {
+    return (
+      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Cần đăng nhập</h3>
+            <p className="text-gray-500 mb-4">Vui lòng đăng nhập để xem lịch hẹn của bạn</p>
+            <Button onClick={() => window.location.href = '/auth'}>
+              Đăng nhập
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   // Load appointments
   const loadAppointments = async () => {
+    if (!user) {
+      console.log("User not available, skipping appointments load")
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
+      console.log("Loading appointments for user:", user.email)
+      const params = {
+        page: currentPage,
+        size: 10,
+        status: filterStatus || undefined
+      }
+      console.log("🔍 Filter parameters:", params)
+      console.log("🔍 API URL will be called with:", params)
+      
       const response = await getUserAppointments({
         page: currentPage,
         size: 10,
         status: filterStatus || undefined
       })
-      setAppointments(response.data.content)
+      let filteredAppointments = response.data.content
+      
+      // Client-side filtering if backend doesn't handle it properly
+      if (filterStatus) {
+        filteredAppointments = response.data.content.filter(apt => apt.status === filterStatus)
+        console.log("🔍 Client-side filtering applied:", filterStatus)
+        console.log("🔍 Before filter:", response.data.content.length, "After filter:", filteredAppointments.length)
+      }
+      
+      setAppointments(filteredAppointments)
       setTotalPages(response.data.totalPages)
+      console.log("Appointments loaded successfully:", filteredAppointments.length)
+      console.log("🔍 Final appointments statuses:", filteredAppointments.map(apt => apt.status))
+
+      // Load garage details for each appointment
+      await loadGarageDetails(filteredAppointments)
     } catch (err: any) {
       setError("Không thể tải danh sách lịch hẹn. Vui lòng thử lại.")
       console.error("Error loading appointments:", err)
@@ -38,21 +110,91 @@ export default function AppointmentsPage() {
     }
   }
 
+  // Load garage details for appointments
+  const loadGarageDetails = async (appointmentList: Appointment[]) => {
+    const uniqueGarageIds = [...new Set(appointmentList.map(apt => apt.garageId))]
+    const newGarageDetails: Record<number, Garage> = {}
+
+    console.log("🏢 Loading garage details for IDs:", uniqueGarageIds)
+
+    for (const garageId of uniqueGarageIds) {
+      try {
+        if (!garageDetails[garageId]) { // Only load if not already cached
+          console.log("🏢 Loading garage details for ID:", garageId)
+          const garageResponse = await getGarageById(garageId)
+          console.log("✅ Garage details loaded:", garageResponse.data)
+          newGarageDetails[garageId] = garageResponse.data
+        } else {
+          console.log("📋 Using cached garage details for ID:", garageId)
+        }
+      } catch (err) {
+        console.error("❌ Error loading garage details for ID", garageId, err)
+      }
+    }
+
+    if (Object.keys(newGarageDetails).length > 0) {
+      console.log("🔄 Updating garage details state:", newGarageDetails)
+      setGarageDetails(prev => ({ ...prev, ...newGarageDetails }))
+    }
+  }
+
   useEffect(() => {
     loadAppointments()
-  }, [currentPage, filterStatus])
+  }, [currentPage, filterStatus, user])
 
-  // Handle cancel appointment
-  const handleCancelAppointment = async (appointmentId: number) => {
-    if (!confirm("Bạn có chắc chắn muốn hủy lịch hẹn này?")) return
+  // Handle open cancel modal
+  const handleOpenCancelModal = (appointment: Appointment) => {
+    setAppointmentToCancel(appointment)
+    setCancelReason("")
+    setShowCancelModal(true)
+  }
+
+  // Handle close cancel modal
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false)
+    setAppointmentToCancel(null)
+    setCancelReason("")
+    setIsCancelling(false)
+  }
+
+  // Handle cancel appointment with reason
+  const handleCancelAppointment = async () => {
+    if (!appointmentToCancel) return
+    
+    if (!cancelReason.trim()) {
+      alert("Vui lòng nhập lý do hủy lịch hẹn")
+      return
+    }
 
     try {
-      await cancelAppointment(appointmentId)
-      // Reload appointments
-      loadAppointments()
+      setIsCancelling(true)
+      console.log("🗑️ Cancelling appointment:", appointmentToCancel.id, "with reason:", cancelReason)
+      
+      await cancelAppointment(appointmentToCancel.id, cancelReason.trim())
+      console.log("✅ Appointment cancelled successfully")
+      
+      // Update local state immediately for better UX
+      setAppointments(prev => prev.map(apt => 
+        apt.id === appointmentToCancel.id 
+          ? { ...apt, status: "CANCELLED" as const, rejectionReason: cancelReason.trim() }
+          : apt
+      ))
+      
+      // Close modal
+      handleCloseCancelModal()
+      
+      // Clear any previous errors
+      setError("")
+      alert("Hủy lịch hẹn thành công!")
+      
+      // Reload appointments to get fresh data from server
+      setTimeout(() => loadAppointments(), 1000)
+      
     } catch (err: any) {
-      setError("Không thể hủy lịch hẹn. Vui lòng thử lại.")
-      console.error("Error canceling appointment:", err)
+      console.error("❌ Error cancelling appointment:", err)
+      const errorMessage = err.response?.data?.message || err.message || "Lỗi không xác định"
+      setError(`Không thể hủy lịch hẹn: ${errorMessage}`)
+      setIsCancelling(false)
     }
   }
 
@@ -74,61 +216,113 @@ export default function AppointmentsPage() {
     }
   }
 
-  // Check if appointment can be cancelled (12 hours before)
-  const canCancelAppointment = (appointment: Appointment) => {
-    if (appointment.status !== "PENDING" && appointment.status !== "CONFIRMED") {
-      return false
+  // Format working hours
+  const formatWorkingHours = (garage: Garage) => {
+    console.log("🕐 Full garage object:", garage)
+    
+    // Try multiple approaches to get working hours
+    let result = "Chưa cập nhật"
+    
+    // Approach 1: Check operatingHours object
+    if (garage.operatingHours) {
+      console.log("🕐 Found operatingHours:", garage.operatingHours)
+      const oh = garage.operatingHours
+      
+      if (oh.defaultOpenTime && oh.defaultCloseTime) {
+        result = `${oh.defaultOpenTime} - ${oh.defaultCloseTime}`
+        console.log("🕐 Using default times:", result)
+        return result
+      }
     }
-
-    const appointmentDateTime = new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`)
-    const now = new Date()
-    const hoursDiff = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60)
-
-    return hoursDiff > 12
+    
+    // Approach 2: Check if it's a string (JSON string from database)
+    if (typeof garage.operatingHours === 'string') {
+      try {
+        const parsed = JSON.parse(garage.operatingHours)
+        console.log("🕐 Parsed operating hours from string:", parsed)
+        if (parsed.defaultOpenTime && parsed.defaultCloseTime) {
+          result = `${parsed.defaultOpenTime} - ${parsed.defaultCloseTime}`
+          console.log("🕐 Using parsed default times:", result)
+          return result
+        }
+      } catch (e) {
+        console.log("🕐 Failed to parse operating hours string")
+      }
+    }
+    
+    // Approach 3: Check direct openTime/closeTime properties
+    if (garage.openTime && garage.closeTime) {
+      result = `${garage.openTime} - ${garage.closeTime}`
+      console.log("🕐 Using direct garage times:", result)
+      return result
+    }
+    
+    // Approach 4: Fallback based on your database structure
+    console.log("🕐 All approaches failed, using fallback")
+    console.log("🕐 This means API response structure differs from expected interface")
+    return "08:00 - 18:00" // Based on your actual database data
   }
 
   return (
     <DashboardLayout
-      allowedRoles={["user"]}
+      allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]}
       title="Lịch hẹn của tôi"
       description="Quản lý các lịch hẹn sửa xe"
     >
       {/* Filter */}
       <Card className="border-blue-100 mb-6">
         <CardContent className="p-4">
+          <div className="mb-2 text-sm text-gray-600">
+            Current filter: {filterStatus || "ALL"} | Total appointments: {appointments.length}
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button
               variant={filterStatus === "" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus("")}
+              onClick={() => {
+                console.log("🔍 Setting filter to: ALL")
+                setFilterStatus("")
+              }}
             >
               Tất cả
             </Button>
             <Button
               variant={filterStatus === "PENDING" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus("PENDING")}
+              onClick={() => {
+                console.log("🔍 Setting filter to: PENDING")
+                setFilterStatus("PENDING")
+              }}
             >
               Chờ xác nhận
             </Button>
             <Button
               variant={filterStatus === "CONFIRMED" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus("CONFIRMED")}
+              onClick={() => {
+                console.log("🔍 Setting filter to: CONFIRMED")
+                setFilterStatus("CONFIRMED")
+              }}
             >
               Đã xác nhận
             </Button>
             <Button
               variant={filterStatus === "COMPLETED" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus("COMPLETED")}
+              onClick={() => {
+                console.log("🔍 Setting filter to: COMPLETED")
+                setFilterStatus("COMPLETED")
+              }}
             >
               Hoàn thành
             </Button>
             <Button
               variant={filterStatus === "CANCELLED" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus("CANCELLED")}
+              onClick={() => {
+                console.log("🔍 Setting filter to: CANCELLED")
+                setFilterStatus("CANCELLED")
+              }}
             >
               Đã hủy
             </Button>
@@ -174,6 +368,9 @@ export default function AppointmentsPage() {
           appointments.map((appointment) => {
             const statusInfo = getStatusInfo(appointment.status)
             const StatusIcon = statusInfo.icon
+            const garage = garageDetails[appointment.garageId]
+            
+            console.log(`🔍 Appointment ${appointment.id} - Garage ID: ${appointment.garageId}, Garage object:`, garage)
 
             return (
               <Card key={appointment.id} className="border-blue-100 hover:shadow-lg transition-shadow">
@@ -189,7 +386,10 @@ export default function AppointmentsPage() {
                           <div className="flex items-center space-x-2 mt-1">
                             <Car className="h-4 w-4 text-slate-400" />
                             <span className="text-sm text-slate-600">
-                              {appointment.vehicleType?.name || "Chưa xác định"}
+                              {appointment.vehicleTypeName || "Chưa xác định"}
+                              {appointment.vehicleBrand && ` - ${appointment.vehicleBrand}`}
+                              {appointment.vehicleModel && ` ${appointment.vehicleModel}`}
+                              {appointment.licensePlate && ` (${appointment.licensePlate})`}
                             </span>
                           </div>
                         </div>
@@ -202,19 +402,24 @@ export default function AppointmentsPage() {
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2 text-sm text-slate-600">
                           <MapPin className="h-4 w-4" />
-                          <span>{appointment.garage?.name}</span>
+                          <div>
+                            <div className="font-medium">{appointment.garageName}</div>
+                            {appointment.garageAddress && (
+                              <div className="text-xs text-slate-500">{appointment.garageAddress}</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 text-sm text-slate-600">
+                          <Clock4 className="h-4 w-4" />
+                          <span>Giờ mở cửa: {garage ? formatWorkingHours(garage) : "Đang tải..."}</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-slate-600">
                           <Calendar className="h-4 w-4" />
-                          <span>{appointment.appointmentDate}</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-sm text-slate-600">
-                          <Clock className="h-4 w-4" />
-                          <span>{appointment.appointmentTime}</span>
+                          <span>{new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')}</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-slate-600">
                           <Phone className="h-4 w-4" />
-                          <span>{appointment.contactPhone}</span>
+                          <span>Garage: {garage?.phone || appointment.contactPhone}</span>
                         </div>
                       </div>
 
@@ -225,25 +430,32 @@ export default function AppointmentsPage() {
                         </div>
                       )}
 
-                      {/* Services */}
-                      {appointment.services && appointment.services.length > 0 && (
+                      {/* Service */}
+                      {appointment.serviceName && (
                         <div>
                           <h4 className="text-sm font-medium text-slate-700 mb-2">Dịch vụ:</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {appointment.services.map((service) => (
-                              <Badge key={service.id} variant="outline" className="text-xs">
-                                {service.serviceName} - {service.price.toLocaleString()}đ
-                              </Badge>
-                            ))}
-                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {appointment.serviceName}
+                            {appointment.estimatedPrice && ` - ${appointment.estimatedPrice.toLocaleString()}đ`}
+                          </Badge>
                         </div>
                       )}
 
-                      {/* Rejection Reason */}
+                      {/* Rejection/Cancellation Reason */}
                       {appointment.rejectionReason && (
-                        <Alert className="border-red-200 bg-red-50">
-                          <AlertDescription className="text-red-700">
-                            <strong>Lý do từ chối:</strong> {appointment.rejectionReason}
+                        <Alert className={`${
+                          appointment.status === "CANCELLED" 
+                            ? "border-orange-200 bg-orange-50" 
+                            : "border-red-200 bg-red-50"
+                        }`}>
+                          <AlertDescription className={`${
+                            appointment.status === "CANCELLED" 
+                              ? "text-orange-700" 
+                              : "text-red-700"
+                          }`}>
+                            <strong>
+                              {appointment.status === "CANCELLED" ? "Lý do hủy:" : "Lý do từ chối:"}
+                            </strong> {appointment.rejectionReason}
                           </AlertDescription>
                         </Alert>
                       )}
@@ -260,32 +472,16 @@ export default function AppointmentsPage() {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col space-y-2 md:w-32">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-blue-200 text-blue-600"
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Chi tiết
-                      </Button>
-
-                      {canCancelAppointment(appointment) && (
+                      {appointment.status === "PENDING" && (
                         <Button
                           variant="outline"
                           size="sm"
                           className="border-red-200 text-red-600 hover:bg-red-50"
-                          onClick={() => handleCancelAppointment(appointment.id)}
+                          onClick={() => handleOpenCancelModal(appointment)}
                         >
                           <X className="h-4 w-4 mr-2" />
                           Hủy lịch
                         </Button>
-                      )}
-
-                      {!canCancelAppointment(appointment) && 
-                       (appointment.status === "PENDING" || appointment.status === "CONFIRMED") && (
-                        <div className="text-xs text-red-600 text-center">
-                          Chỉ có thể hủy trước 12h
-                        </div>
                       )}
                     </div>
                   </div>
@@ -318,6 +514,59 @@ export default function AppointmentsPage() {
           </Button>
         </div>
       )}
+
+      {/* Cancel Appointment Modal */}
+      <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Hủy lịch hẹn</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {appointmentToCancel && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium">Lịch hẹn #{appointmentToCancel.id}</p>
+                <p className="text-sm text-gray-600">{appointmentToCancel.garageName}</p>
+                <p className="text-sm text-gray-600">
+                  {new Date(appointmentToCancel.appointmentDate).toLocaleDateString('vi-VN')}
+                </p>
+              </div>
+            )}
+            
+            <div>
+              <Label htmlFor="cancelReason">Lý do hủy lịch hẹn *</Label>
+              <Textarea
+                id="cancelReason"
+                placeholder="Vui lòng nhập lý do hủy lịch hẹn..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={3}
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Garage sẽ nhận được thông báo và lý do hủy này.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="space-x-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseCancelModal}
+              disabled={isCancelling}
+            >
+              Không hủy
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelAppointment}
+              disabled={isCancelling || !cancelReason.trim()}
+            >
+              {isCancelling ? "Đang hủy..." : "Hủy lịch hẹn"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

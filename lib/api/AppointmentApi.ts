@@ -87,7 +87,11 @@ export const getAppointmentById = (id: number) =>
   axiosClient.get<Appointment>(`/apis/user/appointments/${id}`)
 
 // Hủy lịch hẹn
-export const cancelAppointment = (id: number) =>
+export const cancelAppointment = (id: number, reason?: string) =>
+  axiosClient.patch(`/apis/user/appointments/${id}/cancel`, { reason })
+
+// Hủy lịch hẹn (old method - fallback)
+export const cancelAppointmentOld = (id: number) =>
   axiosClient.delete(`/apis/user/appointments/${id}`)
 
 // Lấy danh sách lịch hẹn của garage (cho garage owner)

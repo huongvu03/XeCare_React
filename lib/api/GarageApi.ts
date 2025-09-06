@@ -2,7 +2,8 @@
 import axiosClient from "../axiosClient"
 
 export interface DaySchedule {
-  isOpen: boolean
+  isOpen?: boolean  // TypeScript interface format
+  open?: boolean    // Database format
   openTime: string
   closeTime: string
 }

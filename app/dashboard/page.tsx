@@ -32,6 +32,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { getUserProfile } from "@/lib/api/UserApi"
 import { getGaragesByOwner } from "@/lib/api/GarageApi"
 import { getUserAppointments, getPendingAppointmentsCount, type Appointment } from "@/lib/api/AppointmentApi"
+import Link from "next/link"
 import type { User } from "@/lib/api/UserApi"
 import type { Garage } from "@/lib/api/GarageApi"
 
@@ -54,6 +55,7 @@ export default function UnifiedDashboard() {
   const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([])
   const [appointmentsLoading, setAppointmentsLoading] = useState(true)
   const [garagePendingCounts, setGaragePendingCounts] = useState<Record<number, number>>({})
+  const [appointmentsRefreshKey, setAppointmentsRefreshKey] = useState(0)
   
   // Dashboard Statistics
   const [todayAppointmentsCount, setTodayAppointmentsCount] = useState(0)
@@ -78,6 +80,11 @@ export default function UnifiedDashboard() {
       }
     } else if (tabParam === 'user') {
       setActiveTab('user')
+      // Force reload appointments when switching to user tab
+      if (user) {
+        console.log("🔄 Dashboard: Switching to user tab, force reloading appointments...")
+        setAppointmentsRefreshKey(prev => prev + 1)
+      }
     } else if (!tabParam) {
       // Default to user tab if no tab specified and redirect with tab parameter
       setActiveTab('user')
@@ -115,38 +122,27 @@ export default function UnifiedDashboard() {
     }
   }, [searchParams, user, updateUser]) // Dependencies for proper re-execution
 
-  // Load user profile with garage information - only once when component mounts  
+  // Load user profile and appointments when user is available
   useEffect(() => {
     // Ensure we're on client side to avoid hydration issues
     if (typeof window === 'undefined') return
     
     const loadUserProfile = async () => {
-      if (user) {
-        setUserProfile(user)
-        setLoading(false)
-        return
-      }
-      //if (!user) return
-      
       try {
-        const response = await getUserProfile()
-        setUserProfile(response.data)
-        updateUser(response.data)
+        setLoading(true)
+        setAppointmentsLoading(true)
         
-        // Load recent appointments
-        try {
-          const appointmentsResponse = await getUserAppointments({
-            page: 0,
-            size: 5
-          })
-          setRecentAppointments(appointmentsResponse.data.content)
-        } catch (appointmentErr) {
-          console.error("Error loading appointments:", appointmentErr)
-          // Don't fail the whole loading if appointments fail
+        let currentUserProfile = user
+        
+        // If user not in context, fetch from API
+        if (!currentUserProfile) {
+          const response = await getUserProfile()
+          currentUserProfile = response.data
+          updateUser(response.data)
         }
         
+        setUserProfile(currentUserProfile)
         setLoading(false)
-        setAppointmentsLoading(false)
       } catch (err: any) {
         setError("Không thể tải thông tin người dùng")
         setLoading(false)
@@ -155,7 +151,36 @@ export default function UnifiedDashboard() {
     }
 
     loadUserProfile()
-  }, [user?.id]) // Empty dependency array - only run once
+  }, [user, updateUser])
+
+  // Separate effect for loading appointments - runs when user is available
+  useEffect(() => {
+    const loadAppointments = async () => {
+      if (!user) {
+        console.log("🔄 Dashboard: User not available, skipping appointments load")
+        return
+      }
+      
+      console.log("🔄 Dashboard: Loading appointments for user:", user.email)
+      
+      try {
+        setAppointmentsLoading(true)
+        const appointmentsResponse = await getUserAppointments({
+          page: 0,
+          size: 5
+        })
+        console.log("✅ Dashboard: Appointments loaded:", appointmentsResponse.data.content.length)
+        setRecentAppointments(appointmentsResponse.data.content)
+      } catch (appointmentErr) {
+        console.error("❌ Dashboard: Error loading appointments:", appointmentErr)
+        setRecentAppointments([])
+      } finally {
+        setAppointmentsLoading(false)
+      }
+    }
+
+    loadAppointments()
+  }, [user, appointmentsRefreshKey]) // Run when user changes or refresh key changes
 
   // Load pending appointments count for each garage
   const loadGaragePendingCounts = async (garages: Garage[]) => {
@@ -510,13 +535,14 @@ export default function UnifiedDashboard() {
                     })}
                     {recentAppointments.length > 3 && (
                       <div className="text-center pt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => router.push("/user/appointments")}
-                        >
-                          Xem tất cả ({recentAppointments.length})
-                        </Button>
+                        <Link href="/user/appointments">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                          >
+                            Xem tất cả ({recentAppointments.length})
+                          </Button>
+                        </Link>
                       </div>
                     )}
                   </div>

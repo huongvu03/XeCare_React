@@ -47,6 +47,9 @@ export default function AppointmentDetailPage() {
     const loadAppointmentDetail = async () => {
       try {
         const response = await getAppointmentDetail(appointmentId)
+        console.log("🔍 Garage: Loaded appointment detail:", response.data)
+        console.log("🔍 Garage: Appointment status:", response.data.status)
+        console.log("🔍 Garage: Appointment notes:", response.data.notes)
         setAppointment(response.data)
         setLoading(false)
       } catch (err: any) {
@@ -340,11 +343,19 @@ export default function AppointmentDetailPage() {
                   </div>
                 )}
 
-                {/* Rejection Reason */}
-                {appointment.status === "REJECTED" && appointment.rejectionReason && (
+                {/* Rejection/Cancellation Reason */}
+                {appointment.rejectionReason && (
                   <div>
-                    <label className="text-sm font-medium text-red-600">Lý do từ chối</label>
-                    <p className="text-red-700 bg-red-50 p-3 rounded-md border border-red-200">
+                    <label className={`text-sm font-medium ${
+                      appointment.status === "REJECTED" ? "text-red-600" : "text-orange-600"
+                    }`}>
+                      {appointment.status === "REJECTED" ? "Lý do từ chối" : "Lý do hủy lịch hẹn"}
+                    </label>
+                    <p className={`p-3 rounded-md border ${
+                      appointment.status === "REJECTED" 
+                        ? "text-red-700 bg-red-50 border-red-200" 
+                        : "text-orange-700 bg-orange-50 border-orange-200"
+                    }`}>
                       {appointment.rejectionReason}
                     </p>
                   </div>
