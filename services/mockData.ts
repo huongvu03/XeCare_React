@@ -186,6 +186,9 @@ export const mockStats: GarageStats = {
 // Mock API functions
 export const mockApiClient = {
   searchGaragesAdvanced: async (params: any): Promise<PublicGarageResponseDto[]> => {
+    // Debug log
+    console.log('MockAPI: searchGaragesAdvanced called with params:', JSON.stringify(params, null, 2));
+    
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -237,6 +240,7 @@ export const mockApiClient = {
       );
     }
     
+    console.log(`MockAPI: Returning ${filteredGarages.length} garages out of ${mockGarages.length} total`);
     return filteredGarages;
   },
   

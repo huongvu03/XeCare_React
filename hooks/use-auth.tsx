@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = async () => {
     try {
       // Call API to get updated user data
-      const response = await fetch("/apis/user/profile", {
+      const response = await fetch("http://localhost:8080/apis/user/profile", {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         }

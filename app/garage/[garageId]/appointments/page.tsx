@@ -12,6 +12,7 @@ import {
   Clock,
   User,
   Phone,
+  Mail,
   Car,
   MapPin,
   ArrowLeft,
@@ -25,10 +26,11 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getMyGarageById } from "@/lib/api/UserApi"
+import { getGarageAppointments, type Appointment, type AppointmentSearchResponse } from "@/lib/api/AppointmentApi"
 import type { GarageInfo } from "@/hooks/use-auth"
 
-// Mock appointment data
-interface Appointment {
+// Appointment interface từ API
+interface AppointmentDisplay {
   id: number
   customerName: string
   customerPhone: string
@@ -43,50 +45,7 @@ interface Appointment {
   createdAt: string
 }
 
-const mockAppointments: Appointment[] = [
-  {
-    id: 1,
-    customerName: "Nguyễn Văn A",
-    customerPhone: "0123456789",
-    customerEmail: "nguyenvana@gmail.com",
-    vehicleInfo: "Honda Wave Alpha - 51G-12345",
-    serviceName: "Thay nhớt xe máy",
-    appointmentDate: "2024-12-20",
-    appointmentTime: "14:00",
-    status: "CONFIRMED",
-    notes: "Khách hàng yêu cầu thay nhớt 4T",
-    totalPrice: 150000,
-    createdAt: "2024-12-18T10:30:00Z"
-  },
-  {
-    id: 2,
-    customerName: "Trần Thị B",
-    customerPhone: "0987654321",
-    customerEmail: "tranthib@gmail.com",
-    vehicleInfo: "Yamaha Exciter - 51F-67890",
-    serviceName: "Sửa phanh xe máy",
-    appointmentDate: "2024-12-20",
-    appointmentTime: "15:30",
-    status: "PENDING",
-    notes: "Phanh trước bị mềm",
-    totalPrice: 300000,
-    createdAt: "2024-12-18T11:15:00Z"
-  },
-  {
-    id: 3,
-    customerName: "Lê Văn C",
-    customerPhone: "0369852147",
-    customerEmail: "levanc@gmail.com",
-    vehicleInfo: "Suzuki GSX-R150 - 51H-11111",
-    serviceName: "Bảo dưỡng định kỳ",
-    appointmentDate: "2024-12-21",
-    appointmentTime: "09:00",
-    status: "COMPLETED",
-    notes: "Đã hoàn thành bảo dưỡng",
-    totalPrice: 500000,
-    createdAt: "2024-12-17T14:20:00Z"
-  }
-]
+// Mock data removed - now using real API data
 
 export default function AppointmentsPage() {
   const router = useRouter()
@@ -95,7 +54,7 @@ export default function AppointmentsPage() {
   const garageId = Number(params.garageId)
   
   const [garage, setGarage] = useState<GarageInfo | null>(null)
-  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [appointments, setAppointments] = useState<AppointmentDisplay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL")
@@ -113,11 +72,32 @@ export default function AppointmentsPage() {
         }
 
         // Load garage info
-        const response = await getMyGarageById(garageId)
-        setGarage(response.data)
+        const garageResponse = await getMyGarageById(garageId)
+        setGarage(garageResponse.data)
         
-        // Load appointments (mock data for now)
-        setAppointments(mockAppointments)
+        // Load real appointments from API
+        const appointmentsResponse = await getGarageAppointments(garageId, { 
+          page: 0, 
+          size: 100 // Load nhiều appointments
+        })
+        
+        // Transform API data to display format
+        const transformedAppointments: AppointmentDisplay[] = appointmentsResponse.data.content.map(appointment => ({
+          id: appointment.id,
+          customerName: appointment.userName || "Unknown User",
+          customerPhone: appointment.userPhone || appointment.contactPhone,
+          customerEmail: appointment.userEmail || appointment.contactEmail,
+          vehicleInfo: `${appointment.vehicleTypeName} ${appointment.vehicleBrand ? `- ${appointment.vehicleBrand}` : ''} ${appointment.vehicleModel ? `${appointment.vehicleModel}` : ''} ${appointment.licensePlate ? `(${appointment.licensePlate})` : ''}`.trim(),
+          serviceName: appointment.serviceName || "General Service",
+          appointmentDate: appointment.appointmentDate,
+          appointmentTime: appointment.appointmentTime || "Not specified",
+          status: appointment.status,
+          notes: appointment.notes || appointment.description,
+          totalPrice: appointment.finalPrice || appointment.estimatedPrice,
+          createdAt: appointment.createdAt
+        }))
+        
+        setAppointments(transformedAppointments)
         
         setLoading(false)
       } catch (err: any) {
@@ -218,7 +198,7 @@ export default function AppointmentsPage() {
         </div>
 
         {/* Statistics */}
-        <div className="grid md:grid-cols-5 gap-4">
+        <div className="grid md:grid-cols-6 gap-4">
           <Card className="border-blue-100">
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
@@ -274,6 +254,18 @@ export default function AppointmentsPage() {
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{getStatusCount("COMPLETED")}</p>
                   <p className="text-sm text-slate-600">Hoàn thành</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-100">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <XCircle className="h-8 w-8 text-red-600" />
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{getStatusCount("CANCELLED")}</p>
+                  <p className="text-sm text-slate-600">Đã hủy</p>
                 </div>
               </div>
             </CardContent>
@@ -352,6 +344,10 @@ export default function AppointmentsPage() {
                               <span className="text-slate-600">{appointment.customerPhone}</span>
                             </div>
                             <div className="flex items-center space-x-2">
+                              <Mail className="h-4 w-4 text-slate-400" />
+                              <span className="text-slate-600">{appointment.customerEmail}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
                               <Car className="h-4 w-4 text-slate-400" />
                               <span className="text-slate-600">{appointment.vehicleInfo}</span>
                             </div>
@@ -387,29 +383,14 @@ export default function AppointmentsPage() {
                       </div>
                       
                       <div className="flex flex-col space-y-2 ml-4">
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                          onClick={() => router.push(`/garage/${garageId}/appointments/${appointment.id}`)}
+                        >
                           Xem chi tiết
                         </Button>
-                        {appointment.status === "PENDING" && (
-                          <>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                              Xác nhận
-                            </Button>
-                            <Button size="sm" variant="destructive">
-                              Từ chối
-                            </Button>
-                          </>
-                        )}
-                        {appointment.status === "CONFIRMED" && (
-                          <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                            Bắt đầu
-                          </Button>
-                        )}
-                        {appointment.status === "IN_PROGRESS" && (
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                            Hoàn thành
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </div>

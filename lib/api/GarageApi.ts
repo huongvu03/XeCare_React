@@ -42,8 +42,8 @@ export interface GarageService {
   id: number
   serviceId: number
   serviceName: string
-  serviceDescription: string
-  price: number
+  description: string
+  basePrice: number
   estimatedTimeMinutes: number
   isActive: boolean
 }

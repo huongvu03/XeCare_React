@@ -69,10 +69,13 @@ export function LoginForm() {
         break
       case "GARAGE":
       case "USER_AND_GARAGE":
+        console.log("Debug - Redirecting to garage dashboard")
+        await router.push("/dashboard?tab=garage")
+        break
       case "USER":
       default:
         console.log("Debug - Redirecting to user dashboard")
-        await router.push("/dashboard") // Redirect to unified dashboard
+        await router.push("/dashboard?tab=user") // Direct to user tab for USER role
     }
     
     console.log("Debug - Redirect completed")

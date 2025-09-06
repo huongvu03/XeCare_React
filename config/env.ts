@@ -3,7 +3,7 @@ export const config = {
   API_BASE_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080",
 
   // Data Source Configuration
-  USE_MOCK_DATA: false, // Temporarily use mock data due to 403 authentication errors
+  USE_MOCK_DATA: false, // Switch to real API
 
   // Google Maps Configuration
   GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",

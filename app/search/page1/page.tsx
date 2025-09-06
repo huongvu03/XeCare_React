@@ -1,16 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { PublicGarageResponseDto, GarageSearchParams } from '@/services/api';
 import { useGarageSearch } from '@/hooks/useGarageSearch';
 import { useGarageOptions } from '@/hooks/useGarageOptions';
+import { useUserLocation } from '@/hooks/useUserLocation';
+import { useNearbyGarages } from '@/hooks/useNearbyGarages';
 import { SearchFilters } from '@/components/garage/SearchFilters';
 import { GarageCard } from '@/components/garage/GarageCard';
 import { GarageMap } from '@/components/garage/GarageMap';
 import { Button } from '@/components/ui/button';
+import { MapPin, Navigation, Loader2 } from 'lucide-react';
 
 export default function GarageSearchPage() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [sortByDistance, setSortByDistance] = useState(false);
 
   // Custom hooks
   const {
@@ -32,6 +38,25 @@ export default function GarageSearchPage() {
     stats
   } = useGarageOptions();
 
+  // Location hooks
+  const {
+    userLocation,
+    isLocating,
+    locationError,
+    isSupported,
+    requestLocation,
+    clearLocation
+  } = useUserLocation();
+
+  // Nearby garages calculation
+  const {
+    sortedGarages,
+    nearbyGarages,
+    averageDistance
+  } = useNearbyGarages(garages, userLocation, {
+    sortByDistance: sortByDistance
+  });
+
   // Handle search
   const handleSearch = (params: GarageSearchParams) => {
     search(params);
@@ -39,18 +64,38 @@ export default function GarageSearchPage() {
 
   // Handle view details
   const handleViewDetails = (garage: PublicGarageResponseDto) => {
-    console.log('View details:', garage);
+    router.push(`/garage-detail/${garage.id}`);
   };
 
   // Handle contact
   const handleContact = (garage: PublicGarageResponseDto) => {
-    console.log('Contact:', garage);
+    const phoneNumber = garage.phone;
+    if (phoneNumber) {
+      window.open(`tel:${phoneNumber}`);
+    }
   };
 
   // Toggle view mode
   const toggleViewMode = () => {
     setViewMode(prev => prev === 'grid' ? 'map' : 'grid');
   };
+
+  // Handle location request
+  const handleLocationRequest = async () => {
+    await requestLocation();
+    if (!sortByDistance) {
+      setSortByDistance(true);
+    }
+  };
+
+  // Handle clear location
+  const handleClearLocation = () => {
+    clearLocation();
+    setSortByDistance(false);
+  };
+
+  // Use sorted garages when available
+  const displayGarages = sortByDistance && userLocation ? sortedGarages : garages;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,13 +129,60 @@ export default function GarageSearchPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Results Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Kết quả tìm kiếm
-          </h2>
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600">
-              Tìm thấy {garages.length} garage
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Kết quả tìm kiếm
+            </h2>
+            <div className="text-sm text-gray-600 mt-1">
+              Tìm thấy {displayGarages.length} garage
+              {userLocation && averageDistance > 0 && (
+                <span className="ml-2">• Khoảng cách trung bình: {averageDistance}km</span>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Location Controls */}
+            <div className="flex items-center gap-2">
+              {!userLocation ? (
+                <Button
+                  onClick={handleLocationRequest}
+                  disabled={isLocating || !isSupported}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  {isLocating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <MapPin className="w-4 h-4" />
+                  )}
+                  {isLocating ? 'Đang tìm...' : 'Tìm vị trí của tôi'}
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleClearLocation}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <MapPin className="w-4 h-4 text-green-600" />
+                    Vị trí đã xác định
+                  </Button>
+                  
+                  <Button
+                    onClick={() => setSortByDistance(!sortByDistance)}
+                    variant={sortByDistance ? "default" : "outline"}
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Navigation className="w-4 h-4" />
+                    {sortByDistance ? 'Đang sắp xếp gần nhất' : 'Sắp xếp theo khoảng cách'}
+                  </Button>
+                </div>
+              )}
             </div>
             
             {/* View Mode Toggle */}
@@ -121,10 +213,21 @@ export default function GarageSearchPage() {
           </div>
         </div>
 
+        {/* Location Error */}
+        {locationError && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-2 text-red-700">
+              <MapPin className="w-4 h-4" />
+              <span className="text-sm font-medium">Lỗi định vị</span>
+            </div>
+            <p className="text-sm text-red-600 mt-1">{locationError.message}</p>
+          </div>
+        )}
+
         {/* Garage Grid/Map */}
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {garages.map((garage) => (
+            {displayGarages.map((garage) => (
               <GarageCard
                 key={garage.id}
                 garage={garage}
@@ -135,9 +238,10 @@ export default function GarageSearchPage() {
           </div>
         ) : (
           <GarageMap
-            garages={garages}
+            garages={displayGarages}
             onGarageSelect={handleViewDetails}
             selectedGarage={undefined}
+            userLocation={userLocation}
           />
         )}
 
@@ -155,7 +259,7 @@ export default function GarageSearchPage() {
         )}
 
         {/* No Results */}
-        {!isLoading && garages.length === 0 && (
+        {!isLoading && displayGarages.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">🔍</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy garage nào</h3>
