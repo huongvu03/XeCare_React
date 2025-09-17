@@ -177,7 +177,7 @@ export default function UnifiedDashboard() {
           page: 0,
           size: 5
         })
-        console.log("✅ Dashboard: Appointments loaded:", appointmentsResponse.data.content.length)
+        //console.log("✅ Dashboard: Appointments loaded:", appointmentsResponse.data.content.length)
         setRecentAppointments(appointmentsResponse.data.content)
       } catch (appointmentErr) {
         console.error("❌ Dashboard: Error loading appointments:", appointmentErr)
@@ -501,7 +501,7 @@ export default function UnifiedDashboard() {
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
                   </div>
-                ) : recentAppointments.length > 0 ? (
+                ) : (recentAppointments?.length ?? 0) > 0 ? (
                   <div className="space-y-3">
                     {recentAppointments.slice(0, 3).map((appointment) => {
                       const getStatusBadge = (status: string) => {

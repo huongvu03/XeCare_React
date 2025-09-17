@@ -327,8 +327,7 @@ const response = res.data;
               </DialogHeader>
               <VehicleForm
             initialData={editingVehicle || undefined}
-            onSubmit={(dto) =>
-              editingVehicle ? handleUpdate(editingVehicle.id, dto) : handleCreate(dto)
+            onSubmit={(dto) => handleCreate(dto)
             }
             onCancel={() => {
               setIsAddDialogOpen(false);
@@ -521,9 +520,11 @@ const response = res.data;
               editingVehicle ? handleUpdate(editingVehicle.id, dto) : handleCreate(dto)
             }
             onCancel={() => {
-              setIsFormOpen(false);
+              setIsAddDialogOpen(false);
               setEditingVehicle(null);
             }}
+            categories={categories}
+            vehicleTypes={vehicleTypes}
           />
         </DialogContent>
       </Dialog>

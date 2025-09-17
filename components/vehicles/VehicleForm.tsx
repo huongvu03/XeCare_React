@@ -78,7 +78,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
               Danh mục
             </Label>
             <Select
-              value={formData.categoryId.toString()}
+              value={formData.categoryId?.toString() ?? ""}
               onValueChange={(value) =>
                 setFormData({ ...formData, categoryId: Number(value) })
               }
@@ -109,7 +109,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
               Loại xe
             </Label>
             <Select
-              value={formData.vehicleTypeId.toString()}
+              value={formData.vehicleTypeId?.toString() ?? ""}
               onValueChange={(value) =>
                 setFormData({ ...formData, vehicleTypeId: Number(value) })
               }
