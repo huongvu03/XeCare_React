@@ -1,393 +1,581 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Eye, Edit, Plus } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Car, Edit, Trash2, Plus, Eye, Search, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import userVehicleApi from "@/lib/api/userVehicleApi"
-import { UserVehicleTypeResponseDto } from "@/types/users/userVehicle"
-import userVehicleCategoryApi, { UserVehicleTypeCategory } from "@/lib/api/userVehicleCategoryApi"
+import { useAuth } from "@/hooks/use-auth"
+import axiosClient from "@/lib/axiosClient"
 
-const lockReasons = ["Đã bán xe", "Xe hỏng nặng", "Không sử dụng tạm thời", "Chờ sửa chữa", "Lý do khác"]
+import {Vehicle,VehicleType, Category, UserVehicleTypeCreateDto, UserVehicleTypeUpdateDto } from "@/types/users/userVehicle";
+import { VehicleApi } from "@/lib/api/userVehicleApi";
+import VehicleForm from "@/components/vehicles/VehicleForm";
+import VehicleCard from "@/components/vehicles/VehicleCard";
+import VehicleDetailView from "@/components/vehicles/VehicleDetailView";
 
-export function VehicleManagement() {
-  const [vehicles, setVehicles] = useState<UserVehicleTypeResponseDto[]>([])
-  const [categories, setCategories] = useState<UserVehicleTypeCategory[]>([])
+interface ApiResponse<T> {
+  content: T[]
+  totalElements: number
+  totalPages: number
+  size: number
+  number: number
+  first: boolean
+  last: boolean
+}
+
+
+export function VehicleManagement(
+) {
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
-    // sort + filter
-  const [sortBy, setSortBy] = useState("nameAsc")
-  const [filterCategory, setFilterCategory] = useState<string>("all")
-  const [filterStatus, setFilterStatus] = useState<string>("all")
-
-  // dialog states
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+  const [pageSize] = useState(10)
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isLockDialogOpen, setIsLockDialogOpen] = useState(false)
-
-  const [editingVehicle, setEditingVehicle] = useState<UserVehicleTypeResponseDto | null>(null)
-  const [viewingVehicle, setViewingVehicle] = useState<UserVehicleTypeResponseDto | null>(null)
-  const [lockingVehicle, setLockingVehicle] = useState<UserVehicleTypeResponseDto | null>(null)
+  const [viewingVehicle, setViewingVehicle] = useState<Vehicle | null>(null)
+  const [lockingVehicle, setLockingVehicle] = useState<Vehicle | null>(null)
   const [lockReason, setLockReason] = useState("")
 
-  const [formData, setFormData] = useState<any>({
+  // Form state
+  const [formData, setFormData] = useState({
     vehicleName: "",
     brand: "",
     model: "",
-    color: "",
-    licensePlate: "",
     year: new Date().getFullYear(),
-    categoryId: 1,
-    vehicleTypeId: 1,
+    licensePlate: "",
+    color: "",
+    categoryId: "0", // Updated default value to be a non-empty string
+    vehicleTypeId: "0", // Updated default value to be a non-empty string
   })
 
+  // Filter and sort states
+  const [sortBy, setSortBy] = useState<string>("createdAt")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+  const [filterByCategory, setFilterByCategory] = useState<string>("all")
+  const [showLocked, setShowLocked] = useState<"all" | "active" | "locked">("active")
+
+  const { user } = useAuth()
   const { toast } = useToast()
 
-  // ---------------- Fetch ----------------
-  const fetchVehicles = async () => {
-    try {
-      setLoading(true)
-      const data = await userVehicleApi.getAll()
-      setVehicles(Array.isArray(data) ? data.map(v => ({ ...v, isLocked: Boolean(v.isLocked) })) : [])
-    } catch {
-      toast({ title: "Lỗi", description: "Không tải được danh sách xe", variant: "destructive" })
-    } finally {
-      setLoading(false)
-    }
+  // Fetch vehicles with pagination and search
+  const fetchVehicles = async (
+  page = 0,
+  keyword = "",
+  sortBy = "createdAt",
+  direction = "desc",
+  categoryId?: string,
+  locked?: string
+) => {
+  try {
+    setLoading(true);
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: pageSize.toString(),
+      sortBy,
+      direction,
+    });
+
+    if (keyword.trim()) params.append("keyword", keyword.trim());
+    if (categoryId && categoryId !== "all") params.append("categoryId", categoryId);
+    if (locked && locked !== "all") params.append("locked", locked);
+
+const res = await axiosClient.get<ApiResponse<Vehicle>>(`/apis/user/vehicles?${params}`);
+const response = res.data;
+    setVehicles(response.content || []);
+    setTotalPages(response.totalPages || 0);
+    setTotalElements(response.totalElements || 0);
+    setCurrentPage(response.number || 0);
+    console.log("Fetched vehicles:", response);
+  } catch (error) {
+    console.error("Error fetching vehicles:", error);
+    setVehicles([]);
+  } finally {
+    setLoading(false);
   }
+};
 
-  const fetchCategories = async () => {
-    try {
-      const res = await userVehicleCategoryApi.getAll()
-      setCategories(res.data)
-    } catch (err) {
-      console.error("Không tải được categories", err)
-    }
-  }
 
-  useEffect(() => {
-    fetchVehicles()
-    fetchCategories()
-  }, [])
-
-  // ---------------- Search + Sort + Filter ----------------
-  const processedVehicles = vehicles
-    .filter(v =>
-      v.vehicleName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.licensePlate?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(v => filterCategory === "all" || v.categoryId.toString() === filterCategory)
-    .filter(v => {
-      if (filterStatus === "locked") return v.isLocked
-      if (filterStatus === "unlocked") return !v.isLocked
-      return true
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "nameAsc": return a.vehicleName.localeCompare(b.vehicleName)
-        case "nameDesc": return b.vehicleName.localeCompare(a.vehicleName)
-        case "yearAsc": return a.year - b.year
-        case "yearDesc": return b.year - a.year
-        case "statusLocked": return (b.isLocked ? 1 : 0) - (a.isLocked ? 1 : 0)
-        case "statusUnlocked": return (a.isLocked ? 1 : 0) - (b.isLocked ? 1 : 0)
-        default: return 0
+  // Fetch categories
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosClient.get("/apis/v1/vehicle/categories")
+        setCategories(response.data || [])
+        console.log("Fetched categories:", response);
+      } catch (error) {
+        console.error("Error fetching categories:", error)
+        toast({
+          title: "Lỗi",
+          description: "Không thể tải danh mục xe.",
+          variant: "destructive",
+        })
       }
-    })
+    }
+    const fetchTypes = async () => {
+      try {
+        const response = await axiosClient.get("/apis/v1/vehicle")
+        setVehicleTypes(response.data || [])
+        console.log("Fetched vehicle types:", response);
+      } catch (error) {
+        console.error("Error fetching vehicle types:", error)
+        toast({
+          title: "Lỗi",
+          description: "Không thể tải loại xe.",
+          variant: "destructive",
+        })
+      }
+    }
 
-  // ---------------- Form + CRUD ----------------
+  // Initial data load
+  useEffect(() => {
+    if (user) {
+      fetchVehicles()
+      fetchCategories()
+      fetchTypes()
+    }
+  }, [user])
+
+  // Handle search and filter changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (user) {
+        fetchVehicles(0, searchTerm, sortBy, sortDirection)
+        setCurrentPage(0)
+      }
+    }, 500) // Debounce search
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, sortBy, sortDirection, user])
+
   const resetForm = () => {
     setFormData({
       vehicleName: "",
       brand: "",
       model: "",
-      color: "",
-      licensePlate: "",
       year: new Date().getFullYear(),
-      categoryId: categories[0]?.id || 1,
-      vehicleTypeId: 1,
+      licensePlate: "",
+      color: "",
+      categoryId: "0", // Updated default value to be a non-empty string
+      vehicleTypeId: "0", // Updated default value to be a non-empty string
     })
   }
-
-  // ---------------- CRUD ----------------
-  const handleAdd = async () => {
-    try {
-      await userVehicleApi.create({
-        vehicleName: formData.vehicleName,
-        brand: formData.brand,
-        model: formData.model,
-        licensePlate: formData.licensePlate,
-        year: formData.year,
-        categoryId: formData.categoryId,
-      })
-      await fetchVehicles()
-      setIsAddDialogOpen(false)
-      resetForm()
-      toast({ title: "Thành công", description: "Đã thêm xe mới" })
-    } catch {
-      toast({ title: "Lỗi", description: "Không thể thêm xe", variant: "destructive" })
-    }
-  }
-
-  const handleUpdate = async () => {
-    if (!editingVehicle) return
-    try {
-      await userVehicleApi.update(editingVehicle.id, {
-        vehicleName: formData.vehicleName,
-        brand: formData.brand,
-        model: formData.model || null,
-        color: formData.color || null,
-        licensePlate: formData.licensePlate,
-        year: formData.year,
-        categoryId: formData.categoryId,
-        vehicleTypeId: formData.vehicleTypeId,
-      })
-      await fetchVehicles()
-      setIsEditDialogOpen(false)
-      setEditingVehicle(null)
-      resetForm()
-      toast({ title: "Thành công", description: "Đã cập nhật xe" })
-    } catch {
-      toast({ title: "Lỗi", description: "Không thể cập nhật xe", variant: "destructive" })
-    }
-  }
-
   const handleConfirmLock = async () => {
-    if (!lockingVehicle) return
+    if (!lockingVehicle || !lockReason.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập lý do khóa xe",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      await userVehicleApi.lock(lockingVehicle.id, lockReason)
-      await fetchVehicles()
+      await axiosClient.post(`/apis/user/vehicles/${lockingVehicle.id}/lock?reason=${encodeURIComponent(lockReason)}`)
+
       setIsLockDialogOpen(false)
       setLockingVehicle(null)
       setLockReason("")
-      toast({ title: "Thành công", description: "Xe đã bị khóa" })
-    } catch {
-      toast({ title: "Lỗi", description: "Không thể khóa xe", variant: "destructive" })
+      fetchVehicles(currentPage, searchTerm, sortBy, sortDirection)
+      toast({
+        title: "Thành công",
+        description: "Đã khóa xe thành công",
+      })
+    } catch (error) {
+      console.error("Error locking vehicle:", error)
+      toast({
+        title: "Lỗi",
+        description: "Không thể khóa xe. Vui lòng thử lại.",
+        variant: "destructive",
+      })
     }
   }
 
-  const handleUnlock = async (id: number) => {
-    try {
-      await userVehicleApi.unlock(id)
-      await fetchVehicles()
-      setLockingVehicle(null)
-      toast({ title: "Thành công", description: "Xe đã được mở khóa" })
-    } catch {
-      toast({ title: "Lỗi", description: "Không thể mở khóa xe", variant: "destructive" })
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    fetchVehicles(newPage, searchTerm, sortBy, sortDirection)
+  }
+
+  const clearAllFilters = () => {
+    setSearchTerm("")
+    setActiveCategory("all")
+    setFilterByCategory("all")
+    setShowLocked("all")
+    setSortBy("createdAt")
+    setSortDirection("desc")
+    setCurrentPage(0)
+    fetchVehicles(0, "", "createdAt", "desc")
+    toast({
+      title: "Đã xóa bộ lọc",
+      description: "Hiển thị tất cả xe",
+    })
+  }
+
+  const getFilteredVehicles = () => {
+    let filtered = vehicles
+
+    // Filter by category
+    if (filterByCategory !== "all") {
+      if (filterByCategory === "uncategorized") {
+        filtered = filtered.filter((v) => !v.categoryId)
+      } else {
+        filtered = filtered.filter((v) => v.categoryId?.toString() === filterByCategory)
+      }
     }
+
+    // Filter by locked status
+    if (showLocked === "active") {
+      filtered = filtered.filter((v) => !v.locked)
+    } else if (showLocked === "locked") {
+      filtered = filtered.filter((v) => v.locked)
+    }
+
+    return filtered
   }
 
-  const handleChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }))
+  const getCategoryById = (id: number) => {
+    return categories.find((c) => c.id === id)
   }
 
-  // ---------------- UI ----------------
-  const VehicleForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <div className="grid gap-4">
-      <Label>Tên xe</Label>
-      <Input value={formData.vehicleName} onChange={e => handleChange("vehicleName", e.target.value)} placeholder="VD: Xe máy Honda" />
+  const filteredVehicles = getFilteredVehicles()
 
-      <Label htmlFor="categoryId">Danh mục</Label>
-      <Select value={formData.categoryId?.toString() || ""} onValueChange={value => handleChange("categoryId", Number(value))}>
-        <SelectTrigger><SelectValue placeholder="Chọn danh mục" /></SelectTrigger>
-        <SelectContent>
-          {categories.map(cat => <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>)}
-        </SelectContent>
-      </Select>
-
-      <Label>Hãng xe</Label>
-      <Input value={formData.brand} onChange={e => handleChange("brand", e.target.value)} placeholder="VD: Honda" />
-
-      <Label>Model</Label>
-      <Input value={formData.model} onChange={e => handleChange("model", e.target.value)} placeholder="VD: Wave Alpha" />
-
-      <Label>Màu sắc</Label>
-      <Input value={formData.color} onChange={e => handleChange("color", e.target.value)} placeholder="VD: Đỏ" />
-
-      <Label>Biển số</Label>
-      <Input value={formData.licensePlate} onChange={e => handleChange("licensePlate", e.target.value)} placeholder="VD: 59H1-12345" />
-
-      <Label>Năm SX</Label>
-      <Input type="number" value={formData.year} onChange={e => handleChange("year", parseInt(e.target.value))} />
-
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => (isEdit ? setIsEditDialogOpen(false) : setIsAddDialogOpen(false))}>Hủy</Button>
-        <Button onClick={isEdit ? handleUpdate : handleAdd}>{isEdit ? "Cập nhật" : "Thêm"}</Button>
-      </div>
-    </div>
-  )
-
-  const VehicleCard = ({ vehicle }: { vehicle: UserVehicleTypeResponseDto }) => {
-    const isLocked = vehicle.isLocked
-    const [confirmUnlockOpen, setConfirmUnlockOpen] = useState(false)
-
+  if (loading) {
     return (
-      <Card>
-        <CardContent className="p-4 flex justify-between items-start">
-          <div>
-            <h3 className="font-bold">{vehicle.vehicleName}</h3>
-            <p>{vehicle.brand} - {vehicle.model}</p>
-            <p>Biển số: {vehicle.licensePlate}</p>
-            <p>Năm SX: {vehicle.year}</p>
-            {isLocked && <p className="text-red-500">🔒 {vehicle.lockReason}</p>}
-          </div>
-
-          <div className="flex gap-2">
-            {/* View */}
-            <Button size="sm" variant="outline" onClick={() => { setViewingVehicle(vehicle); setIsViewDialogOpen(true) }}>
-              <Eye className="h-4 w-4" />
-            </Button>
-
-            {/* Edit */}
-            {!isLocked && (
-              <Button size="sm" variant="outline" onClick={() => {
-                setEditingVehicle(vehicle)
-                setFormData({
-                  vehicleName: vehicle.vehicleName,
-                  brand: vehicle.brand,
-                  model: vehicle.model || "",
-                  color: vehicle.color || "",
-                  licensePlate: vehicle.licensePlate,
-                  year: vehicle.year,
-                  categoryId: vehicle.categoryId,
-                  vehicleTypeId: vehicle.id || 1,
-                })
-                setIsEditDialogOpen(true)
-              }}>
-                <Edit className="h-4 w-4" />
-              </Button>
-            )}
-
-            {/* Lock / Unlock */}
-            {!isLocked ? (
-              <Button size="sm" variant="outline" onClick={() => { setLockingVehicle(vehicle); setIsLockDialogOpen(true) }}>🔒</Button>
-            ) : (
-              <Button size="sm" variant="outline" onClick={() => { setLockingVehicle(vehicle); setConfirmUnlockOpen(true) }}>🔓</Button>
-            )}
-          </div>
-        </CardContent>
-
-        {/* Confirm Unlock Dialog */}
-        <Dialog open={confirmUnlockOpen} onOpenChange={setConfirmUnlockOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Mở khóa xe</DialogTitle>
-            </DialogHeader>
-            <p>Bạn có chắc chắn muốn mở khóa xe này?</p>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setConfirmUnlockOpen(false)}>Hủy</Button>
-              <Button onClick={async () => { if (vehicle.id) await handleUnlock(vehicle.id); setConfirmUnlockOpen(false) }}>Xác nhận mở khóa</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </Card>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <span className="ml-3 text-slate-600">Đang tải dữ liệu xe...</span>
+      </div>
     )
   }
 
-  // ---------------- Render ----------------
+// 📌 Tạo mới
+  const handleCreate = async (dto: UserVehicleTypeCreateDto) => {
+    await VehicleApi.create(dto);
+    setIsAddDialogOpen(false);
+    fetchVehicles();
+  };
+
+  // 📌 Cập nhật
+  const handleUpdate = async (id: number, dto: UserVehicleTypeUpdateDto) => {
+    await VehicleApi.update(id, dto);
+    setIsFormOpen(false);
+    setEditingVehicle(null);
+    fetchVehicles();
+  };
+
+  // 📌 Xóa
+  const handleDelete = async (id: number) => {
+    await VehicleApi.remove(id);
+    fetchVehicles();
+  };
+
+  // 📌 Lock/Unlock
+  const handleLock = async (id: number, reason: string) => {
+    await VehicleApi.lock(id, reason);
+    fetchVehicles();
+  };
+
+  const handleUnlock = async (id: number) => {
+    await VehicleApi.unlock(id);
+    fetchVehicles();
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between">
-        <Input
-          placeholder="Tìm kiếm theo tên/biển số..."
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className="w-1/2"
-        />
-{/* Sort */}
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="nameAsc">Tên A → Z</SelectItem>
-            <SelectItem value="nameDesc">Tên Z → A</SelectItem>
-            <SelectItem value="yearAsc">Năm SX ↑</SelectItem>
-            <SelectItem value="yearDesc">Năm SX ↓</SelectItem>
-            <SelectItem value="statusLocked">Đang khóa</SelectItem>
-            <SelectItem value="statusUnlocked">Đang mở</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Search and Filter */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Tìm kiếm xe theo tên, hãng, model, biển số..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-10"
+            />
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shrink-0">
+                <Plus className="h-4 w-4 mr-2" />
+                Thêm xe mới
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>{editingVehicle ? "Sửa phương tiện" : "Thêm phương tiện"}</DialogTitle>
+              </DialogHeader>
+              <VehicleForm
+            initialData={editingVehicle || undefined}
+            onSubmit={(dto) =>
+              editingVehicle ? handleUpdate(editingVehicle.id, dto) : handleCreate(dto)
+            }
+            onCancel={() => {
+              setIsAddDialogOpen(false);
+              setEditingVehicle(null);
+            }}
+            categories={categories}
+            vehicleTypes={vehicleTypes}
+          />
+            </DialogContent>
+          </Dialog>
+        </div>
 
-        {/* Filter by Category */}
-        <Select value={filterCategory} onValueChange={setFilterCategory}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Danh mục" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả danh mục</SelectItem>
-            {categories.map(cat => <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
+          <div className="flex flex-wrap gap-3 items-center">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[180px] h-10">
+                <SelectValue placeholder="Sắp xếp theo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="createdAt">Ngày tạo</SelectItem>
+                <SelectItem value="vehicleName">Tên xe</SelectItem>
+                <SelectItem value="brand">Hãng xe</SelectItem>
+                <SelectItem value="year">Năm sản xuất</SelectItem>
+              </SelectContent>
+            </Select>
 
-        {/* Filter by Status */}
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Trạng thái" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="locked">Đang khóa</SelectItem>
-            <SelectItem value="unlocked">Đang mở</SelectItem>
-          </SelectContent>
-        </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+              className="h-10 px-3"
+              title={`Sắp xếp ${sortDirection === "asc" ? "tăng dần" : "giảm dần"}`}
+            >
+              {sortDirection === "asc" ? "↑" : "↓"}
+            </Button>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Thêm xe</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Thêm xe mới</DialogTitle></DialogHeader>
-            <VehicleForm />
-          </DialogContent>
-        </Dialog>
+            <Select value={filterByCategory} onValueChange={setFilterByCategory}>
+              <SelectTrigger className="w-[150px] h-10">
+                <SelectValue placeholder="Danh mục" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả danh mục</SelectItem>
+                <SelectItem value="uncategorized">Chưa phân loại</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    <div className="flex items-center space-x-2">
+                      <span>{category.icon}</span>
+                      <span>{category.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={showLocked} onValueChange={(value: any) => setShowLocked(value)}>
+              <SelectTrigger className="w-[150px] h-10">
+                <SelectValue placeholder="Xe hoạt động" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả xe</SelectItem>
+                <SelectItem value="active">
+                  <div className="flex items-center space-x-2">
+                    <span>🔓</span>
+                    <span>Xe hoạt động</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="locked">
+                  <div className="flex items-center space-x-2">
+                    <span>🔒</span>
+                    <span>Xe đã khóa</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="h-10 px-4 text-slate-600 hover:text-slate-900 bg-transparent"
+              title="Xóa tất cả bộ lọc"
+            >
+              <span className="mr-2">🔄</span>
+              Hiển thị tất cả
+            </Button>
+          </div>
       </div>
 
-      {loading ? <p>Đang tải...</p> :
-        processedVehicles.length === 0 ? <p>Không tìm thấy xe nào</p> :
-          processedVehicles.map(v => <VehicleCard key={v.id} vehicle={v} />)
-      }
+      {/* Statistics */}
+      <div className="flex items-center justify-between text-sm text-slate-600 bg-slate-50 rounded-lg p-4">
+        <div className="flex items-center space-x-6 flex-wrap">
+          <span>
+            Tổng cộng: <strong className="text-slate-900">{totalElements}</strong> xe
+          </span>
+          <span>
+            Hiển thị: <strong className="text-slate-900">{filteredVehicles.length}</strong> xe
+          </span>
+          <span>
+            Hoạt động: <strong className="text-green-700">{vehicles.filter((v) => !v.locked).length}</strong> xe
+          </span>
+          <span>
+            Đã khóa: <strong className="text-red-700">{vehicles.filter((v) => v.locked).length}</strong> xe
+          </span>
+        </div>
+      </div>
+
+      {/* Vehicle List */}
+      <div className="space-y-4">
+        {filteredVehicles.length === 0 ? (
+          <div className="text-center py-12">
+            <Car className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              {searchTerm ? "Không tìm thấy xe nào" : "Chưa có xe nào"}
+            </h3>
+            <p className="text-slate-500 mb-6">
+              {searchTerm
+                ? "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc"
+                : "Thêm xe đầu tiên để bắt đầu quản lý phương tiện của bạn"}
+            </p>
+            {!searchTerm && (
+              <Button
+                onClick={() => setIsAddDialogOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Thêm xe đầu tiên
+              </Button>
+            )}
+          </div>
+        ) : (
+          Array.isArray(vehicles) && vehicles.length > 0 ? (
+          filteredVehicles.map((vehicle) => (
+            <VehicleCard
+              key={vehicle.id}
+              vehicle={vehicle}
+              onEdit={() => {
+          setEditingVehicle(vehicle);
+          setIsEditDialogOpen(true);
+        }}
+        onDelete={() => handleDelete(vehicle.id)}
+        onLock={(id, reason) => handleLock(vehicle.id, reason)}
+        onUnlock={() => handleUnlock(vehicle.id)}
+        onViewDetail={() => {
+          setSelectedVehicle(vehicle);
+          setIsViewDialogOpen(true);
+        }}
+      />
+    ))
+  ) : (
+    <p className="text-gray-500">Không có phương tiện nào</p>
+  )
+)}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-slate-600">
+            Trang {currentPage + 1} / {totalPages} (Tổng {totalElements} xe)
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+            >
+              Trước
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
+            >
+              Sau
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Chỉnh sửa xe</DialogTitle></DialogHeader>
-          <VehicleForm isEdit={true} />
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Chỉnh sửa thông tin xe</DialogTitle>
+          </DialogHeader>
+          <VehicleForm
+            initialData={editingVehicle || undefined}
+            onSubmit={(dto) =>
+              editingVehicle ? handleUpdate(editingVehicle.id, dto) : handleCreate(dto)
+            }
+            onCancel={() => {
+              setIsFormOpen(false);
+              setEditingVehicle(null);
+            }}
+          />
         </DialogContent>
       </Dialog>
 
       {/* View Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Chi tiết xe</DialogTitle></DialogHeader>
-          {viewingVehicle && (
-            <div>
-              <p><b>Tên:</b> {viewingVehicle.vehicleName}</p>
-              <p><b>Hãng:</b> {viewingVehicle.brand}</p>
-              <p><b>Model:</b> {viewingVehicle.model}</p>
-              <p><b>Biển số:</b> {viewingVehicle.licensePlate}</p>
-              <p><b>Năm:</b> {viewingVehicle.year}</p>
-              <p><b>Danh mục:</b> {viewingVehicle.categoryName}</p>
-              <p><b>Loại xe:</b> {viewingVehicle.vehicleTypeName}</p>
-              {viewingVehicle.isLocked && <p className="text-red-500">🔒 {viewingVehicle.lockReason}</p>}
-            </div>
-          )}
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Chi tiết xe</DialogTitle>
+          </DialogHeader>
+          {selectedVehicle && <VehicleDetailView vehicle={selectedVehicle} open={isDetailOpen} onClose={() => setIsDetailOpen(false)} />}
         </DialogContent>
       </Dialog>
 
       {/* Lock Dialog */}
       <Dialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Khóa xe</DialogTitle></DialogHeader>
-          <Label>Lý do khóa</Label>
-          <Select value={lockReason} onValueChange={setLockReason}>
-            <SelectTrigger><SelectValue placeholder="Chọn lý do" /></SelectTrigger>
-            <SelectContent>
-              {lockReasons.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsLockDialogOpen(false)}>Hủy</Button>
-            <Button onClick={handleConfirmLock} disabled={!lockReason}>Xác nhận</Button>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Khóa xe</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Bạn có chắc chắn muốn khóa xe <strong>{lockingVehicle?.vehicleName}</strong>?
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="lockReason">Lý do khóa *</Label>
+              <Input
+                id="lockReason"
+                value={lockReason}
+                onChange={(e) => setLockReason(e.target.value)}
+                placeholder="Nhập lý do khóa xe..."
+              />
+            </div>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsLockDialogOpen(false)
+                  setLockingVehicle(null)
+                  setLockReason("")
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleConfirmLock}
+                disabled={!lockReason.trim()}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                Khóa xe
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

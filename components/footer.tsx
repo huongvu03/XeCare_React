@@ -33,7 +33,7 @@ export function Footer() {
             </p>
 
             {/* Newsletter signup */}
-            <div className="space-y-3">
+            {/* <div className="space-y-3">
               <h4 className="font-semibold text-white">Đăng ký nhận tin khuyến mãi</h4>
               <div className="flex space-x-2">
                 <Input
@@ -44,7 +44,7 @@ export function Footer() {
                   Đăng ký
                 </Button>
               </div>
-            </div>
+            </div> */}
 
             {/* Social links */}
             <div className="flex space-x-4">

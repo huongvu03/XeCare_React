@@ -1,5 +1,5 @@
 "use client"
-
+import UserRecentSection from "@/components/user/UserRecentSection"
 import { useState, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { 
-  Calendar, 
-  MapPin, 
-  Star, 
-  Car, 
-  Building2, 
+import {
+  Calendar,
+  MapPin,
+  Star,
+  Car,
+  Building2,
   Clock,
   CheckCircle,
   Clock as ClockIcon,
@@ -24,7 +24,10 @@ import {
   Settings,
   Loader2
 } from "lucide-react"
-import { VehicleManagement } from "@/components/vehicle-management"
+import { VehicleManagement } from "@/components/vehicle-management";
+// import VehicleManagement from "@/components/vehicle-management";
+
+console.log("VehicleManagement:", VehicleManagement);
 import { useAuth } from "@/hooks/use-auth"
 import { getUserProfile } from "@/lib/api/UserApi"
 import { getGaragesByOwner } from "@/lib/api/GarageApi"
@@ -39,7 +42,7 @@ export default function UnifiedDashboard() {
   const [userProfile, setUserProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  
+
   // My Garages Tab
   const [myGarages, setMyGarages] = useState<Garage[]>([])
   const [myGaragesLoading, setMyGaragesLoading] = useState(true)
@@ -57,11 +60,11 @@ export default function UnifiedDashboard() {
   useEffect(() => {
     const loadUserProfile = async () => {
       if (user) {
-      setUserProfile(userProfile)
-      setLoading(false)
-    }
+        setUserProfile(userProfile)
+        setLoading(false)
+      }
       //if (!user) return
-      
+
       try {
         const response = await getUserProfile()
         setUserProfile(response.data)
@@ -160,12 +163,12 @@ export default function UnifiedDashboard() {
             <Car className="h-4 w-4" />
             <span>Người dùng</span>
           </TabsTrigger>
-                     {user && user.garages && user.garages.length > 0 && (
-             <TabsTrigger value="garage" className="flex items-center space-x-2">
-               <Building2 className="h-4 w-4" />
-               <span>My Garage</span>
-             </TabsTrigger>
-           )}
+          {user && user.garages && user.garages.length > 0 && (
+            <TabsTrigger value="garage" className="flex items-center space-x-2">
+              <Building2 className="h-4 w-4" />
+              <span>My Garage</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* User Tab - Giữ nguyên như cũ */}
@@ -181,7 +184,7 @@ export default function UnifiedDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600 text-sm mb-4">Tìm garage sửa xe gần bạn</p>
-                <Button 
+                <Button
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600"
                   onClick={() => router.push("/search/page1")}
                 >
@@ -199,8 +202,8 @@ export default function UnifiedDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600 text-sm mb-4">Đặt lịch sửa xe trực tuyến</p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full border-blue-200 text-blue-600"
                   onClick={() => router.push("/search/page1")}
                 >
@@ -224,8 +227,8 @@ export default function UnifiedDashboard() {
               </CardContent>
             </Card>
 
-                         {/* Register Garage Button - Only show if user doesn't have garages */}
-             {(!user || !user.garages || user.garages.length === 0) && (
+            {/* Register Garage Button - Only show if user doesn't have garages */}
+            {(!user || !user.garages || user.garages.length === 0) && (
               <Card className="border-green-100 hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center space-x-2 text-lg">
@@ -235,7 +238,7 @@ export default function UnifiedDashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-slate-600 text-sm mb-4">Đăng ký garage của bạn để nhận lịch hẹn</p>
-                  <Button 
+                  <Button
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600"
                     onClick={() => router.push("/garage/register")}
                   >
@@ -255,14 +258,6 @@ export default function UnifiedDashboard() {
                   <Car className="h-5 w-5 text-blue-600" />
                   <span>Quản lý xe của tôi</span>
                 </div>
-                <Button
-                  size="sm"
-                  className="bg-gradient-to-r from-blue-600 to-cyan-600"
-                  onClick={() => {/* TODO: Add vehicle modal */}}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Thêm xe mới
-                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -271,66 +266,11 @@ export default function UnifiedDashboard() {
           </Card>
 
           {/* Recent Activities */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            <Card className="border-blue-100">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                  <span>Lịch hẹn gần đây</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900">Thay nhớt xe máy</p>
-                      <p className="text-sm text-slate-600">Garage Thành Công</p>
-                      <p className="text-sm text-blue-600">15/12/2024 - 14:00</p>
-                    </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                      Hoàn thành
-                    </Badge>
-                  </div>
-                  <div className="text-center py-4">
-                    <p className="text-slate-500 text-sm">Chưa có lịch hẹn nào khác</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-blue-100">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Star className="h-5 w-5 text-blue-600" />
-                  <span>Garage yêu thích</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900">Garage Thành Công</p>
-                      <p className="text-sm text-slate-600">123 Lê Lợi, Q1, TP.HCM</p>
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-slate-600">4.8 (120 đánh giá)</span>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      Xem
-                    </Button>
-                  </div>
-                  <div className="text-center py-4">
-                    <p className="text-slate-500 text-sm">Chưa có garage yêu thích nào khác</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <UserRecentSection />
         </TabsContent>
 
-                 {/* My Garage Tab - Chỉ hiển thị nếu user có garage */}
-         {user && user.garages && user.garages.length > 0 && (
+        {/* My Garage Tab - Chỉ hiển thị nếu user có garage */}
+        {user && user.garages && user.garages.length > 0 && (
           <TabsContent value="garage" className="space-y-6">
             {/* My Garages */}
             <Card className="border-green-100">
@@ -381,10 +321,10 @@ export default function UnifiedDashboard() {
                 ) : (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {myGarages.map((garage) => (
-                      <Card 
-                        key={garage.id} 
+                      <Card
+                        key={garage.id}
                         className="border-slate-200 hover:border-green-300 hover:shadow-md transition-all cursor-pointer"
-                                                        onClick={() => router.push(`/garage/${garage.id}?owner=true`)}
+                        onClick={() => router.push(`/garage/${garage.id}?owner=true`)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
@@ -393,7 +333,7 @@ export default function UnifiedDashboard() {
                           </div>
                           <p className="text-sm text-slate-600 mb-2">{garage.address}</p>
                           <p className="text-sm text-slate-600 mb-3">{garage.phone}</p>
-                          
+
                           {garage.status === "PENDING" && (
                             <Alert className="border-yellow-200 bg-yellow-50 mb-3">
                               <ClockIcon className="h-4 w-4" />
@@ -402,14 +342,14 @@ export default function UnifiedDashboard() {
                               </AlertDescription>
                             </Alert>
                           )}
-                          
+
                           {garage.status === "ACTIVE" && (
                             <div className="flex items-center space-x-2 text-green-600">
                               <CheckCircle className="h-4 w-4" />
                               <span className="text-sm font-medium">Đã được phê duyệt</span>
                             </div>
                           )}
-                          
+
                           {garage.status === "INACTIVE" && (
                             <Alert className="border-red-200 bg-red-50 mb-3">
                               <XCircle className="h-4 w-4" />

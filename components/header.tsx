@@ -51,8 +51,8 @@ function AuthButtons() {
                 user.role === "ADMIN"
                   ? "/admin/dashboard"
                   : user.role === "GARAGE"
-                    ? "/garage/dashboard"
-                    : "/user/dashboard"
+                    ? "/dashboard"
+                    : "/dashboard"
               }
               className="flex items-center space-x-2"
             >
