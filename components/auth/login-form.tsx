@@ -88,7 +88,52 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+
+
+  //   login({
+  //     id: user.id,
+  //     email: user.email,
+  //     name: user.name,
+  //     role: user.role as "ADMIN" | "USER" | "GARAGE" | "USER_AND_GARAGE", // Removed .toLowerCase()
+  //     phone: user.phone,
+  //     imageUrl: user.imageUrl,
+  //     address: user.address,
+  //     createdAt: user.createdAt,
+  //     garages: user.garages, // Added garages
+  //   })
+
+  //   console.log("Debug - User logged in successfully")
+  //   console.log("Debug - User role:", user.role)
+  //   console.log("Debug - About to redirect...")
+
+  //   // Chuyển hướng
+  //   switch (user.role) { // Used user.role directly
+  //     case "ADMIN":
+  //       console.log("Debug - Redirecting to admin dashboard")
+  //       await router.push("/admin/dashboard")
+  //       break
+  //     case "GARAGE":
+  //     case "USER_AND_GARAGE":
+  //       console.log("Debug - Redirecting to garage dashboard")
+  //       await router.push("/dashboard?tab=garage")
+  //       break
+  //     case "USER":
+  //     default:
+  //       console.log("Debug - Redirecting to user dashboard")
+  //       await router.push("/dashboard?tab=user") // Direct to user tab for USER role
+  //   }
+    
+  //   console.log("Debug - Redirect completed")
+  // } catch (err: any) {
+  //   console.error("Debug - Login error:", err)
+  //   if (err.response?.status === 403) {
+  //     setError("Email hoặc mật khẩu không đúng.")
+  //   } else {
+  //     setError("Lỗi máy chủ. Vui lòng thử lại.")
+  //   }
+  // } finally {
+  //   setIsLoading(false)
+  // }
 
   return (
     <>
@@ -228,4 +273,5 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       </form>
     </>
   )
+}
 }

@@ -2,7 +2,8 @@
 import axiosClient from "../axiosClient"
 
 export interface DaySchedule {
-  isOpen: boolean
+  isOpen?: boolean  // TypeScript interface format
+  open?: boolean    // Database format
   openTime: string
   closeTime: string
 }
@@ -42,8 +43,8 @@ export interface GarageService {
   id: number
   serviceId: number
   serviceName: string
-  serviceDescription: string
-  price: number
+  description: string
+  basePrice: number
   estimatedTimeMinutes: number
   isActive: boolean
 }
@@ -75,6 +76,12 @@ export interface GarageSearchResponse {
 // Tìm garage gần nhất
 export const findNearbyGarages = (params: NearbyGarageRequest) =>
   axiosClient.get<GarageSearchResponse>("/apis/garage/nearby/paginated", { params })
+
+// Tìm garage gần nhất (simple version)
+export const getNearbyGarages = (latitude: number, longitude: number, radius: number = 10) =>
+  axiosClient.get<Garage[]>("/apis/garage/nearby", { 
+    params: { latitude, longitude, radius } 
+  })
 
 // Lấy danh sách tất cả garage
 export const getAllGarages = (params?: { page?: number; size?: number; status?: string }) =>

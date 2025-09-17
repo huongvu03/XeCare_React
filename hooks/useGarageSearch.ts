@@ -192,12 +192,38 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
   }, [usePagination, currentParams, pageSize]);
 
   // Reset function
-  const reset = useCallback(() => {
+  const reset = useCallback(async () => {
+    console.log('useGarageSearch: Reset started');
     setGarages([]);
     setPaginatedData(undefined);
     setError(null);
-    setCurrentParams(initialParams);
-  }, [initialParams]);
+    setCurrentParams({});
+    
+    try {
+      console.log('useGarageSearch: Triggering reload with empty params');
+      setIsLoading(true);
+      setError(null);
+      
+      // Force search with completely empty params to get all garages
+      if (usePagination) {
+        const response = await apiWrapper.searchGaragesWithPagination({
+          size: pageSize
+        });
+        setPaginatedData(response);
+        setGarages(response.content);
+      } else {
+        const response = await apiWrapper.searchGaragesAdvanced({});
+        setGarages(response);
+        setPaginatedData(undefined);
+      }
+      console.log('useGarageSearch: Reset completed successfully');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi reset');
+      console.error('useGarageSearch: Reset error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [usePagination, pageSize]);
 
   // Computed values
   const hasMore = paginatedData ? !paginatedData.last : false;

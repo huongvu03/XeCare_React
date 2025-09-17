@@ -4,39 +4,33 @@ import axiosClient from "../axiosClient"
 export interface Appointment {
   id: number
   userId: number
+  userName: string
+  userEmail: string
+  userPhone: string
   garageId: number
+  garageName: string
+  garageAddress: string
+  serviceId?: number
+  serviceName: string
   vehicleTypeId: number
+  vehicleTypeName: string
+  vehicleBrand?: string
+  vehicleModel?: string
+  licensePlate?: string
+  vehicleYear?: number
   appointmentDate: string
-  appointmentTime: string
-  description: string
-  status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "REJECTED"
+  appointmentTime?: string
+  description?: string
+  notes?: string
+  estimatedPrice?: number
+  finalPrice?: number
+  status: "PENDING" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "REJECTED"
   contactPhone: string
   contactEmail: string
   rejectionReason?: string
-  rejectedAt?: string
-  confirmedAt?: string
-  completedAt?: string
-  cancelledAt?: string
-  notes?: string
+  imageUrls?: string[]
   createdAt: string
-  user?: {
-    id: number
-    name: string
-    email: string
-    phone: string
-  }
-  garage?: {
-    id: number
-    name: string
-    address: string
-    phone: string
-  }
-  vehicleType?: {
-    id: number
-    name: string
-  }
-  services?: AppointmentService[]
-  images?: AppointmentImage[]
+  updatedAt?: string
 }
 
 export interface AppointmentService {
@@ -62,7 +56,6 @@ export interface CreateAppointmentRequest {
   contactPhone: string
   contactEmail: string
   services: number[]
-  images?: File[]
 }
 
 export interface AppointmentSearchResponse {
@@ -78,20 +71,59 @@ export const createAppointment = (data: CreateAppointmentRequest) =>
   axiosClient.post<Appointment>("/apis/user/appointments", data)
 
 // Lấy danh sách lịch hẹn của user
-export const getUserAppointments = (params?: { 
-  page?: number; 
-  size?: number; 
-  status?: string 
+export const getUserAppointments = (params?: {
+  page?: number;
+  size?: number;
+  status?: string
 }) =>
-  axiosClient.get<AppointmentSearchResponse>("/apis/user/appointments", { params })
+  axiosClient.get<AppointmentSearchResponse>("/apis/user/appointments/my", { params })
+
+// Lấy số lượng lịch hẹn pending cho garage
+export const getPendingAppointmentsCount = (garageId: number) =>
+  axiosClient.get<{pendingCount: number}>(`/apis/user/appointments/garage/${garageId}/pending-count`)
 
 // Lấy chi tiết lịch hẹn
 export const getAppointmentById = (id: number) =>
   axiosClient.get<Appointment>(`/apis/user/appointments/${id}`)
 
 // Hủy lịch hẹn
-export const cancelAppointment = (id: number) =>
+export const cancelAppointment = (id: number, reason?: string) =>
+  axiosClient.patch(`/apis/user/appointments/${id}/cancel`, { reason })
+
+// Hủy lịch hẹn (old method - fallback)
+export const cancelAppointmentOld = (id: number) =>
   axiosClient.delete(`/apis/user/appointments/${id}`)
+
+// Lấy danh sách lịch hẹn của garage (cho garage owner)
+export const getGarageAppointments = (garageId: number, params?: { 
+  page?: number; 
+  size?: number; 
+  status?: string 
+}) =>
+  axiosClient.get<AppointmentSearchResponse>(`/apis/user/appointments/garage/${garageId}`, { params })
+
+// Lấy chi tiết lịch hẹn
+export const getAppointmentDetail = (appointmentId: number) =>
+  axiosClient.get<Appointment>(`/apis/user/appointments/${appointmentId}`)
+
+// Cập nhật trạng thái lịch hẹn (garage owner)
+export const updateAppointmentStatus = (appointmentId: number, data: {
+  status: "CONFIRMED" | "REJECTED"
+  rejectionReason?: string
+}) =>
+  axiosClient.patch<Appointment>(`/apis/user/appointments/${appointmentId}/status`, data)
+
+// Bắt đầu lịch hẹn (CONFIRMED -> IN_PROGRESS)
+export const startAppointment = (appointmentId: number) =>
+  axiosClient.patch<Appointment>(`/apis/user/appointments/${appointmentId}/start`)
+
+// Hoàn thành lịch hẹn (IN_PROGRESS -> COMPLETED)
+export const completeAppointment = (appointmentId: number) =>
+  axiosClient.patch<Appointment>(`/apis/user/appointments/${appointmentId}/complete`)
+
+// Hủy lịch hẹn bởi garage owner (CONFIRMED -> CANCELLED)
+export const cancelAppointmentByGarage = (appointmentId: number) =>
+  axiosClient.patch<Appointment>(`/apis/user/appointments/${appointmentId}/cancel-by-garage`)
 
 // Upload hình ảnh cho lịch hẹn
 export const uploadAppointmentImages = (appointmentId: number, files: File[]) => {

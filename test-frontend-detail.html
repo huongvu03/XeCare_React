@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Emergency Detail</title>
+</head>
+<body>
+    <h1>Emergency Detail Test</h1>
+    <p>Testing emergency detail page...</p>
+    
+    <button onclick="testDetailPage()">Test Detail API</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testDetailPage() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Test the same strategy as our API
+                const response = await fetch('http://localhost:8080/apis/emergency/all-requests');
+                const allData = await response.json();
+                
+                if (allData.length > 0) {
+                    const testId = allData[0].id;
+                    const foundRequest = allData.find(req => req.id === testId);
+                    
+                    resultDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p><strong>Request ID:</strong> ${foundRequest.id}</p>
+                        <p><strong>Description:</strong> ${foundRequest.description}</p>
+                        <p><strong>Status:</strong> ${foundRequest.status}</p>
+                        <p><strong>User:</strong> ${foundRequest.user?.name || 'NULL'}</p>
+                        <p><strong>Garage:</strong> ${foundRequest.garage?.name || 'NULL'}</p>
+                        <p><strong>Location:</strong> ${foundRequest.latitude}, ${foundRequest.longitude}</p>
+                        <p><strong>Created:</strong> ${foundRequest.createdAt}</p>
+                        
+                        <h3>Test Detail Page URL:</h3>
+                        <a href="/emergency/${foundRequest.id}" target="_blank">
+                            /emergency/${foundRequest.id}
+                        </a>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

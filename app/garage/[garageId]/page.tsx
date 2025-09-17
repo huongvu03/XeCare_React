@@ -251,48 +251,6 @@ export default function GarageDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-                         {/* Quick Stats - Only for owner */}
-             {isOwner && (
-               <Card className="border-green-100">
-                 <CardHeader>
-                   <CardTitle className="text-lg">Thống kê</CardTitle>
-                 </CardHeader>
-                 <CardContent className="space-y-4">
-                   <div className="flex items-center justify-between">
-                     <div className="flex items-center space-x-2">
-                       <Calendar className="h-5 w-5 text-blue-600" />
-                       <span className="text-sm text-slate-600">Lịch hẹn hôm nay</span>
-                     </div>
-                     <span className="font-semibold text-slate-900">12</span>
-                   </div>
-                   
-                   <div className="flex items-center justify-between">
-                     <div className="flex items-center space-x-2">
-                       <Users className="h-5 w-5 text-green-600" />
-                       <span className="text-sm text-slate-600">Khách hàng mới</span>
-                     </div>
-                     <span className="font-semibold text-slate-900">5</span>
-                   </div>
-                   
-                   <div className="flex items-center justify-between">
-                     <div className="flex items-center space-x-2">
-                       <Star className="h-5 w-5 text-yellow-600" />
-                       <span className="text-sm text-slate-600">Đánh giá TB</span>
-                     </div>
-                     <span className="font-semibold text-slate-900">4.8</span>
-                   </div>
-                   
-                   <div className="flex items-center justify-between">
-                     <div className="flex items-center space-x-2">
-                       <DollarSign className="h-5 w-5 text-green-600" />
-                       <span className="text-sm text-slate-600">Doanh thu tháng</span>
-                     </div>
-                     <span className="font-semibold text-slate-900">15.2M</span>
-                   </div>
-                 </CardContent>
-               </Card>
-             )}
-
                          {/* Quick Actions - Only for owner */}
              {isOwner && (
                <Card className="border-blue-100">

@@ -2,6 +2,7 @@ import type React from "react"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/hooks/use-auth"
+import { NotificationProvider } from "@/hooks/use-notifications"
 import { Chatbox } from "@/components/chatbox"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -14,14 +15,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi">
-      <body className={inter.className}>
-          <AuthProvider>
+    <html lang="vi" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+                  <AuthProvider>
+          <NotificationProvider>
             <Header />
             {children}
             <Chatbox />
             <Footer />
-          </AuthProvider>
+          </NotificationProvider>
+        </AuthProvider>
       </body>
     </html>
   )

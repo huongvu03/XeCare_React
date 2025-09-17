@@ -80,18 +80,24 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Get token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    
     const defaultOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
     };
 
     try {
+      console.log('API Request:', { url, options: defaultOptions });
       const response = await fetch(url, defaultOptions);
       
       if (!response.ok) {
+        console.error('API Error:', { url, status: response.status, statusText: response.statusText });
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
 
@@ -111,7 +117,11 @@ class ApiClient {
   // Garage Search APIs
   async searchGaragesAdvanced(params: GarageSearchParams): Promise<PublicGarageResponseDto[]> {
     const queryString = buildQueryString(params);
-    return this.fetchApi<PublicGarageResponseDto[]>(`/apis/garage/search/advanced?${queryString}`);
+    console.log('API: searchGaragesAdvanced called with params:', params);
+    console.log('API: queryString:', queryString);
+    const result = await this.fetchApi<PublicGarageResponseDto[]>(`/apis/garage/search/advanced?${queryString}`);
+    console.log('API: searchGaragesAdvanced result:', result);
+    return result;
   }
 
   async searchGaragesWithPagination(params: GarageSearchParams): Promise<PaginatedResponse<PublicGarageResponseDto>> {

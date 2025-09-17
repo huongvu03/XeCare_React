@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SweetAlert Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f3f4f6;
+        }
+        .demo-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🎉 SweetAlert Demo - XeCare Emergency System</h1>
+        
+        <div class="demo-section">
+            <h3>1. Nút "Hủy" - Xác nhận xóa yêu cầu cứu hộ</h3>
+            <button class="btn btn-danger" onclick="demoDeleteConfirmation()">
+                🗑️ Hủy yêu cầu cứu hộ
+            </button>
+        </div>
+        
+        <div class="demo-section">
+            <h3>2. Nút "Chấp nhận" - Loading và thành công</h3>
+            <button class="btn btn-success" onclick="demoAcceptRequest()">
+                ✅ Chấp nhận yêu cầu
+            </button>
+        </div>
+        
+        <div class="demo-section">
+            <h3>3. Demo Error</h3>
+            <button class="btn btn-danger" onclick="demoError()">
+                ❌ Thử lỗi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function demoDeleteConfirmation() {
+            const result = await Swal.fire({
+                title: 'Xác nhận xóa',
+                text: 'Bạn có chắc chắn muốn xóa yêu cầu cứu hộ #123?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy',
+                backdrop: true,
+                allowOutsideClick: false
+            });
+            
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Đang xóa...',
+                    text: 'Vui lòng đợi',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Simulate API call
+                setTimeout(async () => {
+                    await Swal.fire({
+                        title: 'Thành công!',
+                        text: 'Đã xóa yêu cầu cứu hộ #123',
+                        icon: 'success',
+                        confirmButtonColor: '#059669',
+                        confirmButtonText: 'OK'
+                    });
+                }, 2000);
+            }
+        }
+        
+        async function demoAcceptRequest() {
+            // Show loading
+            Swal.fire({
+                title: 'Đang chấp nhận...',
+                text: 'Vui lòng đợi',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Simulate API call
+            setTimeout(async () => {
+                await Swal.fire({
+                    title: 'Đã chấp nhận!',
+                    text: 'Yêu cầu cứu hộ #123 đã được chấp nhận',
+                    icon: 'success',
+                    confirmButtonColor: '#059669',
+                    confirmButtonText: 'OK'
+                });
+            }, 1500);
+        }
+        
+        async function demoError() {
+            await Swal.fire({
+                title: 'Lỗi!',
+                text: 'Không thể thực hiện thao tác: Server đang bảo trì',
+                icon: 'error',
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'OK'
+            });
+        }
+    </script>
+</body>
+</html>

@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { PublicGarageResponseDto } from '@/services/api';
-import { Star, MapPin, Phone, Mail, CheckCircle, Clock, Car, Wrench, Image as ImageIcon } from 'lucide-react';
+import { Star, MapPin, Phone, Mail, CheckCircle, Clock, Car, Wrench, Image as ImageIcon, Navigation } from 'lucide-react';
 import { getFullImageUrl, isPlaceholderImage } from '@/utils/imageUtils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
 
 interface GarageCardProps {
-  garage: PublicGarageResponseDto;
+  garage: PublicGarageResponseDto & { distanceFromUser?: number };
   onViewDetails?: (garage: PublicGarageResponseDto) => void;
   onContact?: (garage: PublicGarageResponseDto) => void;
 }
@@ -123,14 +124,35 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
               </Badge>
             </div>
 
-            {/* Rating badge */}
-            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-semibold text-gray-900">
-                  {garage.averageRating.toFixed(1)}
-                </span>
+            {/* Favorite button */}
+            <div className="absolute top-3 left-3">
+              <FavoriteButton garageId={garage.id} size="sm" />
+            </div>
+
+            {/* Rating and Distance badges */}
+            <div className="absolute bottom-3 left-3 flex flex-col gap-2">
+              <div className="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-semibold text-gray-900">
+                    {garage.averageRating.toFixed(1)}
+                  </span>
+                </div>
               </div>
+              
+              {garage.distanceFromUser !== undefined && (
+                <div className="bg-blue-500/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
+                  <div className="flex items-center gap-1">
+                    <Navigation className="w-3 h-3 text-white" />
+                    <span className="text-xs font-medium text-white">
+                      {garage.distanceFromUser < 1 
+                        ? `${Math.round(garage.distanceFromUser * 1000)}m`
+                        : `${garage.distanceFromUser}km`
+                      }
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

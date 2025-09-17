@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { GarageSearchParams } from '@/services/api';
-import { Search, Star, MapPin, Settings } from 'lucide-react';
+import { Search, Star, MapPin, Settings, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,12 +13,13 @@ interface SearchFiltersProps {
   services: string[];
   vehicleTypes: string[];
   onSearch: (params: GarageSearchParams) => void;
-  onReset: () => void;
+  onReset: () => void | Promise<void>;
   isLoading?: boolean;
 }
 
 export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoading }: SearchFiltersProps) {
   const [mounted, setMounted] = useState(false);
+  const [resetKey, setResetKey] = useState(0); // Key to force re-render
   const [searchParams, setSearchParams] = useState<GarageSearchParams>({
     name: '',
     address: '',
@@ -26,9 +27,7 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
     vehicleType: 'all',
     minRating: 0,
     maxRating: 5,
-    isVerified: undefined,
-    sort: 'averageRating',
-    direction: 'desc'
+    isVerified: undefined
   });
 
   // Fix hydration mismatch
@@ -56,8 +55,9 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     try {
+      console.log('SearchFilters: Reset button clicked');
       const resetParams: GarageSearchParams = {
         name: '',
         address: '',
@@ -65,17 +65,20 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
         vehicleType: 'all',
         minRating: 0,
         maxRating: 5,
-        isVerified: undefined,
-        sort: 'averageRating',
-        direction: 'desc'
+        isVerified: undefined
       };
+      
+      // Update form state
+      console.log('SearchFilters: Updating form state');
       setSearchParams(resetParams);
       
-      // Immediately trigger search with empty params to show all garages
-      onSearch({});
+      // Force re-render of all form controls
+      setResetKey(prev => prev + 1);
       
-      // Call the parent reset function
-      onReset();
+      // Call the parent reset function - this will now automatically reload all garages
+      console.log('SearchFilters: Calling parent reset function');
+      await onReset();
+      console.log('SearchFilters: Reset completed');
     } catch (error) {
       console.error('Reset error:', error);
     }
@@ -108,14 +111,16 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
   return (
     <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-blue-50 to-indigo-50">
       <CardContent className="p-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-end">
+        {/* Filter Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
           {/* Tên garage */}
-          <div className="flex-1 space-y-2">
+          <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <Search className="w-4 h-4 text-blue-500" />
               Tên garage
             </Label>
             <Input
+              key={`name-${resetKey}`}
               placeholder="Nhập tên garage..."
               value={searchParams.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
@@ -125,12 +130,13 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
           </div>
 
           {/* Dịch vụ */}
-          <div className="flex-1 space-y-2">
+          <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <Settings className="w-4 h-4 text-green-500" />
               Dịch vụ
             </Label>
             <Select
+              key={`service-${resetKey}`}
               value={searchParams.service || 'all'}
               onValueChange={(value) => handleInputChange('service', value)}
             >
@@ -148,13 +154,39 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
             </Select>
           </div>
 
+          {/* Loại xe */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+              <Car className="w-4 h-4 text-orange-500" />
+              Loại xe
+            </Label>
+            <Select
+              key={`vehicleType-${resetKey}`}
+              value={searchParams.vehicleType || 'all'}
+              onValueChange={(value) => handleInputChange('vehicleType', value)}
+            >
+              <SelectTrigger className="h-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500">
+                <SelectValue placeholder="Chọn loại xe..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả loại xe</SelectItem>
+                {vehicleTypes && vehicleTypes.map((vehicleType) => (
+                  <SelectItem key={vehicleType} value={vehicleType}>
+                    {vehicleType}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Địa chỉ */}
-          <div className="flex-1 space-y-2">
+          <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <MapPin className="w-4 h-4 text-purple-500" />
               Địa chỉ
             </Label>
             <Input
+              key={`address-${resetKey}`}
               placeholder="Nhập địa chỉ..."
               value={searchParams.address || ''}
               onChange={(e) => handleInputChange('address', e.target.value)}
@@ -164,12 +196,13 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
           </div>
 
           {/* Đánh giá */}
-          <div className="flex-1 space-y-2">
+          <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <Star className="w-4 h-4 text-yellow-500" />
               Đánh giá tối thiểu
             </Label>
             <Select
+              key={`rating-${resetKey}`}
               value={searchParams.minRating?.toString() || '0'}
               onValueChange={(value) => handleInputChange('minRating', parseFloat(value))}
             >
@@ -186,35 +219,35 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
               </SelectContent>
             </Select>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSearch}
-              disabled={isLoading}
-              className="h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Tìm...
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4 mr-2" />
-                  Tìm kiếm
-                </>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              disabled={isLoading}
-              className="h-10 border-gray-200 hover:bg-gray-50 px-4"
-            >
-              Đặt lại
-            </Button>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-3">
+          <Button
+            onClick={handleSearch}
+            disabled={isLoading}
+            className="h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium px-8"
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Tìm...
+              </>
+            ) : (
+              <>
+                <Search className="w-4 h-4 mr-2" />
+                Tìm kiếm
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleReset}
+            disabled={isLoading}
+            className="h-10 border-gray-200 hover:bg-gray-50 px-6"
+          >
+            Đặt lại
+          </Button>
         </div>
 
         {/* Search Info */}

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Calendar, Clock, MapPin, Phone, Car, Upload, ArrowLeft } from "lucide-react"
-import { getGarageById, type Garage } from "@/lib/api/GarageApi"
+import { getGarageById, type Garage, type GarageService } from "@/lib/api/GarageApi"
 import { createAppointment, type CreateAppointmentRequest } from "@/lib/api/AppointmentApi"
 import { useAuth } from "@/hooks/use-auth"
 import { getPublicGarageById, type PublicGarageInfo } from "@/lib/api/UserApi"
@@ -23,6 +23,8 @@ export default function BookingPage() {
   const { user } = useAuth()
   
   const [garage, setGarage] = useState<Garage | null>(null)
+  const [services, setServices] = useState<GarageService[]>([])
+  const [vehicleTypes, setVehicleTypes] = useState<GarageVehicleType[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -30,15 +32,44 @@ export default function BookingPage() {
 
   // Form data
   const [appointmentDate, setAppointmentDate] = useState("")
-  const [appointmentTime, setAppointmentTime] = useState("")
   const [description, setDescription] = useState("")
   const [contactPhone, setContactPhone] = useState(user?.phone || "")
   const [contactEmail, setContactEmail] = useState(user?.email || "")
-  const [selectedServices, setSelectedServices] = useState<number[]>([])
+  const [selectedService, setSelectedService] = useState<number | null>(null)
   const [selectedVehicleType, setSelectedVehicleType] = useState<number | null>(null)
   const [images, setImages] = useState<File[]>([])
 
   const garageId = Number(params.garageId)
+
+  // Lấy danh sách services của garage
+  const fetchGarageServices = async (garageId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/apis/garage/${garageId}/services`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const servicesData = await response.json()
+      setServices(servicesData)
+    } catch (err: any) {
+      console.error("Error fetching garage services:", err)
+      setError("Không thể tải danh sách dịch vụ. Vui lòng thử lại.")
+    }
+  }
+
+  // Lấy danh sách vehicle types của garage
+  const fetchGarageVehicleTypes = async (garageId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/apis/garage/${garageId}/vehicle-types`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const vehicleTypesData = await response.json()
+      setVehicleTypes(vehicleTypesData)
+    } catch (err: any) {
+      console.error("Error fetching garage vehicle types:", err)
+      setError("Không thể tải danh sách loại xe. Vui lòng thử lại.")
+    }
+  }
 
   // Lấy thông tin garage
   useEffect(() => {
@@ -46,6 +77,12 @@ export default function BookingPage() {
       try {
         const response = await getGarageById(garageId)
         setGarage(response.data)
+        
+        // Lấy danh sách services và vehicle types
+        await Promise.all([
+          fetchGarageServices(garageId),
+          fetchGarageVehicleTypes(garageId)
+        ])
       } catch (err: any) {
         setError("Không thể tải thông tin garage. Vui lòng thử lại.")
         console.error("Error fetching garage:", err)
@@ -59,19 +96,14 @@ export default function BookingPage() {
     }
   }, [garageId])
 
-  // Time slots
-  const timeSlots = [
-    "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
-  ]
 
-  // Handle service selection
-  const handleServiceToggle = (serviceId: number) => {
-    setSelectedServices(prev => 
-      prev.includes(serviceId) 
-        ? prev.filter(id => id !== serviceId)
-        : [...prev, serviceId]
-    )
+  // Handle dropdown selections
+  const handleServiceChange = (serviceId: string) => {
+    setSelectedService(serviceId === "" ? null : Number(serviceId))
+  }
+
+  const handleVehicleTypeChange = (vehicleTypeId: string) => {
+    setSelectedVehicleType(vehicleTypeId === "" ? null : Number(vehicleTypeId))
   }
 
   // Handle image upload
@@ -88,16 +120,21 @@ export default function BookingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!garage || !user) return
+    if (!garage) return
+    
+    if (!user) {
+      setError("Bạn cần đăng nhập để đặt lịch hẹn. Vui lòng đăng nhập tại trang chủ.")
+      return
+    }
 
     // Validation
-    if (!appointmentDate || !appointmentTime || !description || !contactPhone || !contactEmail) {
+    if (!appointmentDate || !description || !contactPhone || !contactEmail) {
       setError("Vui lòng điền đầy đủ thông tin bắt buộc.")
       return
     }
 
-    if (selectedServices.length === 0) {
-      setError("Vui lòng chọn ít nhất một dịch vụ.")
+    if (!selectedService) {
+      setError("Vui lòng chọn dịch vụ.")
       return
     }
 
@@ -114,12 +151,11 @@ export default function BookingPage() {
         garageId: garage.id,
         vehicleTypeId: selectedVehicleType,
         appointmentDate,
-        appointmentTime,
+        appointmentTime: "09:00", // Default time, garage will schedule specific time
         description,
         contactPhone,
         contactEmail,
-        services: selectedServices,
-        images: images.length > 0 ? images : undefined
+        services: [selectedService]
       }
 
       const response = await createAppointment(appointmentData)
@@ -141,7 +177,7 @@ export default function BookingPage() {
   if (loading) {
     return (
       <DashboardLayout
-        allowedRoles={["user"]}
+        allowedRoles={["USER", "GARAGE"]}
         title="Đặt lịch hẹn"
         description="Đang tải thông tin garage..."
       >
@@ -158,7 +194,7 @@ export default function BookingPage() {
   if (!garage) {
     return (
       <DashboardLayout
-        allowedRoles={["user"]}
+        allowedRoles={["USER", "GARAGE"]}
         title="Lỗi"
         description="Không tìm thấy garage"
       >
@@ -177,7 +213,7 @@ export default function BookingPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["user"]}
+      allowedRoles={["USER", "GARAGE"]}
       title="Đặt lịch hẹn"
       description={`Đặt lịch hẹn tại ${garage.name}`}
     >
@@ -208,9 +244,11 @@ export default function BookingPage() {
               <div className="flex items-center space-x-2 text-sm text-slate-600">
                 <Clock className="h-4 w-4" />
                 <span>
-                  {'operatingHours' in garage && garage.operatingHours 
-                    ? formatOperatingHours(garage.operatingHours as any)
-                    : `${garage.openTime} - ${garage.closeTime}`
+                  {garage.operatingHours 
+                    ? formatOperatingHours(garage.operatingHours)
+                    : garage.openTime && garage.closeTime
+                    ? `${garage.openTime} - ${garage.closeTime}`
+                    : "08:00 - 18:00 (Thời gian mặc định)"
                   }
                 </span>
               </div>
@@ -255,89 +293,88 @@ export default function BookingPage() {
                   </Alert>
                 )}
 
-                {/* Date and Time */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Ngày hẹn *</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={appointmentDate}
-                      onChange={(e) => setAppointmentDate(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="time">Giờ hẹn *</Label>
-                    <select
-                      id="time"
-                      value={appointmentTime}
-                      onChange={(e) => setAppointmentTime(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="">Chọn giờ</option>
-                      {timeSlots.map(time => (
-                        <option key={time} value={time}>{time}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Vehicle Type */}
+                {/* Date Only */}
                 <div className="space-y-2">
-                  <Label>Loại xe *</Label>
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {garage.vehicleTypes?.map(vehicleType => (
-                      <div
-                        key={vehicleType.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedVehicleType === vehicleType.vehicleTypeId
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-slate-200 hover:border-slate-300"
-                        }`}
-                        onClick={() => setSelectedVehicleType(vehicleType.vehicleTypeId)}
-                      >
-                        <div className="font-medium">{vehicleType.vehicleTypeName}</div>
-                        <div className="text-sm text-slate-600">{vehicleType.vehicleTypeDescription}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <Label htmlFor="date">Ngày hẹn *</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={appointmentDate}
+                    onChange={(e) => setAppointmentDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                    className="max-w-xs"
+                  />
+                  <p className="text-sm text-slate-500">Garage sẽ liên hệ để xác nhận thời gian cụ thể</p>
                 </div>
+
 
                 {/* Services */}
                 <div className="space-y-2">
-                  <Label>Dịch vụ *</Label>
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {garage.services?.map(service => (
-                      <div
-                        key={service.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedServices.includes(service.serviceId)
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-slate-200 hover:border-slate-300"
-                        }`}
-                        onClick={() => handleServiceToggle(service.serviceId)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">{service.serviceName}</div>
-                            <div className="text-sm text-slate-600">{service.serviceDescription}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-medium text-blue-600">
-                              {service.price.toLocaleString()}đ
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {service.estimatedTimeMinutes} phút
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                  <Label htmlFor="service">Dịch vụ *</Label>
+                  <select
+                    id="service"
+                    value={selectedService || ""}
+                    onChange={(e) => handleServiceChange(e.target.value)}
+                    className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">-- Chọn dịch vụ --</option>
+                    {services.map(service => (
+                      <option key={service.id} value={service.serviceId}>
+                        {service.serviceName} - {service.basePrice.toLocaleString()}đ ({service.estimatedTimeMinutes} phút)
+                      </option>
                     ))}
-                  </div>
+                  </select>
+                  {selectedService && (
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      {(() => {
+                        const service = services.find(s => s.serviceId === selectedService)
+                        return service ? (
+                          <div>
+                            <div className="font-medium text-blue-900">{service.serviceName}</div>
+                            <div className="text-sm text-blue-700 mt-1">{service.description}</div>
+                            <div className="text-sm text-blue-600 mt-1">
+                              Giá: <span className="font-semibold">{service.basePrice.toLocaleString()}đ</span> | 
+                              Thời gian: <span className="font-semibold">{service.estimatedTimeMinutes} phút</span>
+                            </div>
+                          </div>
+                        ) : null
+                      })()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Vehicle Types */}
+                <div className="space-y-2">
+                  <Label htmlFor="vehicleType">Loại xe *</Label>
+                  <select
+                    id="vehicleType"
+                    value={selectedVehicleType || ""}
+                    onChange={(e) => handleVehicleTypeChange(e.target.value)}
+                    className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">-- Chọn loại xe --</option>
+                    {vehicleTypes.map(vehicleType => (
+                      <option key={vehicleType.id} value={vehicleType.vehicleTypeId}>
+                        {vehicleType.vehicleTypeName}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedVehicleType && (
+                    <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      {(() => {
+                        const vehicleType = vehicleTypes.find(vt => vt.vehicleTypeId === selectedVehicleType)
+                        return vehicleType ? (
+                          <div>
+                            <div className="font-medium text-green-900">{vehicleType.vehicleTypeName}</div>
+                            <div className="text-sm text-green-700 mt-1">{vehicleType.vehicleTypeDescription}</div>
+                          </div>
+                        ) : null
+                      })()}
+                    </div>
+                  )}
                 </div>
 
                 {/* Contact Information */}

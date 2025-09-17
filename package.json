@@ -49,11 +49,13 @@
     "next": "^15.5.3",
     "next-themes": "latest",
     "react": "^19.1.1",
+    "react-day-picker": "^9.9.0",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.54.1",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.0",
     "sonner": "^1.7.1",
+    "sweetalert2": "^11.23.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.1"

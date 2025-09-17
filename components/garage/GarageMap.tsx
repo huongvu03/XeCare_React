@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { PublicGarageResponseDto } from '@/services/api';
-import { MapPin, Navigation, Phone, Mail } from 'lucide-react';
+import { UserLocation } from '@/utils/geolocation';
+import { MapPin, Navigation, Phone, Mail, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,11 +12,12 @@ interface GarageMapProps {
   garages: PublicGarageResponseDto[];
   onGarageSelect?: (garage: PublicGarageResponseDto) => void;
   selectedGarage?: PublicGarageResponseDto;
+  userLocation?: UserLocation | null;
 }
 
-export function GarageMap({ garages, onGarageSelect, selectedGarage }: GarageMapProps) {
+export function GarageMap({ garages, onGarageSelect, selectedGarage, userLocation: propUserLocation }: GarageMapProps) {
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [internalUserLocation, setInternalUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   // Mock map component - in real implementation, you would use Google Maps or Leaflet
   useEffect(() => {
@@ -24,12 +26,17 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage }: GarageMap
     return () => clearTimeout(timer);
   }, []);
 
-  // Get user location
+  // Use prop userLocation or get internal location
+  const userLocation = propUserLocation 
+    ? { lat: propUserLocation.latitude, lng: propUserLocation.longitude }
+    : internalUserLocation;
+
+  // Get user location if not provided via props
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (!propUserLocation && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
+          setInternalUserLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
@@ -39,7 +46,7 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage }: GarageMap
         }
       );
     }
-  }, []);
+  }, [propUserLocation]);
 
   const handleGarageClick = (garage: PublicGarageResponseDto) => {
     onGarageSelect?.(garage);
@@ -80,14 +87,41 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage }: GarageMap
             </div>
           ) : (
             <div className="relative h-full">
-              {/* User Location */}
+              {/* User Location Marker */}
               {userLocation && (
-                <div className="absolute top-4 left-4 z-10">
-                  <Badge variant="secondary" className="bg-blue-500 text-white">
-                    <Navigation className="w-3 h-3 mr-1" />
-                    Vị trí của bạn
-                  </Badge>
-                </div>
+                <>
+                  {/* User position badge */}
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge variant="secondary" className="bg-blue-500 text-white">
+                      <Navigation className="w-3 h-3 mr-1" />
+                      Vị trí của bạn
+                    </Badge>
+                  </div>
+                  
+                  {/* User marker on map */}
+                  <div 
+                    className="absolute z-30"
+                    style={{
+                      left: '10%',
+                      top: '20%'
+                    }}
+                  >
+                    <div className="relative">
+                      {/* Pulse animation */}
+                      <div className="absolute inset-0 w-6 h-6 bg-blue-400 rounded-full animate-ping opacity-75"></div>
+                      
+                      {/* User marker */}
+                      <div className="relative w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                        <User className="w-3 h-3 text-white" />
+                      </div>
+                      
+                      {/* Location label */}
+                      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md border text-xs whitespace-nowrap">
+                        Bạn ở đây
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
               
               {/* Garage Markers */}

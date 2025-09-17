@@ -239,13 +239,35 @@ export default function GarageRegistrationPage() {
         updateUser(updatedUser)
       }
       
-      // Refresh user data to get updated garage information
+      // Force refresh user data to get updated garage information and role
       await refreshUser()
       
-                     // Redirect to dashboard with garage tab after 3 seconds
-               setTimeout(() => {
-                 router.push("/dashboard?tab=garage")
-               }, 3000)
+      // Clear any cached garage data to force reload
+      if (typeof window !== 'undefined') {
+        // Force reload localStorage to sync with backend
+        const token = localStorage.getItem('token')
+        if (token) {
+          try {
+            const response = await fetch('http://localhost:8080/apis/user/profile', {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            })
+            if (response.ok) {
+              const latestUserData = await response.json()
+              updateUser(latestUserData)
+              localStorage.setItem('user', JSON.stringify(latestUserData))
+            }
+          } catch (error) {
+            console.error('Error refreshing user data:', error)
+          }
+        }
+      }
+      
+      // Redirect to dashboard with garage tab after 3 seconds
+      setTimeout(() => {
+        router.push("/dashboard?tab=garage")
+      }, 3000)
 
     } catch (err: any) {
       console.error("Debug - Error details:", err)

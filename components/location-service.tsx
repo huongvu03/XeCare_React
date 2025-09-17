@@ -80,16 +80,23 @@ export function LocationService({ onLocationUpdate, className }: LocationService
     // For demo purposes, we'll return a mock address based on coordinates
     const mockAddresses = [
       "Quận 1, TP. Hồ Chí Minh",
-      "Quận 3, TP. Hồ Chí Minh",
+      "Quận 3, TP. Hồ Chí Minh", 
       "Quận 5, TP. Hồ Chí Minh",
       "Quận 10, TP. Hồ Chí Minh",
       "Quận 11, TP. Hồ Chí Minh",
+      "Quận Bình Thạnh, TP. Hồ Chí Minh",
+      "Quận Gò Vấp, TP. Hồ Chí Minh",
+      "Quận Phú Nhuận, TP. Hồ Chí Minh",
+      "Quận Tân Bình, TP. Hồ Chí Minh",
+      "Quận Tân Phú, TP. Hồ Chí Minh",
     ]
 
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    return mockAddresses[Math.floor(Math.random() * mockAddresses.length)]
+    // Use coordinates to generate a more realistic address
+    const index = Math.floor((lat + lng) * 1000) % mockAddresses.length
+    return mockAddresses[index]
   }
 
   const getAccuracyLevel = (accuracy: number) => {
