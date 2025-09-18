@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { UserLocation, LocationError, getCurrentLocation, isGeolocationSupported } from '@/utils/geolocation';
 
 interface UseUserLocationReturn {
@@ -14,7 +14,12 @@ export function useUserLocation(): UseUserLocationReturn {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<LocationError | null>(null);
-  const isSupported = isGeolocationSupported();
+  const [isSupported, setIsSupported] = useState(false);
+
+  // Handle SSR by setting isSupported after hydration
+  useEffect(() => {
+    setIsSupported(isGeolocationSupported());
+  }, []);
 
   const requestLocation = useCallback(async () => {
     if (!isSupported) {

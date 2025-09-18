@@ -4,159 +4,166 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Clock, MapPin, Phone, Star, ChevronLeft, ChevronRight } from "lucide-react"
+import { Clock, MapPin, Phone, Star, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import { apiWrapper } from "@/services/apiWrapper"
+import type { PublicGarageResponseDto } from "@/services/api"
 
-// Mock data for garages
-const mockGarages = [
-  {
-    id: 1,
-    slug: "thanh-cong",
-    name: "Garage Thành Công",
-    logo: "TC",
-    logoColor: "from-blue-600 to-cyan-600",
-    rating: 4.9,
-    reviewCount: 245,
-    address: "123 Lê Lợi, Q1, TP.HCM",
-    distance: 1.2,
-    openHours: "7:00 - 19:00",
-    isOpen: true,
-    phone: "0909 123 456",
-    services: [
-      { name: "Thay nhớt", color: "blue" },
-      { name: "Sửa phanh", color: "green" },
-      { name: "Bảo dưỡng", color: "purple" },
-    ],
-    isFavorite: true,
-    isPopular: true,
-  },
-  {
-    id: 2,
-    slug: "garage-24-7",
-    name: "Garage 24/7",
-    logo: "24",
-    logoColor: "from-green-600 to-emerald-600",
-    rating: 4.7,
-    reviewCount: 189,
-    address: "456 Nguyễn Huệ, Q1, TP.HCM",
-    distance: 2.1,
-    openHours: "24/7",
-    isOpen: true,
-    phone: "0908 247 247",
-    services: [
-      { name: "Cứu hộ", color: "red" },
-      { name: "Sửa chữa", color: "orange" },
-    ],
-    isFavorite: false,
-    isPopular: true,
-  },
-  {
-    id: 3,
-    slug: "auto-care",
-    name: "Auto Care Center",
-    logo: "AC",
-    logoColor: "from-purple-600 to-pink-600",
-    rating: 4.8,
-    reviewCount: 172,
-    address: "789 Cách Mạng Tháng 8, Q3, TP.HCM",
-    distance: 0.8,
-    openHours: "8:00 - 20:00",
-    isOpen: true,
-    phone: "0907 888 999",
-    services: [
-      { name: "Điện", color: "yellow" },
-      { name: "Điều hòa", color: "blue" },
-      { name: "Đồng sơn", color: "red" },
-    ],
-    isFavorite: true,
-    isPopular: false,
-  },
-  {
-    id: 4,
-    slug: "saigon-auto",
-    name: "Sài Gòn Auto",
-    logo: "SG",
-    logoColor: "from-red-600 to-orange-600",
-    rating: 4.6,
-    reviewCount: 156,
-    address: "101 Nguyễn Văn Linh, Q7, TP.HCM",
-    distance: 3.5,
-    openHours: "7:30 - 18:30",
-    isOpen: true,
-    phone: "0903 777 888",
-    services: [
-      { name: "Gầm", color: "gray" },
-      { name: "Động cơ", color: "green" },
-    ],
-    isFavorite: false,
-    isPopular: false,
-  },
-  {
-    id: 5,
-    slug: "viet-nhat",
-    name: "Việt Nhật Auto",
-    logo: "VN",
-    logoColor: "from-yellow-500 to-amber-600",
-    rating: 4.5,
-    reviewCount: 132,
-    address: "202 Điện Biên Phủ, Bình Thạnh, TP.HCM",
-    distance: 1.5,
-    openHours: "8:00 - 17:30",
-    isOpen: false,
-    phone: "0904 555 666",
-    services: [
-      { name: "Xe Nhật", color: "blue" },
-      { name: "Phụ tùng", color: "purple" },
-    ],
-    isFavorite: false,
-    isPopular: true,
-  },
-]
+// Interface for enhanced garage data
+interface EnhancedGarage extends PublicGarageResponseDto {
+  slug: string;
+  logo: string;
+  logoColor: string;
+  distance?: number;
+  openHours: string;
+  isOpen: boolean;
+  isFavorite: boolean;
+  isPopular: boolean;
+  services: Array<{ name: string; color: string }>;
+}
+
+// Helper function to convert backend data to enhanced format
+const convertToEnhancedGarage = (garage: PublicGarageResponseDto): EnhancedGarage => {
+  // Generate slug from name
+  const slug = garage.name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '-')
+    .trim();
+
+  // Generate logo from name (first 2 characters)
+  const logo = garage.name
+    .split(' ')
+    .map(word => word.charAt(0))
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
+  // Generate logo color based on garage ID
+  const colors = [
+    "from-blue-600 to-cyan-600",
+    "from-green-600 to-emerald-600", 
+    "from-purple-600 to-pink-600",
+    "from-red-600 to-orange-600",
+    "from-yellow-500 to-amber-600",
+    "from-indigo-600 to-purple-600",
+    "from-pink-600 to-rose-600",
+    "from-teal-600 to-cyan-600"
+  ];
+  const logoColor = colors[garage.id % colors.length];
+
+  // Convert services to enhanced format
+  const serviceColors = ["blue", "green", "purple", "red", "orange", "yellow", "indigo", "pink"];
+  const services = garage.serviceNames.map((service, index) => ({
+    name: service,
+    color: serviceColors[index % serviceColors.length]
+  }));
+
+  // Mock distance (in real app, this would be calculated based on user location)
+  const distance = Math.random() * 5 + 0.5; // Random distance between 0.5-5.5 km
+
+  // Mock open hours and status
+  const openHours = "7:00 - 19:00";
+  const isOpen = Math.random() > 0.2; // 80% chance of being open
+
+  // Mock favorite status (in real app, this would come from user's favorites)
+  const isFavorite = Math.random() > 0.7; // 30% chance of being favorite
+
+  // Determine if popular based on rating and review count
+  const isPopular = garage.averageRating >= 4.5 && garage.totalReviews >= 50;
+
+  return {
+    ...garage,
+    slug,
+    logo,
+    logoColor,
+    distance,
+    openHours,
+    isOpen,
+    isFavorite,
+    isPopular,
+    services
+  };
+};
 
 export function FeaturedGarageCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [garages, setGarages] = useState(mockGarages)
-  const { isAuthenticated } = useAuth()
+  const [garages, setGarages] = useState<EnhancedGarage[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
+  const isAuthenticated = !!user
   const router = useRouter()
 
   // Get the 3 garages to display
   const displayGarages = garages.slice(0, 3)
 
+  // Load garages from backend
   useEffect(() => {
-    // Sort garages based on user authentication status
-    if (isAuthenticated) {
-      // If user is logged in, prioritize nearest garages
-      // If distance is similar (within 0.5km), prioritize favorites
-      const sortedGarages = [...mockGarages].sort((a, b) => {
-        const distanceDiff = Math.abs(a.distance - b.distance)
+    const loadGarages = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        console.log('🔄 Loading featured garages from backend...')
+        
+        // Get active garages from backend
+        const response = await apiWrapper.searchGaragesAdvanced({
+          status: 'ACTIVE',
+          isVerified: true
+        })
+        
+        console.log('✅ Featured garages loaded:', response.length)
+        
+        // Convert to enhanced format
+        const enhancedGarages = response.map(convertToEnhancedGarage)
+        
+        // Sort garages based on user authentication status
+        let sortedGarages: EnhancedGarage[]
+        
+        if (isAuthenticated) {
+          // If user is logged in, prioritize nearest garages
+          // If distance is similar (within 0.5km), prioritize favorites
+          sortedGarages = enhancedGarages.sort((a, b) => {
+            const distanceDiff = Math.abs((a.distance || 0) - (b.distance || 0))
 
-        if (distanceDiff <= 0.5) {
-          // If distance is similar, prioritize favorites
-          if (a.isFavorite && !b.isFavorite) return -1
-          if (!a.isFavorite && b.isFavorite) return 1
+            if (distanceDiff <= 0.5) {
+              // If distance is similar, prioritize favorites
+              if (a.isFavorite && !b.isFavorite) return -1
+              if (!a.isFavorite && b.isFavorite) return 1
+            }
+
+            // Otherwise sort by distance
+            return (a.distance || 0) - (b.distance || 0)
+          })
+        } else {
+          // If user is not logged in, prioritize favorites, then popular, then rating
+          sortedGarages = enhancedGarages.sort((a, b) => {
+            if (a.isFavorite && !b.isFavorite) return -1
+            if (!a.isFavorite && b.isFavorite) return 1
+
+            if (a.isPopular && !b.isPopular) return -1
+            if (!a.isPopular && b.isPopular) return 1
+
+            return b.averageRating - a.averageRating
+          })
         }
-
-        // Otherwise sort by distance
-        return a.distance - b.distance
-      })
-
-      setGarages(sortedGarages)
-    } else {
-      // If user is not logged in, prioritize favorites, then popular, then rating
-      const sortedGarages = [...mockGarages].sort((a, b) => {
-        if (a.isFavorite && !b.isFavorite) return -1
-        if (!a.isFavorite && b.isFavorite) return 1
-
-        if (a.isPopular && !b.isPopular) return -1
-        if (!a.isPopular && b.isPopular) return 1
-
-        return b.rating - a.rating
-      })
-
-      setGarages(sortedGarages)
+        
+        setGarages(sortedGarages)
+      } catch (err) {
+        console.error('❌ Error loading featured garages:', err)
+        setError('Không thể tải danh sách garage')
+        
+        // Fallback to empty array
+        setGarages([])
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    loadGarages()
   }, [isAuthenticated])
 
   // Auto-play carousel
@@ -176,7 +183,7 @@ export function FeaturedGarageCarousel() {
     setCurrentIndex((prevIndex) => (prevIndex === 0 ? displayGarages.length - 1 : prevIndex - 1))
   }
 
-  const goToSlide = (index) => {
+  const goToSlide = (index: number) => {
     setCurrentIndex(index)
   }
 
@@ -187,6 +194,62 @@ export function FeaturedGarageCarousel() {
       return
     }
     router.push(`/garage/${garageSlug}`)
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="relative">
+        <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100">
+          <div className="bg-white p-6 rounded-2xl">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <p className="text-slate-600">Đang tải danh sách garage...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="relative">
+        <div className="relative overflow-hidden rounded-2xl shadow-xl border border-red-100">
+          <div className="bg-white p-6 rounded-2xl">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="text-red-400 text-6xl mb-4">⚠️</div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Có lỗi xảy ra</h3>
+                <p className="text-gray-600">{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show empty state
+  if (displayGarages.length === 0) {
+    return (
+      <div className="relative">
+        <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100">
+          <div className="bg-white p-6 rounded-2xl">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="text-gray-400 text-6xl mb-4">🏪</div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có garage nào</h3>
+                <p className="text-gray-600">Hiện tại chưa có garage nào được hiển thị</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -219,7 +282,7 @@ export function FeaturedGarageCarousel() {
                       <div className="flex items-center space-x-1">
                         <Star className="h-4 w-4 text-yellow-400 fill-current" />
                         <span className="text-sm text-slate-600">
-                          {garage.rating} ({garage.reviewCount} đánh giá)
+                          {garage.averageRating ? garage.averageRating.toFixed(1) : 'Chưa có đánh giá'} ({garage.totalReviews || 0} đánh giá)
                         </span>
                       </div>
                     </div>
@@ -300,7 +363,7 @@ export function FeaturedGarageCarousel() {
 
         {/* Indicators */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
-          {displayGarages.map((_, index) => (
+          {displayGarages.map((_, index: number) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}

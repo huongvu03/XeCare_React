@@ -89,13 +89,16 @@ export const getUserById = (id: number) =>
   axiosClient.get<UserList>(`${BASE_URL}/${id}`)
 export const createUser = (user: CreateUserDto) =>
   axiosClient.post<UserList>(BASE_URL, user)
+// Update user profile using the secure endpoint
 export const updateUserInfoApi = (id: number, dto: UpdateUserDto) => {
-  return axiosClient.put(`${BASE_URL}/${id}`, dto)
+  return axiosClient.put("/apis/user/profile", dto)
 }
+
+// Update user profile image using the secure endpoint
 export const updateUserImageApi = (id: number, image: File) => {
   const formData = new FormData()
   formData.append("image", image)
-  return axiosClient.put(`/apis/v1/users/${id}/image`, formData, {
+  return axiosClient.put("/apis/user/profile/image", formData, {
     headers: { "Content-Type": "multipart/form-data" }
   })
 }

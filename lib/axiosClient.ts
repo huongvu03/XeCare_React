@@ -49,13 +49,12 @@ axiosClient.interceptors.response.use(
 
     if (error.response?.status === 401) {
       console.log("🔐 [axiosClient] Unauthorized - Token expired or invalid");
+      // Chỉ clear token, không tự động redirect
+      // Để component tự xử lý redirect
       try {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth')) {
-          window.location.href = '/auth';
-        }
-      } catch (redirectError) {
+      } catch (clearError) {
         // Không log gì cả
       }
       return Promise.reject(error);

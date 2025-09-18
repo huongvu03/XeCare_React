@@ -83,7 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null)
     if (typeof window !== "undefined") {
+      // Clear all authentication data
       localStorage.removeItem("user")
+      localStorage.removeItem("token")
       // Chuyển hướng về trang chủ sau khi đăng xuất
       window.location.href = "/"
     }
@@ -112,10 +114,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        // No token, clear user data
+        setUser(null)
+        localStorage.removeItem("user")
+        return
+      }
+
       // Call API to get updated user data
       const response = await fetch("http://localhost:8080/apis/user/profile", {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${token}`
         }
       })
       
@@ -124,6 +134,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userData)
         if (typeof window !== "undefined") {
           localStorage.setItem("user", JSON.stringify(userData))
+        }
+      } else if (response.status === 401 || response.status === 403) {
+        // Token is invalid or expired, clear user data
+        setUser(null)
+        localStorage.removeItem("user")
+        localStorage.removeItem("token")
+        // Redirect to login page
+        if (typeof window !== "undefined") {
+          window.location.href = "/auth"
         }
       }
     } catch (error) {
@@ -136,6 +155,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(JSON.parse(savedUser))
           } catch (error) {
             localStorage.removeItem("user")
+            localStorage.removeItem("token")
+            setUser(null)
           }
         }
       }

@@ -107,7 +107,19 @@ class ApiClient {
         return {} as T;
       }
 
-      return JSON.parse(text);
+      // Check if response is HTML (error page) instead of JSON
+      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+        console.error('Server returned HTML instead of JSON:', { url, text: text.substring(0, 200) });
+        throw new Error('Server returned HTML error page instead of JSON response. Please check if the backend server is running.');
+      }
+
+      // Try to parse JSON
+      try {
+        return JSON.parse(text);
+      } catch (parseError) {
+        console.error('JSON Parse Error:', { url, text: text.substring(0, 200), parseError });
+        throw new Error(`Invalid JSON response from server: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
+      }
     } catch (error) {
       console.error('API call failed:', error);
       throw error;
@@ -186,6 +198,6 @@ class ApiClient {
 
 // Export singleton instance
 export const apiClient = new ApiClient();
-
 // Export types
 export type { PublicGarageResponseDto, GarageSearchParams, PaginatedResponse, GarageStats };
+

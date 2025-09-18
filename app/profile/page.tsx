@@ -11,8 +11,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useState, useEffect } from "react"
 import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Save, X, Camera } from "lucide-react"
 
-import { updateUserInfoApi, updateUserImageApi } from "@/lib/api/UserApi"
-import { getUserById } from "@/lib/api/UserApi"
+import { updateUserInfoApi, updateUserImageApi, getUserProfile } from "@/lib/api/UserApi"
 import { getImageUrl } from "@/utils/getImageUrl"
 
 
@@ -25,13 +24,12 @@ export default function ProfilePage() {
 
 
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
-    //image: user?.imageUrl || "",
+    name: "",
+    email: "",
+    phone: "",
     image: null as File | null,
-    createdAt: user?.createdAt || "",
-    address: user?.address || "",
+    createdAt: "",
+    address: "",
     bio: "",
     website: "",
     emergencyContact: "",
@@ -40,13 +38,12 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user?.name || "",
-        email: user?.email || "",
-        phone: user?.phone || "",
-        //image: user?.imageUrl || "",
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
         image: null as File | null,
-        createdAt: user?.createdAt || "",
-        address: user?.address || "",
+        createdAt: user.createdAt || "",
+        address: user.address || "",
         bio: "",
         website: "",
         emergencyContact: "",
@@ -65,21 +62,42 @@ export default function ProfilePage() {
     setSuccess("")
 
     try {
+      // Validate required fields
       if (!formData.name.trim()) {
         setError("Tên không được để trống")
+        setIsLoading(false)
         return
       }
       if (!formData.email.trim()) {
         setError("Email không được để trống")
+        setIsLoading(false)
         return
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.email)) {
+        setError("Email không đúng định dạng")
+        setIsLoading(false)
+        return
+      }
+
+      // Validate phone format (if provided)
+      if (formData.phone && formData.phone.trim()) {
+        const phoneRegex = /^[0-9+\-\s()]+$/
+        if (!phoneRegex.test(formData.phone)) {
+          setError("Số điện thoại không đúng định dạng")
+          setIsLoading(false)
+          return
+        }
       }
 
       // Gọi API cập nhật thông tin
       await updateUserInfoApi(user!.id, {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone?.trim() || "",
+        address: formData.address?.trim() || "",
         imageUrl: user?.imageUrl, // giữ nguyên imageUrl hiện tại
       })
 
@@ -88,34 +106,58 @@ export default function ProfilePage() {
         await updateUserImageApi(user!.id, formData.image)
       }
 
-      // Lấy lại user sau cập nhật
-      // const { data: updatedUser } = await getUserById(user!.id)
-      // updateUser(updatedUser)
       // Lấy lại thông tin mới từ server
-      const { data: updatedUser } = await getUserById(user!.id)
+      const { data: updatedUser } = await getUserProfile()
       updateUser(updatedUser)
 
       setSuccess("Cập nhật thông tin thành công!")
       setIsEditing(false)
-    } catch (err) {
-      setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+    } catch (err: any) {
+      console.error("Error updating profile:", err)
+      
+      // Xử lý lỗi 401 - token hết hạn
+      if (err.response?.status === 401) {
+        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
+        // Không tự động redirect, để user tự quyết định
+        setTimeout(() => {
+          window.location.href = "/auth"
+        }, 2000)
+        return
+      }
+      
+      // Xử lý lỗi 403 - không có quyền
+      if (err.response?.status === 403) {
+        setError("Bạn không có quyền thực hiện thao tác này.")
+        return
+      }
+      
+      // Xử lý các lỗi khác
+      if (err.response?.data?.message) {
+        setError(err.response.data.message)
+      } else if (err.response?.data) {
+        setError(err.response.data)
+      } else {
+        setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleCancel = () => {
-    setFormData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      image: null as File | null,
-      address: user?.address || "",
-      createdAt: user?.createdAt || "",
-      bio: "",
-      website: "",
-      emergencyContact: "",
-    })
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        image: null as File | null,
+        address: user.address || "",
+        createdAt: user.createdAt || "",
+        bio: "",
+        website: "",
+        emergencyContact: "",
+      })
+    }
     setIsEditing(false)
     setError("")
     setSuccess("")
@@ -157,8 +199,17 @@ export default function ProfilePage() {
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
-            <p className="text-red-600">Không thể tải thông tin người dùng</p>
-            <Button onClick={() => window.location.reload()}>Thử lại</Button>
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+              <User className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900">Chưa đăng nhập</h3>
+            <p className="text-slate-600">Vui lòng đăng nhập để xem thông tin cá nhân</p>
+            <Button 
+              onClick={() => window.location.href = "/auth"}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600"
+            >
+              Đăng nhập
+            </Button>
           </div>
         </div>
       </DashboardLayout>
@@ -242,7 +293,7 @@ export default function ProfilePage() {
                 ) : (
                   <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
                     <span className="text-white text-2xl font-bold">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
@@ -251,8 +302,8 @@ export default function ProfilePage() {
 
               {/* Basic Info */}
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-slate-900">{user?.name}</h3>
-                <p className="text-slate-600">{user?.email}</p>
+                <h3 className="text-xl font-semibold text-slate-900">{user?.name || 'Người dùng'}</h3>
+                <p className="text-slate-600">{user?.email || 'Chưa có email'}</p>
                 {getRoleBadge(user?.role || "")}
               </div>
 

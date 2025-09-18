@@ -56,25 +56,25 @@ function DashboardHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center space-x-2 text-blue-600 hover:text-blue-700">
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">{user.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-white text-sm font-medium">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
                   </div>
-                  <span className="hidden sm:block">{user.name}</span>
+                  <span className="hidden sm:block">{user?.name || 'Người dùng'}</span>
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{user.name}</p>
-                    <p className="text-xs text-slate-500">{user.email}</p>
+                    <p className="text-sm font-medium">{user?.name || 'Người dùng'}</p>
+                    <p className="text-xs text-slate-500">{user?.email || 'Chưa có email'}</p>
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          user.role === "ADMIN" ? "bg-red-500" : user.role === "GARAGE" ? "bg-green-500" : "bg-blue-500"
+                          user?.role === "ADMIN" ? "bg-red-500" : user?.role === "GARAGE" ? "bg-green-500" : "bg-blue-500"
                         }`}
                       />
                       <span className="text-xs text-slate-500 capitalize">
-                        {user.role === "ADMIN" ? "Quản trị viên" : user.role === "GARAGE" ? "Chủ garage" : "Người dùng"}
+                        {user?.role === "ADMIN" ? "Quản trị viên" : user?.role === "GARAGE" ? "Chủ garage" : "Người dùng"}
                       </span>
                     </div>
                   </div>
@@ -83,7 +83,7 @@ function DashboardHeader() {
                 <DropdownMenuItem asChild>
                   <Link
                     href={
-                      user.role === "ADMIN"
+                      user?.role === "ADMIN"
                         ? "/admin/dashboard"
                         : "/dashboard"
                     }
@@ -95,7 +95,7 @@ function DashboardHeader() {
                 </DropdownMenuItem>
                 
                 {/* User Features - Show for USER and GARAGE */}
-                {(user.role === "USER" || user.role === "GARAGE") && (
+                {(user?.role === "USER" || user?.role === "GARAGE") && (
                   <>
                     <DropdownMenuItem asChild>
                       <Link href="/user/appointments" className="flex items-center space-x-2">
@@ -113,7 +113,7 @@ function DashboardHeader() {
                 )}
 
                 {/* Garage Features - Show for GARAGE */}
-                {user.role === "GARAGE" && (
+                {user?.role === "GARAGE" && (
                   <>
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard?tab=garage" className="flex items-center space-x-2">

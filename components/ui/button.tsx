@@ -47,8 +47,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
-        // {...props}
-        // disabled={!!props.disabled} // đảm bảo luôn boolean
+        disabled={!!props.disabled} // Ensure disabled is always boolean
       />
     )
   }

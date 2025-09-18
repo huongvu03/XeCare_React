@@ -365,13 +365,13 @@ export default function RewardPointsPage() {
                           <img src={entry.user.imageUrl} alt={entry.user.name} className="w-10 h-10 rounded-full" />
                         ) : (
                           <span className="text-gray-600 font-semibold">
-                            {entry.user.name.charAt(0).toUpperCase()}
+                            {entry.user?.name?.charAt(0)?.toUpperCase() || 'U'}
                           </span>
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{entry.user.name}</p>
-                        <p className="text-sm text-gray-500">{entry.user.email}</p>
+                        <p className="font-medium text-gray-900">{entry.user?.name || 'Người dùng'}</p>
+                        <p className="text-sm text-gray-500">{entry.user?.email || 'Chưa có email'}</p>
                       </div>
                     </div>
                   </div>
