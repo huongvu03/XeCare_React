@@ -13,26 +13,12 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, Clock, Phone, Car, Upload, Building2, CheckCircle, Search, AlertCircle } from "lucide-react"
 import { registerGarage } from "@/lib/api/UserApi"
 import { uploadTempGarageImage, OperatingHours, checkAddressAvailability } from "@/lib/api/GarageApi"
+import { getAllSystemServices, type Service } from "@/lib/api/ServiceApi"
+import { getAllVehicleTypes, type VehicleType } from "@/lib/api/VehicleTypeApi"
 import { useAuth } from "@/hooks/use-auth"
 import { useGeocoding } from "@/hooks/use-geocoding"
 import { OperatingHoursForm } from "@/components/operating-hours-form"
 import { createDefaultOperatingHours } from "@/lib/utils/operatingHours"
-
-// Mock data for services and vehicle types (sẽ được lấy từ API)
-const availableServices = [
-  { id: 1, name: "Thay nhớt", description: "Thay nhớt động cơ" },
-  { id: 2, name: "Sửa phanh", description: "Sửa chữa hệ thống phanh" },
-  { id: 3, name: "Bảo dưỡng", description: "Bảo dưỡng định kỳ" },
-  { id: 4, name: "Sửa động cơ", description: "Sửa chữa động cơ" },
-  { id: 5, name: "Thay lốp", description: "Thay lốp xe" },
-  { id: 6, name: "Rửa xe", description: "Rửa xe" },
-]
-
-const availableVehicleTypes = [
-  { id: 1, name: "Xe máy", description: "Xe máy các loại" },
-  { id: 2, name: "Ô tô", description: "Ô tô các loại" },
-  { id: 3, name: "Xe tải", description: "Xe tải các loại" },
-]
 
 export default function GarageRegistrationPage() {
   const router = useRouter()
@@ -61,6 +47,12 @@ export default function GarageRegistrationPage() {
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
   const [operatingHours, setOperatingHours] = useState<OperatingHours>(createDefaultOperatingHours())
+  
+  // API data states
+  const [availableServices, setAvailableServices] = useState<Service[]>([])
+  const [availableVehicleTypes, setAvailableVehicleTypes] = useState<VehicleType[]>([])
+  const [servicesLoading, setServicesLoading] = useState(true)
+  const [vehicleTypesLoading, setVehicleTypesLoading] = useState(true)
   
   // Address validation state
   const [addressValidation, setAddressValidation] = useState<{
@@ -134,6 +126,29 @@ export default function GarageRegistrationPage() {
       setLongitude(geocodingResult.lon)
     }
   }, [geocodingResult])
+
+  // Load services and vehicle types from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load services
+        const servicesResponse = await getAllSystemServices()
+        setAvailableServices(servicesResponse.data)
+        setServicesLoading(false)
+        
+        // Load vehicle types
+        const vehicleTypesResponse = await getAllVehicleTypes()
+        setAvailableVehicleTypes(vehicleTypesResponse.data)
+        setVehicleTypesLoading(false)
+      } catch (error) {
+        console.error('Error loading data:', error)
+        setServicesLoading(false)
+        setVehicleTypesLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
 
   // Handle service selection
   const handleServiceToggle = (serviceId: number) => {
@@ -500,43 +515,65 @@ export default function GarageRegistrationPage() {
               {/* Vehicle Types */}
               <div className="space-y-2">
                 <Label>Loại xe phục vụ *</Label>
-                <div className="grid md:grid-cols-3 gap-3">
-                  {availableVehicleTypes.map(vehicleType => (
-                    <div
-                      key={vehicleType.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedVehicleTypes.includes(vehicleType.id)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                      onClick={() => handleVehicleTypeToggle(vehicleType.id)}
-                    >
-                      <div className="font-medium">{vehicleType.name}</div>
-                      <div className="text-sm text-slate-600">{vehicleType.description}</div>
+                {vehicleTypesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      <p className="text-sm text-slate-600">Đang tải loại xe...</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {availableVehicleTypes.map(vehicleType => (
+                        <div
+                          key={vehicleType.id}
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                            selectedVehicleTypes.includes(vehicleType.id)
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-slate-200 hover:border-slate-300"
+                          }`}
+                          onClick={() => handleVehicleTypeToggle(vehicleType.id)}
+                        >
+                          <div className="font-medium">{vehicleType.name}</div>
+                          <div className="text-sm text-slate-600">{vehicleType.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Services */}
               <div className="space-y-2">
                 <Label>Dịch vụ cung cấp *</Label>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {availableServices.map(service => (
-                    <div
-                      key={service.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedServices.includes(service.id)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                      onClick={() => handleServiceToggle(service.id)}
-                    >
-                      <div className="font-medium">{service.name}</div>
-                      <div className="text-sm text-slate-600">{service.description}</div>
+                {servicesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      <p className="text-sm text-slate-600">Đang tải dịch vụ...</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto border border-slate-200 rounded-lg p-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {availableServices.map(service => (
+                        <div
+                          key={service.id}
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                            selectedServices.includes(service.id)
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-slate-200 hover:border-slate-300"
+                          }`}
+                          onClick={() => handleServiceToggle(service.id)}
+                        >
+                          <div className="font-medium">{service.name}</div>
+                          <div className="text-sm text-slate-600">{service.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Image Upload */}

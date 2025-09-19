@@ -13,26 +13,12 @@ import { Badge } from "@/components/ui/badge"
 import { MapPin, Clock, Phone, Car, Upload, Building2, CheckCircle, Search, AlertCircle, ArrowLeft, Save, Loader2, XCircle } from "lucide-react"
 import { getMyGarageById, updateGarage } from "@/lib/api/UserApi"
 import { uploadTempGarageImage, OperatingHours } from "@/lib/api/GarageApi"
+import { getAllSystemServices, type Service } from "@/lib/api/ServiceApi"
+import { getAllVehicleTypes, type VehicleType } from "@/lib/api/VehicleTypeApi"
 import { useAuth } from "@/hooks/use-auth"
 import { useGeocoding } from "@/hooks/use-geocoding"
 import { OperatingHoursForm } from "@/components/operating-hours-form"
 import { createDefaultOperatingHours } from "@/lib/utils/operatingHours"
-
-// Mock data for services and vehicle types (giống hệt form đăng ký)
-const availableServices = [
-  { id: 1, name: "Thay nhớt", description: "Thay nhớt động cơ" },
-  { id: 2, name: "Sửa phanh", description: "Sửa chữa hệ thống phanh" },
-  { id: 3, name: "Bảo dưỡng", description: "Bảo dưỡng định kỳ" },
-  { id: 4, name: "Sửa động cơ", description: "Sửa chữa động cơ" },
-  { id: 5, name: "Thay lốp", description: "Thay lốp xe" },
-  { id: 6, name: "Rửa xe", description: "Rửa xe" },
-]
-
-const availableVehicleTypes = [
-  { id: 1, name: "Xe máy", description: "Xe máy các loại" },
-  { id: 2, name: "Ô tô", description: "Ô tô các loại" },
-  { id: 3, name: "Xe tải", description: "Xe tải các loại" },
-]
 
 export default function EditGaragePage() {
   const router = useRouter()
@@ -63,6 +49,12 @@ export default function EditGaragePage() {
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
   const [operatingHours, setOperatingHours] = useState<OperatingHours>(createDefaultOperatingHours())
+  
+  // API data states
+  const [availableServices, setAvailableServices] = useState<Service[]>([])
+  const [availableVehicleTypes, setAvailableVehicleTypes] = useState<VehicleType[]>([])
+  const [servicesLoading, setServicesLoading] = useState(true)
+  const [vehicleTypesLoading, setVehicleTypesLoading] = useState(true)
 
   // Get current location (giống hệt form đăng ký)
   const getCurrentLocation = () => {
@@ -193,6 +185,29 @@ export default function EditGaragePage() {
       loadGarage()
     }
   }, [garageId])
+
+  // Load services and vehicle types from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load services
+        const servicesResponse = await getAllSystemServices()
+        setAvailableServices(servicesResponse.data)
+        setServicesLoading(false)
+        
+        // Load vehicle types
+        const vehicleTypesResponse = await getAllVehicleTypes()
+        setAvailableVehicleTypes(vehicleTypesResponse.data)
+        setVehicleTypesLoading(false)
+      } catch (error) {
+        console.error('Error loading data:', error)
+        setServicesLoading(false)
+        setVehicleTypesLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
 
   // Handle form submission (giống hệt form đăng ký)
   const handleSubmit = async (e: React.FormEvent) => {
@@ -548,25 +563,38 @@ export default function EditGaragePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                {availableVehicleTypes.map((vehicleType) => (
-                  <div key={vehicleType.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50">
-                    <input
-                      type="checkbox"
-                      id={`vehicle-${vehicleType.id}`}
-                      checked={selectedVehicleTypes.includes(vehicleType.id)}
-                      onChange={() => handleVehicleTypeToggle(vehicleType.id)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor={`vehicle-${vehicleType.id}`} className="flex-1 cursor-pointer">
-                      <div className="font-medium">{vehicleType.name}</div>
-                      <div className="text-sm text-gray-500">{vehicleType.description}</div>
-                    </label>
+              {vehicleTypesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-sm text-slate-600">Đang tải loại xe...</p>
                   </div>
-                ))}
-              </div>
-              {selectedVehicleTypes.length === 0 && (
-                <p className="text-sm text-red-600 mt-2">Vui lòng chọn ít nhất một loại xe</p>
+                </div>
+              ) : (
+                <>
+                  <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {availableVehicleTypes.map((vehicleType) => (
+                        <div key={vehicleType.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50">
+                          <input
+                            type="checkbox"
+                            id={`vehicle-${vehicleType.id}`}
+                            checked={selectedVehicleTypes.includes(vehicleType.id)}
+                            onChange={() => handleVehicleTypeToggle(vehicleType.id)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <label htmlFor={`vehicle-${vehicleType.id}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium">{vehicleType.name}</div>
+                            <div className="text-sm text-gray-500">{vehicleType.description}</div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {selectedVehicleTypes.length === 0 && (
+                    <p className="text-sm text-red-600 mt-2">Vui lòng chọn ít nhất một loại xe</p>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
@@ -580,25 +608,38 @@ export default function EditGaragePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                {availableServices.map((service) => (
-                  <div key={service.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50">
-                    <input
-                      type="checkbox"
-                      id={`service-${service.id}`}
-                      checked={selectedServices.includes(service.id)}
-                      onChange={() => handleServiceToggle(service.id)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor={`service-${service.id}`} className="flex-1 cursor-pointer">
-                      <div className="font-medium">{service.name}</div>
-                      <div className="text-sm text-gray-500">{service.description}</div>
-                    </label>
+              {servicesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-sm text-slate-600">Đang tải dịch vụ...</p>
                   </div>
-                ))}
-              </div>
-              {selectedServices.length === 0 && (
-                <p className="text-sm text-red-600 mt-2">Vui lòng chọn ít nhất một dịch vụ</p>
+                </div>
+              ) : (
+                <>
+                  <div className="max-h-64 overflow-y-auto border border-slate-200 rounded-lg p-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {availableServices.map((service) => (
+                        <div key={service.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50">
+                          <input
+                            type="checkbox"
+                            id={`service-${service.id}`}
+                            checked={selectedServices.includes(service.id)}
+                            onChange={() => handleServiceToggle(service.id)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <label htmlFor={`service-${service.id}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium">{service.name}</div>
+                            <div className="text-sm text-gray-500">{service.description}</div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {selectedServices.length === 0 && (
+                    <p className="text-sm text-red-600 mt-2">Vui lòng chọn ít nhất một dịch vụ</p>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
