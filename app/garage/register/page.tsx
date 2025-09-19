@@ -133,15 +133,34 @@ export default function GarageRegistrationPage() {
       try {
         // Load services
         const servicesResponse = await getAllSystemServices()
-        setAvailableServices(servicesResponse.data)
+        console.log('Services response:', servicesResponse)
+        
+        // Ensure we have an array of services
+        if (servicesResponse && servicesResponse.data && Array.isArray(servicesResponse.data)) {
+          setAvailableServices(servicesResponse.data)
+        } else {
+          console.error('Services response is not an array:', servicesResponse)
+          setAvailableServices([])
+        }
         setServicesLoading(false)
         
         // Load vehicle types
         const vehicleTypesResponse = await getAllVehicleTypes()
-        setAvailableVehicleTypes(vehicleTypesResponse.data)
+        console.log('Vehicle types response:', vehicleTypesResponse)
+        
+        // Ensure we have an array of vehicle types
+        if (vehicleTypesResponse && vehicleTypesResponse.data && Array.isArray(vehicleTypesResponse.data)) {
+          setAvailableVehicleTypes(vehicleTypesResponse.data)
+        } else {
+          console.error('Vehicle types response is not an array:', vehicleTypesResponse)
+          setAvailableVehicleTypes([])
+        }
         setVehicleTypesLoading(false)
       } catch (error) {
         console.error('Error loading data:', error)
+        // Set empty arrays as fallback
+        setAvailableServices([])
+        setAvailableVehicleTypes([])
         setServicesLoading(false)
         setVehicleTypesLoading(false)
       }
@@ -525,7 +544,7 @@ export default function GarageRegistrationPage() {
                 ) : (
                   <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3">
                     <div className="grid md:grid-cols-2 gap-3">
-                      {availableVehicleTypes.map(vehicleType => (
+                      {Array.isArray(availableVehicleTypes) && availableVehicleTypes.map(vehicleType => (
                         <div
                           key={vehicleType.id}
                           className={`p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -557,7 +576,7 @@ export default function GarageRegistrationPage() {
                 ) : (
                   <div className="max-h-64 overflow-y-auto border border-slate-200 rounded-lg p-3">
                     <div className="grid md:grid-cols-2 gap-3">
-                      {availableServices.map(service => (
+                      {Array.isArray(availableServices) && availableServices.map(service => (
                         <div
                           key={service.id}
                           className={`p-3 border rounded-lg cursor-pointer transition-colors ${

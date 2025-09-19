@@ -6,7 +6,7 @@ export interface Service {
   description?: string
   category?: string
   isActive: boolean
-  createdAt: string
+  createdAt?: string
   garageId?: number
 }
 
