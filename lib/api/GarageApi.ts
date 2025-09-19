@@ -112,11 +112,12 @@ export const registerGarage = (data: {
   closeTime: string
   latitude?: number
   longitude?: number
+  imageUrl?: string
   services: number[]
   vehicleTypes: number[]
   operatingHours?: OperatingHours
 }) =>
-  axiosClient.post<Garage>("/apis/garage/register", data)
+  axiosClient.post<Garage>("/apis/user/register-garage", data)
 
 // Cập nhật garage
 export const updateGarage = (id: number, data: {
