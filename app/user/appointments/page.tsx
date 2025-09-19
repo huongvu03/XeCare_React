@@ -86,19 +86,22 @@ export default function AppointmentsPage() {
         size: 10,
         status: filterStatus || undefined
       })
-      let filteredAppointments = response.data.content
+      
+      // Ensure response.data.content is an array
+      const appointmentsData = response.data?.content || []
+      let filteredAppointments = appointmentsData
       
       // Client-side filtering if backend doesn't handle it properly
-      if (filterStatus) {
-        filteredAppointments = response.data.content.filter(apt => apt.status === filterStatus)
+      if (filterStatus && appointmentsData.length > 0) {
+        filteredAppointments = appointmentsData.filter(apt => apt.status === filterStatus)
         console.log("🔍 Client-side filtering applied:", filterStatus)
-        console.log("🔍 Before filter:", response.data.content.length, "After filter:", filteredAppointments.length)
+        console.log("🔍 Before filter:", appointmentsData.length, "After filter:", filteredAppointments.length)
       }
       
       setAppointments(filteredAppointments)
-      setTotalPages(response.data.totalPages)
-      console.log("Appointments loaded successfully:", filteredAppointments.length)
-      console.log("🔍 Final appointments statuses:", filteredAppointments.map(apt => apt.status))
+      setTotalPages(response.data?.totalPages || 0)
+      console.log("Appointments loaded successfully:", filteredAppointments?.length || 0)
+      console.log("🔍 Final appointments statuses:", filteredAppointments?.map(apt => apt.status) || [])
 
       // Load garage details for each appointment
       await loadGarageDetails(filteredAppointments)
@@ -346,7 +349,7 @@ export default function AppointmentsPage() {
               <p className="text-slate-600">Đang tải lịch hẹn...</p>
             </div>
           </div>
-        ) : appointments.length === 0 ? (
+        ) : (appointments?.length || 0) === 0 ? (
           <Card className="border-blue-100">
             <CardContent className="p-8 text-center">
               <Calendar className="h-12 w-12 text-slate-400 mx-auto mb-4" />
