@@ -93,15 +93,24 @@ export default function PublicGarageDetailPage() {
       // Load reviews
       const reviewsResponse = await fetch(`http://localhost:8080/apis/reviews/garage/${garageId}?page=0&size=10`)
       if (reviewsResponse.ok) {
-        const reviewsData = await reviewsResponse.json()
-        setReviews(reviewsData.content || [])
+        try {
+          const reviewsData = await reviewsResponse.json()
+          setReviews(reviewsData.content || [])
+        } catch (parseError) {
+          console.error('Error parsing reviews response:', parseError)
+          setReviews([])
+        }
       }
       
       // Load review stats
       const statsResponse = await fetch(`http://localhost:8080/apis/reviews/garage/${garageId}/stats`)
       if (statsResponse.ok) {
-        const statsData = await statsResponse.json()
-        setReviewStats(statsData)
+        try {
+          const statsData = await statsResponse.json()
+          setReviewStats(statsData)
+        } catch (parseError) {
+          console.error('Error parsing stats response:', parseError)
+        }
       }
     } catch (err) {
       console.error("Error loading reviews:", err)
@@ -118,9 +127,14 @@ export default function PublicGarageDetailPage() {
     try {
       const response = await fetch(`http://localhost:8080/apis/reviews/garage/${garageId}/rating/${rating}`)
       if (response.ok) {
-        const data = await response.json()
-        setReviews(data || [])
-        setSelectedRating(rating)
+        try {
+          const data = await response.json()
+          setReviews(data || [])
+          setSelectedRating(rating)
+        } catch (parseError) {
+          console.error('Error parsing reviews by rating response:', parseError)
+          setReviews([])
+        }
       }
     } catch (err) {
       console.error("Error loading reviews by rating:", err)
@@ -157,7 +171,9 @@ export default function PublicGarageDetailPage() {
       })
 
       if (response.ok) {
-        alert("Đánh giá của bạn đã được gửi thành công!")
+        // Success response - backend returns plain text
+        const successMessage = await response.text()
+        alert(successMessage || "Đánh giá của bạn đã được gửi thành công!")
         setShowReviewForm(false)
         setReviewFormData({ rating: 0, comment: '' })
         
@@ -167,8 +183,23 @@ export default function PublicGarageDetailPage() {
         await loadReviews()
         setSelectedRating(0)
       } else {
-        const errorData = await response.json()
-        alert(`Lỗi: ${errorData.message || 'Không thể gửi đánh giá'}`)
+        // Handle error response safely
+        let errorMessage = 'Không thể gửi đánh giá'
+        try {
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json()
+            errorMessage = errorData.message || errorMessage
+          } else {
+            // If response is not JSON, try to get text
+            const errorText = await response.text()
+            errorMessage = errorText || errorMessage
+          }
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError)
+          // Use default error message if parsing fails
+        }
+        alert(`Lỗi: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Error submitting review:', error)
