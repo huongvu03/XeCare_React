@@ -52,6 +52,12 @@ export default function PublicGarageDetailPage() {
   const [selectedRating, setSelectedRating] = useState<number>(0)
   const [showAllReviews, setShowAllReviews] = useState(false)
   
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  
   // Review form states
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [reviewFormData, setReviewFormData] = useState({
@@ -84,32 +90,69 @@ export default function PublicGarageDetailPage() {
     loadInitialData()
   }, [garageId])
 
-  // Load garage reviews
-  const loadReviews = async () => {
+  // Load garage reviews with pagination
+  const loadReviews = async (page: number = 0, append: boolean = false) => {
     if (!garageId) return
     
     setReviewsLoading(true)
     try {
-      // Load reviews
-      const reviewsResponse = await fetch(`http://localhost:8080/apis/reviews/garage/${garageId}?page=0&size=10`)
+      // Check if user is authenticated for reviews API
+      const token = localStorage.getItem('token')
+      console.log('🔍 [loadReviews] Token exists:', !!token)
+      
+      // Load reviews with pagination
+      const reviewsUrl = `http://localhost:8080/apis/reviews/garage/${garageId}?page=${page}&size=10`
+      console.log('🔍 [loadReviews] Fetching URL:', reviewsUrl)
+      
+      const reviewsResponse = await fetch(reviewsUrl, {
+        headers: token ? {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        } : {}
+      })
+      console.log('🔍 [loadReviews] Response status:', reviewsResponse.status)
+      console.log('🔍 [loadReviews] Response ok:', reviewsResponse.ok)
       if (reviewsResponse.ok) {
         try {
-          const reviewsData = await reviewsResponse.json()
-          setReviews(reviewsData.content || [])
+        const reviewsData = await reviewsResponse.json()
+          console.log('🔍 [loadReviews] API Response:', reviewsData)
+          
+          const newReviews = reviewsData.content || []
+          console.log('🔍 [loadReviews] New reviews:', newReviews)
+          console.log('🔍 [loadReviews] Reviews count:', newReviews.length)
+          
+          if (append) {
+            setReviews(prev => [...prev, ...newReviews])
+          } else {
+            setReviews(newReviews)
+          }
+          
+          // Update pagination info
+          setCurrentPage(page)
+          setTotalPages(reviewsData.totalPages || 0)
+          setTotalElements(reviewsData.totalElements || 0)
+          setHasMore(page < (reviewsData.totalPages - 1))
         } catch (parseError) {
           console.error('Error parsing reviews response:', parseError)
-          setReviews([])
+          if (!append) setReviews([])
         }
+      } else {
+        console.error('🔍 [loadReviews] Response not OK:', reviewsResponse.status, reviewsResponse.statusText)
+        const errorText = await reviewsResponse.text()
+        console.error('🔍 [loadReviews] Error response:', errorText)
+        if (!append) setReviews([])
       }
       
-      // Load review stats
+      // Load review stats (only on first load)
+      if (page === 0) {
       const statsResponse = await fetch(`http://localhost:8080/apis/reviews/garage/${garageId}/stats`)
       if (statsResponse.ok) {
-        try {
-          const statsData = await statsResponse.json()
-          setReviewStats(statsData)
-        } catch (parseError) {
-          console.error('Error parsing stats response:', parseError)
+          try {
+        const statsData = await statsResponse.json()
+        setReviewStats(statsData)
+          } catch (parseError) {
+            console.error('Error parsing stats response:', parseError)
+          }
         }
       }
     } catch (err) {
@@ -124,22 +167,53 @@ export default function PublicGarageDetailPage() {
     if (!garageId) return
     
     setReviewsLoading(true)
+    setCurrentPage(0) // Reset pagination when filtering
     try {
-      const response = await fetch(`http://localhost:8080/apis/reviews/garage/${garageId}/rating/${rating}`)
+      const token = localStorage.getItem('token')
+      console.log('🔍 [loadReviewsByRating] Token exists:', !!token)
+      
+      const ratingUrl = `http://localhost:8080/apis/reviews/garage/${garageId}/rating/${rating}`
+      console.log('🔍 [loadReviewsByRating] Fetching URL:', ratingUrl)
+      
+      const response = await fetch(ratingUrl, {
+        headers: token ? {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        } : {}
+      })
+      console.log('🔍 [loadReviewsByRating] Response status:', response.status)
+      console.log('🔍 [loadReviewsByRating] Response ok:', response.ok)
+      
       if (response.ok) {
         try {
           const data = await response.json()
+          console.log('🔍 [loadReviewsByRating] API Response:', data)
+          console.log('🔍 [loadReviewsByRating] Reviews count:', data?.length || 0)
+          
           setReviews(data || [])
           setSelectedRating(rating)
+          setHasMore(false) // Rating filter doesn't support pagination
         } catch (parseError) {
           console.error('Error parsing reviews by rating response:', parseError)
           setReviews([])
         }
+      } else {
+        console.error('🔍 [loadReviewsByRating] Response not OK:', response.status, response.statusText)
+        const errorText = await response.text()
+        console.error('🔍 [loadReviewsByRating] Error response:', errorText)
+        setReviews([])
       }
     } catch (err) {
       console.error("Error loading reviews by rating:", err)
     } finally {
       setReviewsLoading(false)
+    }
+  }
+
+  // Load more reviews (for pagination)
+  const loadMoreReviews = async () => {
+    if (hasMore && !reviewsLoading) {
+      await loadReviews(currentPage + 1, true)
     }
   }
 
@@ -188,7 +262,7 @@ export default function PublicGarageDetailPage() {
         try {
           const contentType = response.headers.get('content-type')
           if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json()
+        const errorData = await response.json()
             errorMessage = errorData.message || errorMessage
           } else {
             // If response is not JSON, try to get text
@@ -558,7 +632,8 @@ export default function PublicGarageDetailPage() {
                         size="sm"
                         onClick={() => {
                           setSelectedRating(0)
-                          loadReviews()
+                          setCurrentPage(0)
+                          loadReviews(0, false)
                         }}
                         className={selectedRating === 0 ? "bg-blue-50 border-blue-300" : ""}
                       >
@@ -725,7 +800,7 @@ export default function PublicGarageDetailPage() {
                   )}
 
                   {/* Reviews Loading */}
-                  {reviewsLoading ? (
+                  {reviewsLoading && reviews.length === 0 ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-3" />
                       <span className="text-gray-600">Đang tải đánh giá...</span>
@@ -743,7 +818,13 @@ export default function PublicGarageDetailPage() {
                           </p>
                         </div>
                       ) : (
-                        (showAllReviews ? reviews : reviews.slice(0, 3)).map((review, index) => (
+                        <>
+                          {/* Scrollable Reviews Container */}
+                          <div 
+                            className="max-h-96 overflow-y-auto space-y-4 pr-2"
+                            style={{ scrollbarWidth: 'thin' }}
+                          >
+                            {reviews.map((review, index) => (
                           <Card key={index} className="border-gray-200">
                             <CardContent className="p-4">
                               <div className="flex items-start space-x-3">
@@ -782,7 +863,52 @@ export default function PublicGarageDetailPage() {
                               </div>
                             </CardContent>
                           </Card>
-                        ))
+                            ))}
+                          </div>
+
+                          {/* Pagination Controls */}
+                          {selectedRating === 0 && totalPages > 1 && (
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                              <div className="text-sm text-gray-600">
+                                Hiển thị {reviews.length} / {totalElements} đánh giá
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {/* Page Info */}
+                                <span className="text-sm text-gray-600">
+                                  Trang {currentPage + 1} / {totalPages}
+                                </span>
+                                
+                                {/* Load More Button */}
+                                {hasMore && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={loadMoreReviews}
+                                    disabled={reviewsLoading}
+                                    className="ml-4"
+                                  >
+                                    {reviewsLoading ? (
+                                      <>
+                                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2" />
+                                        Đang tải...
+                                      </>
+                                    ) : (
+                                      'Tải thêm'
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Loading indicator for load more */}
+                          {reviewsLoading && reviews.length > 0 && (
+                            <div className="flex items-center justify-center py-4">
+                              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2" />
+                              <span className="text-sm text-gray-600">Đang tải thêm...</span>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
