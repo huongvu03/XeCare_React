@@ -11,11 +11,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Calendar, Clock, MapPin, Phone, Car, Upload, ArrowLeft } from "lucide-react"
-import { getGarageById, type Garage, type GarageService } from "@/lib/api/GarageApi"
+import { getGarageById, type Garage, type GarageService, type GarageVehicleType } from "@/lib/api/GarageApi"
 import { createAppointment, type CreateAppointmentRequest } from "@/lib/api/AppointmentApi"
 import { useAuth } from "@/hooks/use-auth"
 import { getPublicGarageById, type PublicGarageInfo } from "@/lib/api/UserApi"
 import { formatOperatingHours } from "@/lib/utils/operatingHours"
+import { VehicleApi } from "@/lib/api/userVehicleApi"
+import type { Vehicle } from "@/types/users/userVehicle"
 
 export default function BookingPage() {
   const params = useParams()
@@ -25,6 +27,10 @@ export default function BookingPage() {
   const [garage, setGarage] = useState<Garage | null>(null)
   const [services, setServices] = useState<GarageService[]>([])
   const [vehicleTypes, setVehicleTypes] = useState<GarageVehicleType[]>([])
+  const [userVehicles, setUserVehicles] = useState<Vehicle[]>([])
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([])
+  const [availableVehicleTypes, setAvailableVehicleTypes] = useState<GarageVehicleType[]>([])
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -59,15 +65,40 @@ export default function BookingPage() {
   // Lấy danh sách vehicle types của garage
   const fetchGarageVehicleTypes = async (garageId: number) => {
     try {
+      console.log(`🚗 Fetching garage vehicle types for garage ${garageId}`)
       const response = await fetch(`http://localhost:8080/apis/garage/${garageId}/vehicle-types`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const vehicleTypesData = await response.json()
+      console.log("📋 Garage vehicle types received:", vehicleTypesData)
       setVehicleTypes(vehicleTypesData)
     } catch (err: any) {
       console.error("Error fetching garage vehicle types:", err)
       setError("Không thể tải danh sách loại xe. Vui lòng thử lại.")
+    }
+  }
+
+  // Lấy danh sách xe của user
+  const fetchUserVehicles = async () => {
+    try {
+      console.log("👤 Fetching user vehicles...")
+      const response = await VehicleApi.getAll()
+      console.log("📋 User vehicles API response:", response.data)
+      
+      if (response.data && response.data.content) {
+        console.log("📋 User vehicles (from content):", response.data.content)
+        setUserVehicles(response.data.content)
+      } else if (Array.isArray(response.data)) {
+        console.log("📋 User vehicles (direct array):", response.data)
+        setUserVehicles(response.data)
+      } else {
+        console.log("📋 No user vehicles found")
+        setUserVehicles([])
+      }
+    } catch (err: any) {
+      console.error("Error fetching user vehicles:", err)
+      // Don't show error for vehicles as it's optional
     }
   }
 
@@ -78,10 +109,11 @@ export default function BookingPage() {
         const response = await getGarageById(garageId)
         setGarage(response.data)
         
-        // Lấy danh sách services và vehicle types
+        // Lấy danh sách services, vehicle types và user vehicles
         await Promise.all([
           fetchGarageServices(garageId),
-          fetchGarageVehicleTypes(garageId)
+          fetchGarageVehicleTypes(garageId),
+          fetchUserVehicles()
         ])
       } catch (err: any) {
         setError("Không thể tải thông tin garage. Vui lòng thử lại.")
@@ -96,6 +128,36 @@ export default function BookingPage() {
     }
   }, [garageId])
 
+  // Lọc vehicle types dựa trên xe của user
+  useEffect(() => {
+    console.log("🔍 Debug Vehicle Type Filtering:")
+    console.log("  - vehicleTypes (garage):", vehicleTypes)
+    console.log("  - userVehicles:", userVehicles)
+    
+    if (vehicleTypes.length > 0 && userVehicles.length > 0) {
+      // Lấy danh sách vehicle type IDs mà user có xe
+      const userVehicleTypeIds = new Set(userVehicles.map(vehicle => vehicle.vehicleTypeId))
+      console.log("  - userVehicleTypeIds:", Array.from(userVehicleTypeIds))
+      
+      // Lọc vehicle types của garage chỉ giữ lại những loại mà user có xe
+      const filtered = vehicleTypes.filter(garageVehicleType => {
+        const hasMatch = userVehicleTypeIds.has(garageVehicleType.vehicleTypeId)
+        console.log(`  - Checking garage vehicle type ${garageVehicleType.vehicleTypeId} (${garageVehicleType.vehicleTypeName}): ${hasMatch}`)
+        return hasMatch
+      })
+      
+      console.log("  - filtered vehicle types:", filtered)
+      setAvailableVehicleTypes(filtered)
+    } else if (vehicleTypes.length > 0 && userVehicles.length === 0) {
+      console.log("  - User has no vehicles, setting empty array")
+      // Nếu user chưa có xe nào, không hiển thị loại xe nào
+      setAvailableVehicleTypes([])
+    } else {
+      console.log("  - No vehicle types or user vehicles available")
+      setAvailableVehicleTypes([])
+    }
+  }, [vehicleTypes, userVehicles])
+
 
   // Handle dropdown selections
   const handleServiceChange = (serviceId: string) => {
@@ -103,7 +165,29 @@ export default function BookingPage() {
   }
 
   const handleVehicleTypeChange = (vehicleTypeId: string) => {
-    setSelectedVehicleType(vehicleTypeId === "" ? null : Number(vehicleTypeId))
+    const newVehicleTypeId = vehicleTypeId === "" ? null : Number(vehicleTypeId)
+    setSelectedVehicleType(newVehicleTypeId)
+    setSelectedVehicle(null) // Reset selected vehicle when vehicle type changes
+    
+    // Filter user vehicles based on selected vehicle type
+    if (newVehicleTypeId) {
+      const filtered = userVehicles.filter(vehicle => 
+        vehicle.vehicleTypeId === newVehicleTypeId && !vehicle.locked
+      )
+      setFilteredVehicles(filtered)
+    } else {
+      setFilteredVehicles([])
+    }
+  }
+
+  const handleVehicleChange = (vehicleId: string) => {
+    const newVehicleId = vehicleId === "" ? null : Number(vehicleId)
+    if (newVehicleId && filteredVehicles.length > 0) {
+      const vehicle = filteredVehicles.find(v => v.id === newVehicleId)
+      setSelectedVehicle(vehicle || null)
+    } else {
+      setSelectedVehicle(null)
+    }
   }
 
   // Handle image upload
@@ -138,8 +222,19 @@ export default function BookingPage() {
       return
     }
 
-    if (!selectedVehicleType) {
+    if (availableVehicleTypes.length > 0 && !selectedVehicleType) {
       setError("Vui lòng chọn loại xe.")
+      return
+    }
+
+    if (availableVehicleTypes.length === 0) {
+      setError("Bạn không có xe nào phù hợp với garage này. Vui lòng thêm xe vào tài khoản hoặc chọn garage khác.")
+      return
+    }
+
+    // Check if user has vehicles of the selected type but hasn't selected a specific vehicle
+    if (filteredVehicles.length > 0 && !selectedVehicle) {
+      setError("Vui lòng chọn xe cụ thể để đặt lịch hẹn.")
       return
     }
 
@@ -155,7 +250,12 @@ export default function BookingPage() {
         description,
         contactPhone,
         contactEmail,
-        services: [selectedService]
+        services: [selectedService],
+        // Vehicle information
+        vehicleBrand: selectedVehicle?.brand || "",
+        vehicleModel: selectedVehicle?.model || "",
+        licensePlate: selectedVehicle?.licensePlate || "",
+        vehicleYear: selectedVehicle?.year || null
       }
 
       const response = await createAppointment(appointmentData)
@@ -348,34 +448,106 @@ export default function BookingPage() {
                 {/* Vehicle Types */}
                 <div className="space-y-2">
                   <Label htmlFor="vehicleType">Loại xe *</Label>
-                  <select
-                    id="vehicleType"
-                    value={selectedVehicleType || ""}
-                    onChange={(e) => handleVehicleTypeChange(e.target.value)}
-                    className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  >
-                    <option value="">-- Chọn loại xe --</option>
-                    {vehicleTypes.map(vehicleType => (
-                      <option key={vehicleType.id} value={vehicleType.vehicleTypeId}>
-                        {vehicleType.vehicleTypeName}
-                      </option>
-                    ))}
-                  </select>
-                  {selectedVehicleType && (
-                    <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      {(() => {
-                        const vehicleType = vehicleTypes.find(vt => vt.vehicleTypeId === selectedVehicleType)
-                        return vehicleType ? (
-                          <div>
-                            <div className="font-medium text-green-900">{vehicleType.vehicleTypeName}</div>
-                            <div className="text-sm text-green-700 mt-1">{vehicleType.vehicleTypeDescription}</div>
-                          </div>
-                        ) : null
-                      })()}
+                  {availableVehicleTypes.length > 0 ? (
+                    <>
+                      <select
+                        id="vehicleType"
+                        value={selectedVehicleType || ""}
+                        onChange={(e) => handleVehicleTypeChange(e.target.value)}
+                        className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        <option value="">-- Chọn loại xe --</option>
+                        {availableVehicleTypes.map(vehicleType => (
+                          <option key={vehicleType.id} value={vehicleType.vehicleTypeId}>
+                            {vehicleType.vehicleTypeName}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedVehicleType && (
+                        <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          {(() => {
+                            const vehicleType = availableVehicleTypes.find(vt => vt.vehicleTypeId === selectedVehicleType)
+                            return vehicleType ? (
+                              <div>
+                                <div className="font-medium text-green-900">{vehicleType.vehicleTypeName}</div>
+                                <div className="text-sm text-green-700 mt-1">{vehicleType.vehicleTypeDescription}</div>
+                              </div>
+                            ) : null
+                          })()}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="text-red-800">
+                        <strong>Không có loại xe phù hợp:</strong> Bạn không có xe nào thuộc các loại mà garage này phục vụ.
+                      </div>
+                      <div className="text-sm text-red-700 mt-1">
+                        Vui lòng thêm xe vào tài khoản hoặc chọn garage khác phù hợp với xe của bạn.
+                      </div>
                     </div>
                   )}
                 </div>
+
+                {/* User Vehicle Selection */}
+                {selectedVehicleType && filteredVehicles.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="vehicle">Chọn xe của bạn *</Label>
+                    <select
+                      id="vehicle"
+                      value={selectedVehicle?.id || ""}
+                      onChange={(e) => handleVehicleChange(e.target.value)}
+                      className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">-- Chọn xe của bạn --</option>
+                      {filteredVehicles.map(vehicle => (
+                        <option key={vehicle.id} value={vehicle.id}>
+                          {vehicle.vehicleName} - {vehicle.brand} {vehicle.model} ({vehicle.licensePlate})
+                        </option>
+                      ))}
+                    </select>
+                    {selectedVehicle && (
+                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div>
+                          <div className="font-medium text-blue-900">{selectedVehicle.vehicleName}</div>
+                          <div className="text-sm text-blue-700 mt-1">
+                            {selectedVehicle.brand} {selectedVehicle.model} • {selectedVehicle.year} • {selectedVehicle.licensePlate}
+                          </div>
+                          <div className="text-sm text-blue-600 mt-1">
+                            Màu: {selectedVehicle.color} • Loại: {selectedVehicle.vehicleTypeName}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Show message if no vehicles match the selected type */}
+                {selectedVehicleType && filteredVehicles.length === 0 && userVehicles.length > 0 && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="text-yellow-800">
+                      <strong>Không có xe nào phù hợp:</strong> Bạn không có xe nào thuộc loại "{availableVehicleTypes.find(vt => vt.vehicleTypeId === selectedVehicleType)?.vehicleTypeName}" 
+                      hoặc tất cả xe của bạn đang bị khóa.
+                    </div>
+                    <div className="text-sm text-yellow-700 mt-1">
+                      Bạn có thể tiếp tục đặt lịch mà không chọn xe cụ thể.
+                    </div>
+                  </div>
+                )}
+
+                {/* Show message if user has no vehicles */}
+                {selectedVehicleType && userVehicles.length === 0 && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="text-blue-800">
+                      <strong>Chưa có xe nào:</strong> Bạn chưa thêm xe nào vào tài khoản.
+                    </div>
+                    <div className="text-sm text-blue-700 mt-1">
+                      Bạn có thể tiếp tục đặt lịch mà không chọn xe cụ thể, hoặc thêm xe vào tài khoản trước.
+                    </div>
+                  </div>
+                )}
 
                 {/* Contact Information */}
                 <div className="grid md:grid-cols-2 gap-4">
@@ -468,7 +640,7 @@ export default function BookingPage() {
                 <div className="flex items-center space-x-4 pt-4">
                   <Button
                     type="submit"
-                    disabled={submitting || garage.status !== "ACTIVE"}
+                    disabled={submitting || garage.status !== "ACTIVE" || availableVehicleTypes.length === 0 || (filteredVehicles.length > 0 && !selectedVehicle)}
                     className="bg-gradient-to-r from-blue-600 to-cyan-600 flex-1"
                   >
                     {submitting ? (
@@ -498,6 +670,14 @@ export default function BookingPage() {
                   <Alert className="border-yellow-200 bg-yellow-50">
                     <AlertDescription className="text-yellow-700">
                       Garage hiện không hoạt động. Vui lòng chọn garage khác.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {availableVehicleTypes.length === 0 && garage.status === "ACTIVE" && (
+                  <Alert className="border-red-200 bg-red-50">
+                    <AlertDescription className="text-red-700">
+                      Bạn không có xe nào phù hợp với garage này. Vui lòng thêm xe vào tài khoản hoặc chọn garage khác.
                     </AlertDescription>
                   </Alert>
                 )}

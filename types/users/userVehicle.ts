@@ -11,6 +11,7 @@ export interface UserVehicleTypeResponseDto {
   year: number;
   categoryId: number;
   categoryName: string;
+  vehicleTypeId: number;
   vehicleTypeName: string;
   isLocked: boolean;
   lockReason: string | null;

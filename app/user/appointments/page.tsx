@@ -30,49 +30,23 @@ export default function AppointmentsPage() {
   const [cancelReason, setCancelReason] = useState("")
   const [isCancelling, setIsCancelling] = useState(false)
 
-  // Show loading while auth is being checked
-  if (authLoading) {
-    return (
-      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">Đang tải...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
-
-  // Show message if user not authenticated
-  if (!user) {
-    return (
-      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Cần đăng nhập</h3>
-            <p className="text-gray-500 mb-4">Vui lòng đăng nhập để xem lịch hẹn của bạn</p>
-            <Button onClick={() => window.location.href = '/auth'}>
-              Đăng nhập
-            </Button>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
-
   // Load appointments
   const loadAppointments = async () => {
+    console.log("🔍 loadAppointments called")
+    console.log("🔍 User object:", user)
+    console.log("🔍 User available:", !!user)
+    
     if (!user) {
-      console.log("User not available, skipping appointments load")
+      console.log("❌ User not available, skipping appointments load")
       setLoading(false)
       return
     }
 
     try {
       setLoading(true)
-      console.log("Loading appointments for user:", user.email)
+      console.log("✅ Loading appointments for user:", user.email)
+      console.log("🔍 User ID:", user.id)
+      console.log("🔍 User roles:", user.roles)
       const params = {
         page: currentPage,
         size: 10,
@@ -87,9 +61,18 @@ export default function AppointmentsPage() {
         status: filterStatus || undefined
       })
       
+      console.log("🔍 Full API response:", response)
+      console.log("🔍 Response status:", response.status)
+      console.log("🔍 Response headers:", response.headers)
+      console.log("🔍 Response data:", response.data)
+      console.log("🔍 Response data content:", response.data?.content)
+      
       // Ensure response.data.content is an array
       const appointmentsData = response.data?.content || []
       let filteredAppointments = appointmentsData
+      
+      console.log("🔍 Appointments data:", appointmentsData)
+      console.log("🔍 Appointments data length:", appointmentsData.length)
       
       // Client-side filtering if backend doesn't handle it properly
       if (filterStatus && appointmentsData.length > 0) {
@@ -106,8 +89,23 @@ export default function AppointmentsPage() {
       // Load garage details for each appointment
       await loadGarageDetails(filteredAppointments)
     } catch (err: any) {
-      setError("Không thể tải danh sách lịch hẹn. Vui lòng thử lại.")
-      console.error("Error loading appointments:", err)
+      console.error("❌ Error loading appointments:", err)
+      console.error("❌ Error response:", err.response)
+      console.error("❌ Error data:", err.response?.data)
+      console.error("❌ Error status:", err.response?.status)
+      console.error("❌ Error headers:", err.response?.headers)
+      console.error("❌ Error config:", err.config)
+      
+      // Specific error handling
+      if (err.response?.status === 401) {
+        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
+      } else if (err.response?.status === 403) {
+        setError("Bạn không có quyền truy cập. Vui lòng kiểm tra tài khoản.")
+      } else if (err.response?.status === 500) {
+        setError("Lỗi server. Vui lòng thử lại sau.")
+      } else {
+        setError("Không thể tải danh sách lịch hẹn. Vui lòng thử lại.")
+      }
     } finally {
       setLoading(false)
     }
@@ -142,8 +140,42 @@ export default function AppointmentsPage() {
   }
 
   useEffect(() => {
+    console.log("🔍 useEffect triggered")
+    console.log("🔍 Dependencies - currentPage:", currentPage, "filterStatus:", filterStatus, "user:", user)
     loadAppointments()
   }, [currentPage, filterStatus, user])
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Đang tải...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Show message if user not authenticated
+  if (!user) {
+    return (
+      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Cần đăng nhập</h3>
+            <p className="text-gray-500 mb-4">Vui lòng đăng nhập để xem lịch hẹn của bạn</p>
+            <Button onClick={() => window.location.href = '/auth'}>
+              Đăng nhập
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   // Handle open cancel modal
   const handleOpenCancelModal = (appointment: Appointment) => {
@@ -339,6 +371,68 @@ export default function AppointmentsPage() {
           <AlertDescription className="text-red-700">{error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Debug Info */}
+      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <h4 className="font-medium text-yellow-800 mb-2">🔍 Debug Info:</h4>
+        <div className="text-sm text-yellow-700 space-y-1">
+          <div>Loading: {loading ? 'true' : 'false'}</div>
+          <div>Appointments array: {appointments ? 'exists' : 'null/undefined'}</div>
+          <div>Appointments length: {appointments?.length || 0}</div>
+          <div>Total pages: {totalPages}</div>
+          <div>Current page: {currentPage}</div>
+          <div>Filter status: {filterStatus || 'none'}</div>
+          <div>Error: {error || 'none'}</div>
+          <div>User: {user ? `${user.email} (ID: ${user.id})` : 'Not logged in'}</div>
+        </div>
+        <div className="mt-3 flex space-x-2">
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => {
+              console.log("🔍 Manual API test triggered");
+              loadAppointments();
+            }}
+          >
+            🔄 Retry Load
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => {
+              console.log("🔍 User object:", user);
+              console.log("🔍 Auth loading:", authLoading);
+              console.log("🔍 Current state:", { appointments, loading, error, totalPages });
+            }}
+          >
+            📋 Log State
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => {
+              window.open('/booking/1', '_blank');
+            }}
+          >
+            ➕ Create Test Appointment
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => {
+              const token = localStorage.getItem('token');
+              const user = localStorage.getItem('user');
+              console.log("🔍 Auth Debug:");
+              console.log("  - Token exists:", !!token);
+              console.log("  - Token preview:", token ? token.substring(0, 50) + "..." : "No token");
+              console.log("  - User data:", user);
+              console.log("  - User parsed:", user ? JSON.parse(user) : "No user data");
+            }}
+          >
+            🔐 Check Auth
+          </Button>
+        </div>
+      </div>
 
       {/* Appointments List */}
       <div className="space-y-4">

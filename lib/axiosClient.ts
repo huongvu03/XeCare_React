@@ -16,7 +16,8 @@ axiosClient.interceptors.request.use(
       baseURL: config.baseURL,
       fullURL: (config.baseURL || "") + (config.url || ""),
       hasToken: !!token,
-      tokenPreview: token ? token.substring(0, 50) + "..." : "No token"
+      tokenPreview: token ? token.substring(0, 50) + "..." : "No token",
+      headers: config.headers
     });
     
     if (token) {

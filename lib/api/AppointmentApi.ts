@@ -56,6 +56,11 @@ export interface CreateAppointmentRequest {
   contactPhone: string
   contactEmail: string
   services: number[]
+  // Vehicle information
+  vehicleBrand?: string
+  vehicleModel?: string
+  licensePlate?: string
+  vehicleYear?: number | null
 }
 
 export interface AppointmentSearchResponse {
