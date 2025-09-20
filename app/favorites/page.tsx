@@ -160,7 +160,7 @@ export default function FavoritesPage() {
 
   const handleGarageClick = (garageId: number) => {
     console.log("🔍 [FavoritesPage] Navigating to garage:", garageId);
-    router.push(`/garage/${garageId}`);
+    router.push(`/garage-detail/${garageId}`);
   };
 
   // Show loading skeleton

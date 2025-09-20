@@ -1,5 +1,4 @@
 "use client"
-import UserRecentSection from "@/components/user/UserRecentSection"
 import { useState, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
@@ -35,6 +34,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { getUserProfile } from "@/lib/api/UserApi"
 import { getGaragesByOwner } from "@/lib/api/GarageApi"
 import { getUserAppointments, getPendingAppointmentsCount, type Appointment } from "@/lib/api/AppointmentApi"
+import { getMyFavorites, type FavoriteGarage } from "@/lib/api/FavoriteApi"
 import Link from "next/link"
 import type { User } from "@/lib/api/UserApi"
 import type { Garage } from "@/lib/api/GarageApi"
@@ -59,6 +59,10 @@ export default function UnifiedDashboard() {
   const [appointmentsLoading, setAppointmentsLoading] = useState(true)
   const [garagePendingCounts, setGaragePendingCounts] = useState<Record<number, number>>({})
   const [appointmentsRefreshKey, setAppointmentsRefreshKey] = useState(0)
+  
+  // Favorite Garages
+  const [favoriteGarages, setFavoriteGarages] = useState<FavoriteGarage[]>([])
+  const [favoritesLoading, setFavoritesLoading] = useState(true)
   
   // Dashboard Statistics
   const [todayAppointmentsCount, setTodayAppointmentsCount] = useState(0)
@@ -189,6 +193,32 @@ export default function UnifiedDashboard() {
 
     loadAppointments()
   }, [user, appointmentsRefreshKey]) // Run when user changes or refresh key changes
+
+  // Load favorite garages when user is available
+  useEffect(() => {
+    const loadFavoriteGarages = async () => {
+      if (!user) {
+        console.log("🔄 Dashboard: User not available, skipping favorites load")
+        return
+      }
+      
+      console.log("🔄 Dashboard: Loading favorite garages for user:", user.email)
+      
+      try {
+        setFavoritesLoading(true)
+        const favoritesResponse = await getMyFavorites()
+        console.log("✅ Dashboard: Favorite garages loaded:", favoritesResponse.data.length)
+        setFavoriteGarages(favoritesResponse.data)
+      } catch (favoriteErr) {
+        console.error("❌ Dashboard: Error loading favorite garages:", favoriteErr)
+        setFavoriteGarages([])
+      } finally {
+        setFavoritesLoading(false)
+      }
+    }
+
+    loadFavoriteGarages()
+  }, [user]) // Run when user changes
 
   // Load pending appointments count for each garage
   const loadGaragePendingCounts = async (garages: Garage[]) => {
@@ -485,8 +515,6 @@ export default function UnifiedDashboard() {
             </CardContent>
           </Card>
 
-          {/* Recent Activities */}
-          <UserRecentSection />
 
           <div className="grid lg:grid-cols-2 gap-6">
             <Card className="border-blue-100">
@@ -574,24 +602,56 @@ export default function UnifiedDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900">Garage Thành Công</p>
-                      <p className="text-sm text-slate-600">123 Lê Lợi, Q1, TP.HCM</p>
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-slate-600">4.8 (120 đánh giá)</span>
+                {favoritesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                  </div>
+                ) : favoriteGarages.length > 0 ? (
+                  <div className="space-y-3">
+                    {favoriteGarages.slice(0, 3).map((favorite) => (
+                      <div key={favorite.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-slate-900">{favorite.garageName}</p>
+                          <p className="text-sm text-slate-600">{favorite.garageAddress}</p>
+                          <p className="text-sm text-blue-600">
+                            {favorite.garagePhone}
+                          </p>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => router.push(`/garage/${favorite.garageId}`)}
+                        >
+                          Xem
+                        </Button>
                       </div>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      Xem
+                    ))}
+                    {favoriteGarages.length > 3 && (
+                      <div className="text-center pt-2">
+                        <Link href="/favorites">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                          >
+                            Xem tất cả ({favoriteGarages.length})
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Star className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                    <p className="text-slate-500 text-sm mb-2">Chưa có garage yêu thích nào</p>
+                    <Button 
+                      size="sm"
+                      onClick={() => router.push("/search")}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      Tìm garage yêu thích
                     </Button>
                   </div>
-                  <div className="text-center py-4">
-                    <p className="text-slate-500 text-sm">Chưa có garage yêu thích nào khác</p>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>
