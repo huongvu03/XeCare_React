@@ -620,7 +620,7 @@ export default function UnifiedDashboard() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => router.push(`/garage/${favorite.garageId}`)}
+                          onClick={() => router.push(`/garage-detail/${favorite.garageId}`)}
                         >
                           Xem
                         </Button>
