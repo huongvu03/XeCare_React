@@ -361,7 +361,7 @@ export default function BookingPage() {
                 <Badge className={garage.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}>
                   {garage.status === "ACTIVE" ? "Đang hoạt động" : "Không hoạt động"}
                 </Badge>
-                {garage.isVerified && (
+                {garage.verified && (
                   <Badge className="bg-blue-100 text-blue-700">Đã xác thực</Badge>
                 )}
               </div>

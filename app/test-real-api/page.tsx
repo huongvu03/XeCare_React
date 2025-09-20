@@ -196,7 +196,7 @@ export default function TestRealApiPage() {
                     <CardContent className="pt-4">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-semibold text-gray-900">{garage.name}</h3>
-                        {garage.isVerified && (
+                        {garage.verified && (
                           <CheckCircle className="w-4 h-4 text-green-500" />
                         )}
                       </div>

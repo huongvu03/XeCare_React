@@ -187,7 +187,7 @@ export function NearbyGarages({
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
                     <h4 className="font-semibold text-lg">{garage.name}</h4>
-                    {garage.isVerified && (
+                    {garage.verified && (
                       <Badge variant="default" className="bg-green-600 text-xs">
                         Đã xác thực
                       </Badge>

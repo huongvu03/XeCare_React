@@ -245,8 +245,8 @@ export default function GarageSearchPage() {
           />
         )}
 
-        {/* Load More Button - Only show in grid mode */}
-        {viewMode === 'grid' && hasMore && (
+        {/* Load More Button - Temporarily disabled due to pagination API issues */}
+        {false && viewMode === 'grid' && hasMore && (
           <div className="text-center pt-6">
             <Button
               onClick={loadMore}

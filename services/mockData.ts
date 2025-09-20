@@ -9,7 +9,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên sửa chữa, bảo dưỡng ô tô các loại. Đội ngũ kỹ thuật viên giàu kinh nghiệm, trang thiết bị hiện đại.",
     imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: true,
+    verified: true,
     averageRating: 4.5,
     totalReviews: 128,
     serviceNames: ["Sửa chữa động cơ", "Bảo dưỡng định kỳ", "Thay dầu nhớt", "Sửa điện"],
@@ -26,7 +26,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên bảo dưỡng, sửa chữa xe máy các hãng. Giá cả hợp lý, chất lượng đảm bảo.",
     imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: true,
+    verified: true,
     averageRating: 4.2,
     totalReviews: 95,
     serviceNames: ["Bảo dưỡng xe máy", "Sửa chữa điện", "Thay phụ tùng", "Rửa xe"],
@@ -43,7 +43,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên sửa chữa xe tải, xe khách. Có xưởng rộng rãi, thiết bị chuyên dụng.",
     imageUrl: "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: false,
+    verified: false,
     averageRating: 3.8,
     totalReviews: 67,
     serviceNames: ["Sửa chữa xe tải", "Bảo dưỡng động cơ", "Thay phụ tùng", "Kiểm tra an toàn"],
@@ -60,7 +60,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên sửa chữa, bảo dưỡng xe Mercedes. Đội ngũ kỹ thuật viên được đào tạo chuyên sâu.",
     imageUrl: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: true,
+    verified: true,
     averageRating: 4.7,
     totalReviews: 203,
     serviceNames: ["Bảo dưỡng Mercedes", "Sửa chữa điện tử", "Thay dầu nhớt", "Kiểm tra hệ thống"],
@@ -77,7 +77,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên sửa chữa, bảo dưỡng xe máy điện. Cập nhật công nghệ mới nhất.",
     imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: true,
+    verified: true,
     averageRating: 4.3,
     totalReviews: 156,
     serviceNames: ["Sửa chữa xe điện", "Thay pin", "Bảo dưỡng động cơ điện", "Sửa chữa điện tử"],
@@ -94,7 +94,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên sửa chữa xe Nhật: Toyota, Honda, Nissan, Mazda. Chất lượng Nhật Bản.",
     imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: true,
+    verified: true,
     averageRating: 4.6,
     totalReviews: 189,
     serviceNames: ["Sửa chữa xe Nhật", "Bảo dưỡng định kỳ", "Thay dầu nhớt", "Sửa điện"],
@@ -111,7 +111,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên sửa chữa xe tải, xe container. Có cần cẩu, thiết bị nâng hạ chuyên dụng.",
     imageUrl: "https://images.unsplash.com/photo-1549924231-f129b911e442?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: false,
+    verified: false,
     averageRating: 3.9,
     totalReviews: 78,
     serviceNames: ["Sửa chữa xe tải", "Sửa chữa container", "Thay phụ tùng", "Bảo dưỡng động cơ"],
@@ -128,7 +128,7 @@ export const mockGarages: PublicGarageResponseDto[] = [
     description: "Chuyên sửa chữa xe máy thể thao, xe phân khối lớn. Đội ngũ kỹ thuật viên trẻ, năng động.",
     imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
     status: "ACTIVE",
-    isVerified: true,
+    verified: true,
     averageRating: 4.4,
     totalReviews: 112,
     serviceNames: ["Sửa chữa xe thể thao", "Tuning xe", "Thay phụ tùng", "Bảo dưỡng động cơ"],
@@ -236,7 +236,7 @@ export const mockApiClient = {
     
     if (params.isVerified !== undefined) {
       filteredGarages = filteredGarages.filter(garage => 
-        garage.isVerified === params.isVerified
+        garage.verified === params.isVerified
       );
     }
     

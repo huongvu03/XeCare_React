@@ -63,25 +63,20 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
       const searchParams = { ...currentParams, ...params };
       setCurrentParams(searchParams);
 
-      if (usePagination) {
-        const response = await apiWrapper.searchGaragesWithPagination({
-          ...searchParams,
-          size: pageSize
-        });
-        setPaginatedData(response);
-        setGarages(response.content);
-      } else {
-        const response = await apiWrapper.searchGaragesAdvanced(searchParams);
-        setGarages(response);
-        setPaginatedData(undefined);
-      }
+      // Temporarily disable pagination due to backend 500 error
+      // Use basic search instead
+      console.log('useGarageSearch: Calling searchGaragesAdvanced with params:', searchParams);
+      const response = await apiWrapper.searchGaragesAdvanced(searchParams);
+      setGarages(response);
+      setPaginatedData(undefined);
+      console.log('useGarageSearch: Received', response.length, 'garages');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi tìm kiếm');
       console.error('Search error:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [currentParams, usePagination, pageSize]);
+  }, [currentParams]);
 
   const searchAdvanced = useCallback(async (params: GarageSearchParams) => {
     await search(params);
@@ -145,28 +140,10 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
 
   // Pagination functions
   const loadMore = useCallback(async () => {
-    if (!paginatedData || paginatedData.last || isLoading) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const nextPage = paginatedData.number + 1;
-      const response = await apiWrapper.searchGaragesWithPagination({
-        ...currentParams,
-        page: nextPage,
-        size: pageSize
-      });
-      
-      setPaginatedData(response);
-      setGarages(prev => [...prev, ...response.content]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi tải thêm dữ liệu');
-      console.error('Load more error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [paginatedData, currentParams, pageSize, isLoading]);
+    // Temporarily disable load more due to pagination API issues
+    console.log('Load more is temporarily disabled due to pagination API issues');
+    return;
+  }, []);
 
   const goToPage = useCallback(async (page: number) => {
     if (!usePagination) return;
@@ -204,26 +181,18 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
       setIsLoading(true);
       setError(null);
       
-      // Force search with completely empty params to get all garages
-      if (usePagination) {
-        const response = await apiWrapper.searchGaragesWithPagination({
-          size: pageSize
-        });
-        setPaginatedData(response);
-        setGarages(response.content);
-      } else {
-        const response = await apiWrapper.searchGaragesAdvanced({});
-        setGarages(response);
-        setPaginatedData(undefined);
-      }
-      console.log('useGarageSearch: Reset completed successfully');
+      // Use basic search to get all garages
+      const response = await apiWrapper.searchGaragesAdvanced({});
+      setGarages(response);
+      setPaginatedData(undefined);
+      console.log('useGarageSearch: Reset completed successfully, received', response.length, 'garages');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi reset');
       console.error('useGarageSearch: Reset error:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [usePagination, pageSize]);
+  }, []);
 
   // Computed values
   const hasMore = paginatedData ? !paginatedData.last : false;

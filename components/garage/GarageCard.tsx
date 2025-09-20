@@ -113,7 +113,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
 
             {/* Status badges */}
             <div className="absolute top-3 right-3 flex flex-col gap-2">
-              {garage.isVerified && (
+              {garage.verified && (
                 <Badge className="bg-green-500 text-white border-0 shadow-sm">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Đã xác thực

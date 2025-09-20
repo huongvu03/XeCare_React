@@ -145,11 +145,11 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage, userLocatio
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
                         isSelected 
                           ? 'bg-red-500 shadow-lg' 
-                          : garage.isVerified 
+                          : garage.verified 
                             ? 'bg-green-500' 
                             : 'bg-gray-500'
                       }`}>
-                        {garage.isVerified ? '✓' : 'G'}
+                        {garage.verified ? '✓' : 'G'}
                       </div>
                       
                       {/* Distance badge */}
@@ -240,7 +240,7 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage, userLocatio
                           {distance}
                         </Badge>
                       )}
-                      {garage.isVerified && (
+                      {garage.verified && (
                         <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                           ✓
                         </Badge>

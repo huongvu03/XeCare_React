@@ -9,7 +9,7 @@ export interface PublicGarageResponseDto {
   description: string;
   imageUrl: string;
   status: string;
-  isVerified: boolean;
+  verified: boolean; // Backend returns 'verified', not 'isVerified'
   averageRating: number;
   totalReviews: number;
   serviceNames: string[];

@@ -21,11 +21,15 @@ class ApiWrapper {
     mockApiCall: () => Promise<T>
   ): Promise<T> {
     if (this.useMock || this.fallbackToMock) {
+      console.log('Using mock data (useMock:', this.useMock, ', fallbackToMock:', this.fallbackToMock, ')');
       return mockApiCall();
     }
 
     try {
-      return await realApiCall();
+      console.log('Calling real API...');
+      const result = await realApiCall();
+      console.log('Real API call successful');
+      return result;
     } catch (error) {
       console.warn('Real API failed, falling back to mock data:', error);
       this.fallbackToMock = true;
