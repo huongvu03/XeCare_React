@@ -136,7 +136,7 @@ npm run dev
 # Access pages
 http://localhost:3000/dashboard
 http://localhost:3000/admin/user-roles
-http://localhost:3000/search/page1
+http://localhost:3000/search
 ```
 
 ## 🔧 **Configuration**
@@ -146,7 +146,7 @@ http://localhost:3000/search/page1
 // config/env.ts
 export const config = {
   ENABLE_DUAL_ROLE_SYSTEM: true,
-  USE_MOCK_DATA: true, // For development
+  USE_MOCK_DATA: false, // For development
   API_BASE_URL: 'http://localhost:8080',
 };
 ```

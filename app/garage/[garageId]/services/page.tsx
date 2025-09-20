@@ -64,9 +64,8 @@ export default function GarageServicesPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingService, setEditingService] = useState<GarageService | null>(null)
   const [formData, setFormData] = useState<GarageServiceRequest>({
-    garageId: garageId,
     serviceId: 0,
-    basePrice: undefined,
+    price: 0,
     estimatedTimeMinutes: undefined,
     isActive: true
   })
@@ -160,10 +159,10 @@ export default function GarageServicesPage() {
       errors.serviceId = "Vui lòng chọn dịch vụ"
     }
     
-    if (data.basePrice !== undefined && data.basePrice <= 0) {
-      errors.basePrice = "Giá phải lớn hơn 0"
-    } else if (data.basePrice !== undefined && data.basePrice > 1000000000) {
-      errors.basePrice = "Giá không được quá 1 tỷ VNĐ"
+    if (data.price !== undefined && data.price <= 0) {
+      errors.price = "Giá phải lớn hơn 0"
+    } else if (data.price !== undefined && data.price > 1000000000) {
+      errors.price = "Giá không được quá 1 tỷ VNĐ"
     }
     
     if (data.estimatedTimeMinutes !== undefined && data.estimatedTimeMinutes <= 0) {
@@ -203,7 +202,7 @@ export default function GarageServicesPage() {
               service.id === editingService.id 
                 ? { 
                     ...service, 
-                    basePrice: formData.basePrice || null,
+                    price: formData.price || 0,
                     estimatedTimeMinutes: formData.estimatedTimeMinutes || null,
                     isActive: formData.isActive ?? true
                   }
@@ -217,9 +216,8 @@ export default function GarageServicesPage() {
         
         // Reset form and close dialog
         setFormData({
-          garageId: garageId,
           serviceId: 0,
-          basePrice: undefined,
+          price: 0,
           estimatedTimeMinutes: undefined,
           isActive: true
         })
@@ -232,9 +230,8 @@ export default function GarageServicesPage() {
         
         // Reset form and close dialog
         setFormData({
-          garageId: garageId,
           serviceId: 0,
-          basePrice: undefined,
+          price: 0,
           estimatedTimeMinutes: undefined,
           isActive: true
         })
@@ -452,9 +449,8 @@ export default function GarageServicesPage() {
   const handleEdit = (service: GarageService) => {
     setEditingService(service)
     setFormData({
-      garageId: garageId,
-      serviceId: service.service.id,
-      basePrice: service.basePrice || undefined,
+      serviceId: service.serviceId,
+      price: service.price,
       estimatedTimeMinutes: service.estimatedTimeMinutes || undefined,
       isActive: service.isActive
     })
@@ -466,7 +462,7 @@ export default function GarageServicesPage() {
     if (!services || !Array.isArray(services)) {
       return systemServices || []
     }
-    const addedServiceIds = services.map(s => s.service.id)
+    const addedServiceIds = services.map(s => s.serviceId)
     return systemServices.filter(s => !addedServiceIds.includes(s.id))
   }
 
@@ -483,7 +479,7 @@ export default function GarageServicesPage() {
     // Kiểm tra trùng tên với các dịch vụ đã có trong garage
     if (services) {
       const existingService = services.find(service => 
-        service.service.name.toLowerCase() === lowerName
+        service.serviceName.toLowerCase() === lowerName
       )
       if (existingService) {
         errors.name = `Tên dịch vụ "${name}" đã tồn tại trong garage này`
@@ -677,9 +673,10 @@ export default function GarageServicesPage() {
             if (open) {
               // Reset form when opening dialog
               setFormData({
-                garageId: garageId,
+                //garageId: garageId,
                 serviceId: 0,
-                basePrice: undefined,
+                price: 0,
+                //basePrice: undefined,
                 estimatedTimeMinutes: undefined,
                 isActive: true
               })
@@ -843,16 +840,16 @@ export default function GarageServicesPage() {
                 )}
                 
                 <div>
-                  <Label htmlFor="basePrice">Giá cơ bản (VNĐ)</Label>
+                  <Label htmlFor="price">Giá cơ bản (VNĐ)</Label>
                   <Input
-                    id="basePrice"
+                    id="price"
                     type="number"
                     placeholder="Nhập giá"
-                    value={!isCustomServiceMode ? (formData.basePrice || "") : (customServiceData.basePrice || "")}
+                    value={!isCustomServiceMode ? (formData.price || "") : (customServiceData.basePrice || "")}
                     onChange={(e) => {
                       if (!isCustomServiceMode) {
-                        const value = e.target.value ? Number(e.target.value) : undefined
-                        setFormData({...formData, basePrice: value})
+                        const value = e.target.value ? Number(e.target.value) : 0
+                        setFormData({...formData, price: value})
                         
                         // Real-time validation for price in system service mode
                         if (e.target.value !== "") {
@@ -860,25 +857,25 @@ export default function GarageServicesPage() {
                           const errors: {[key: string]: string} = {}
                           
                           if (isNaN(numValue)) {
-                            errors.basePrice = "Giá phải là số hợp lệ"
+                            errors.price = "Giá phải là số hợp lệ"
                           } else if (numValue <= 0) {
-                            errors.basePrice = "Giá phải lớn hơn 0"
+                            errors.price = "Giá phải lớn hơn 0"
                           } else if (numValue > 1000000000) {
-                            errors.basePrice = "Giá không được quá 1 tỷ VNĐ"
+                            errors.price = "Giá không được quá 1 tỷ VNĐ"
                           }
                           
                           if (Object.keys(errors).length > 0) {
                             setCustomServiceErrors({...customServiceErrors, ...errors})
                           } else {
                             // Clear error if validation passes
-                            if (customServiceErrors.basePrice) {
-                              setCustomServiceErrors({...customServiceErrors, basePrice: ""})
+                            if (customServiceErrors.price) {
+                              setCustomServiceErrors({...customServiceErrors, price: ""})
                             }
                           }
                         } else {
                           // Clear error if field is empty
-                          if (customServiceErrors.basePrice) {
-                            setCustomServiceErrors({...customServiceErrors, basePrice: ""})
+                          if (customServiceErrors.price) {
+                            setCustomServiceErrors({...customServiceErrors, price: ""})
                           }
                         }
                       } else {
@@ -911,13 +908,13 @@ export default function GarageServicesPage() {
                       }
                     }}
                   />
-                  {customServiceErrors.basePrice && (
-                    <p className="text-sm text-red-600 mt-1">{customServiceErrors.basePrice}</p>
+                  {customServiceErrors.price && (
+                    <p className="text-sm text-red-600 mt-1">{customServiceErrors.price}</p>
                   )}
-                  {!customServiceErrors.basePrice && isCustomServiceMode && customServiceData.basePrice > 0 && customServiceData.basePrice <= 1000000000 && (
+                  {!customServiceErrors.price && isCustomServiceMode && customServiceData.basePrice > 0 && customServiceData.basePrice <= 1000000000 && (
                     <p className="text-sm text-green-600 mt-1">✓ Giá hợp lệ</p>
                   )}
-                  {!customServiceErrors.basePrice && !isCustomServiceMode && formData.basePrice && formData.basePrice > 0 && formData.basePrice <= 1000000000 && (
+                  {!customServiceErrors.price && !isCustomServiceMode && formData.price && formData.price > 0 && formData.price <= 1000000000 && (
                     <p className="text-sm text-green-600 mt-1">✓ Giá hợp lệ</p>
                   )}
                 </div>
@@ -1021,10 +1018,10 @@ export default function GarageServicesPage() {
                   <Button variant="outline" onClick={() => {
                     // Reset form data
                     setFormData({
-                      garageId: garageId,
+                      //garageId: garageId,
                       serviceId: 0,
-                      basePrice: undefined,
-                      estimatedTimeMinutes: undefined,
+                      price: 0,
+                      //estimatedTimeMinutes: undefined,
                       isActive: true
                     })
                     setCustomServiceData({
@@ -1105,19 +1102,19 @@ export default function GarageServicesPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="font-semibold">{service.service.name}</h3>
+                          <h3 className="font-semibold">{service.serviceName}</h3>
                           <Badge variant={service.isActive ? "default" : "secondary"}>
                             {service.isActive ? "✅ Đang hoạt động" : "⏸️ Tạm dừng"}
                           </Badge>
                         </div>
                         
-                        <p className="text-sm text-gray-600 mb-2">{service.service.description}</p>
+                        <p className="text-sm text-gray-600 mb-2">{service.serviceDescription}</p>
                         
                         <div className="flex items-center space-x-4 text-sm">
-                          {service.basePrice && (
+                          {service.price && (
                             <div className="flex items-center space-x-1">
                               <DollarSign className="h-4 w-4 text-green-600" />
-                              <span>{service.basePrice.toLocaleString()} VNĐ</span>
+                              <span>{service.price.toLocaleString()} VNĐ</span>
                             </div>
                           )}
                           
@@ -1171,26 +1168,26 @@ export default function GarageServicesPage() {
               <div>
                 <Label>Dịch vụ</Label>
                 <Input
-                  value={editingService?.service.name || ""}
+                  value={editingService?.serviceName || ""}
                   disabled
                   className="bg-gray-50"
                 />
               </div>
               
               <div>
-                <Label htmlFor="editBasePrice">Giá cơ bản (VNĐ)</Label>
+                <Label htmlFor="editPrice">Giá cơ bản (VNĐ)</Label>
                 <Input
-                  id="editBasePrice"
+                  id="editPrice"
                   type="number"
                   placeholder="Nhập giá"
-                  value={formData.basePrice || ""}
+                  value={formData.price || ""}
                   onChange={(e) => {
-                    const value = e.target.value ? Number(e.target.value) : undefined
-                    setFormData({...formData, basePrice: value})
+                    const value = e.target.value ? Number(e.target.value) : 0
+                    setFormData({...formData, price: value})
                     
                     // Clear error if exists
-                    if (customServiceErrors.basePrice) {
-                      setCustomServiceErrors({...customServiceErrors, basePrice: ""})
+                    if (customServiceErrors.price) {
+                      setCustomServiceErrors({...customServiceErrors, price: ""})
                     }
                     
                     // Real-time validation for price in edit mode
@@ -1199,11 +1196,11 @@ export default function GarageServicesPage() {
                       const errors: {[key: string]: string} = {}
                       
                       if (isNaN(numValue)) {
-                        errors.basePrice = "Giá phải là số hợp lệ"
+                        errors.price = "Giá phải là số hợp lệ"
                       } else if (numValue <= 0) {
-                        errors.basePrice = "Giá phải lớn hơn 0"
+                        errors.price = "Giá phải lớn hơn 0"
                       } else if (numValue > 1000000000) {
-                        errors.basePrice = "Giá không được quá 1 tỷ VNĐ"
+                        errors.price = "Giá không được quá 1 tỷ VNĐ"
                       }
                       
                       if (Object.keys(errors).length > 0) {
@@ -1212,10 +1209,10 @@ export default function GarageServicesPage() {
                     }
                   }}
                 />
-                {customServiceErrors.basePrice && (
-                  <p className="text-sm text-red-600 mt-1">{customServiceErrors.basePrice}</p>
+                {customServiceErrors.price && (
+                  <p className="text-sm text-red-600 mt-1">{customServiceErrors.price}</p>
                 )}
-                {!customServiceErrors.basePrice && formData.basePrice && formData.basePrice > 0 && formData.basePrice <= 1000000000 && (
+                {!customServiceErrors.price && formData.price && formData.price > 0 && formData.price <= 1000000000 && (
                   <p className="text-sm text-green-600 mt-1">✓ Giá hợp lệ</p>
                 )}
               </div>

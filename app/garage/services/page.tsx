@@ -176,7 +176,7 @@ export default function GarageServicesPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["garage"]}
+      allowedRoles={["GARAGE"]}
       title="Quản lý Dịch vụ"
       description="Quản lý các dịch vụ mà garage cung cấp"
     >

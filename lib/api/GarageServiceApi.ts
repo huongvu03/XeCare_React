@@ -13,24 +13,18 @@ export interface SystemService {
 // Interface cho dịch vụ của garage (GarageService)
 export interface GarageService {
   id: number
-  garageId: number
-  service: {
-    id: number
-    name: string
-    description: string
-    category: string
-    isActive: boolean
-  }
-  basePrice: number | null
+  serviceId: number
+  serviceName: string
+  serviceDescription: string
+  price: number
   estimatedTimeMinutes: number | null
   isActive: boolean
 }
 
 // Interface cho request tạo/cập nhật dịch vụ
 export interface GarageServiceRequest {
-  garageId: number
   serviceId: number
-  basePrice?: number
+  price: number
   estimatedTimeMinutes?: number
   isActive?: boolean
 }
@@ -53,7 +47,7 @@ export interface GarageServiceStats {
 
 // Lấy danh sách dịch vụ của garage
 export const getGarageServices = (garageId: number) =>
-  axiosClient.get<GarageService[]>(`/apis/garage-services/garage/${garageId}`)
+  axiosClient.get<GarageService[]>(`/apis/garage/management/services`)
 
 // Lấy chi tiết dịch vụ
 export const getGarageServiceById = (serviceId: number) =>
@@ -61,7 +55,7 @@ export const getGarageServiceById = (serviceId: number) =>
 
 // Thêm dịch vụ mới cho garage
 export const createGarageService = (data: GarageServiceRequest) =>
-  axiosClient.post<GarageService>("/apis/garage-services", data)
+  axiosClient.post<GarageService>("/apis/garage/management/services", data)
 
 // Tạo custom service mới
 export const createCustomService = (garageId: number, data: CreateCustomServiceRequest) =>
@@ -69,7 +63,7 @@ export const createCustomService = (garageId: number, data: CreateCustomServiceR
 
 // Cập nhật thông tin dịch vụ
 export const updateGarageService = (serviceId: number, data: GarageServiceRequest) =>
-  axiosClient.put<GarageService>(`/apis/garage-services/${serviceId}`, data)
+  axiosClient.put<GarageService>(`/apis/garage/management/services/${serviceId}`, data)
 
 // Bật/tắt trạng thái dịch vụ
 export const toggleGarageServiceStatus = (serviceId: number) =>

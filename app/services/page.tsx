@@ -259,7 +259,7 @@ export default function ServicesPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["user", "admin", "garage"]}
+      allowedRoles={["USER", "ADMIN", "GARAGE"]}
       title="Dịch vụ sửa chữa xe"
       description="Tìm hiểu chi tiết về các dịch vụ sửa chữa và bảo dưỡng xe"
     >
