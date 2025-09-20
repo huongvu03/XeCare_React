@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Car, Edit, Trash2, Plus, Eye, Search, Loader2 } from "lucide-react"
+import { Car, Edit, Trash2, Plus, Eye, Search, Loader2, Wrench } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import axiosClient from "@/lib/axiosClient"
@@ -18,6 +18,7 @@ import { VehicleApi } from "@/lib/api/userVehicleApi";
 import VehicleForm from "@/components/vehicles/VehicleForm";
 import VehicleCard from "@/components/vehicles/VehicleCard";
 import VehicleDetailView from "@/components/vehicles/VehicleDetailView";
+import { VehicleServiceHistory } from "@/components/vehicles/VehicleServiceHistory";
 
 interface ApiResponse<T> {
   content: T[]
@@ -510,6 +511,39 @@ const response = res.data;
 )}
       </div>
 
+      {/* Service History Section - Show summary for all vehicles */}
+      {vehicles.length > 0 && (
+        <Card className="border-blue-100">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Wrench className="h-5 w-5 text-blue-600" />
+              <span>Tổng quan lịch sử sửa xe</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-6">
+              <p className="text-slate-600 mb-4">
+                Để xem lịch sử sửa xe chi tiết cho từng xe, hãy click vào icon 📋 (History) trên xe tương ứng.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <p className="font-medium text-blue-900">Tổng số xe</p>
+                  <p className="text-2xl font-bold text-blue-600">{vehicles.length}</p>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <p className="font-medium text-green-900">Xe hoạt động</p>
+                  <p className="text-2xl font-bold text-green-600">{vehicles.filter(v => !v.locked).length}</p>
+                </div>
+                <div className="p-3 bg-orange-50 rounded-lg">
+                  <p className="font-medium text-orange-900">Xe đã khóa</p>
+                  <p className="text-2xl font-bold text-orange-600">{vehicles.filter(v => v.locked).length}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
@@ -543,11 +577,6 @@ const response = res.data;
           <DialogHeader>
             <DialogTitle>Chỉnh sửa thông tin xe</DialogTitle>
           </DialogHeader>
-          {console.log('🔍 [VehicleManagement] About to render VehicleForm with:', { 
-            vehicleTypes: vehicleTypes.length, 
-            categories: categories.length,
-            editingVehicle: editingVehicle?.vehicleName 
-          })}
           <VehicleForm
             initialData={editingVehicle || undefined}
             onSubmit={(dto) =>

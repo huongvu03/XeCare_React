@@ -3,9 +3,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Vehicle } from "@/types/users/userVehicle"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Edit, Trash2 } from "lucide-react"
+import { Eye, Edit, Trash2, History } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { VehicleServiceHistory } from "./VehicleServiceHistory"
 
 interface VehicleCardProps {
   vehicle: Vehicle
@@ -27,6 +28,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
   onUnlock,
 }) => {
   const [lockDialogOpen, setLockDialogOpen] = useState(false)
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
   const [selectedReason, setSelectedReason] = useState<string>("")
 
   const lockReasons = [
@@ -93,6 +95,15 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
             </div>
 
             <div className="flex items-center space-x-2 ml-4">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => setHistoryDialogOpen(true)} 
+                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                title="Xem lịch sử sửa xe"
+              >
+                <History className="h-4 w-4" />
+              </Button>
               <Button size="sm" variant="outline" onClick={() => onViewDetail(vehicle)} className="h-8 w-8 p-0">
                 <Eye className="h-4 w-4" />
               </Button>
@@ -162,6 +173,30 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
             >
               Xác nhận
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog lịch sử sửa xe */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <History className="h-5 w-5 text-blue-600" />
+              <span>Lịch sử sửa xe - {vehicle.vehicleName}</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <VehicleServiceHistory 
+              vehicle={{
+                id: vehicle.id,
+                licensePlate: vehicle.licensePlate,
+                vehicleName: vehicle.vehicleName,
+                brand: vehicle.brand,
+                model: vehicle.model
+              }}
+              limit={10} 
+            />
           </div>
         </DialogContent>
       </Dialog>
