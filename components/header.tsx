@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, LogOut, User, Settings, LayoutDashboard, Heart, Gift, Bell } from "lucide-react"
+import { ChevronDown, LogOut, User, Settings, LayoutDashboard, Heart, Gift, Bell, Calendar, Building2 } from "lucide-react"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 
 function AuthButtons() {
@@ -22,88 +22,112 @@ function AuthButtons() {
 
   if (user) {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center space-x-2 text-blue-600 hover:text-blue-700">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-medium">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
-            </div>
-            <span className="hidden sm:block">{user?.name || 'Người dùng'}</span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium">{user?.name || 'Người dùng'}</p>
-              <p className="text-xs text-slate-500">{user?.email || 'Chưa có email'}</p>
-              <div className="flex items-center space-x-1">
-                <div
-                  className={`w-2 h-2 rounded-full ${user?.role === "ADMIN" ? "bg-red-500" : user?.role === "GARAGE" ? "bg-green-500" : "bg-blue-500"
-                    }`}
-                />
-                <span className="text-xs text-slate-500 capitalize">
-                  {user?.role === "ADMIN" ? "Quản trị viên" : user?.role === "GARAGE" ? "Chủ garage" : "Người dùng"}
-                </span>
-              </div>
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link
-              href={
-                user?.role === "ADMIN"
-                  ? "/admin/dashboard"
-                  : user?.role === "GARAGE"
-                    ? "/garage/dashboard"
-                    : "/user/dashboard"
-              }
-              className="flex items-center space-x-2"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/profile" className="flex items-center space-x-2">
-              <User className="h-4 w-4" />
-              <span>Thông tin cá nhân</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/favorites" className="flex items-center space-x-2">
-              <Heart className="h-4 w-4" />
-              <span>Garage yêu thích</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/notifications" className="flex items-center space-x-2">
-              <Bell className="h-4 w-4" />
-              <span>Thông báo</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/reward-points" className="flex items-center space-x-2">
-              <Gift className="h-4 w-4" />
-              <span>Điểm thưởng</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/settings" className="flex items-center space-x-2">
-              <Settings className="h-4 w-4" />
-              <span>Cài đặt</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={logout}
-            className="flex items-center space-x-2 text-red-600 focus:text-red-600 focus:bg-red-50"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Đăng xuất</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center space-x-2 text-blue-600 hover:text-blue-700">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                  </div>
+                  <span className="hidden sm:block">{user?.name || 'Người dùng'}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{user?.name || 'Người dùng'}</p>
+                    <p className="text-xs text-slate-500">{user?.email || 'Chưa có email'}</p>
+                    <div className="flex items-center space-x-1">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          user?.role === "ADMIN" ? "bg-red-500" : user?.role === "GARAGE" ? "bg-green-500" : "bg-blue-500"
+                        }`}
+                      />
+                      <span className="text-xs text-slate-500 capitalize">
+                        {user?.role === "ADMIN" ? "Quản trị viên" : user?.role === "GARAGE" ? "Chủ garage" : "Người dùng"}
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={
+                      user?.role === "ADMIN"
+                        ? "/admin/dashboard"
+                        : "/dashboard"
+                    }
+                    className="flex items-center space-x-2"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                
+                {/* User Features - Show for USER and GARAGE */}
+                {(user?.role === "USER" || user?.role === "GARAGE") && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/user/appointments" className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Lịch hẹn của tôi</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/search" className="flex items-center space-x-2">
+                        <Building2 className="h-4 w-4" />
+                        <span>Tìm garage</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+
+                {/* Garage Features - Show for GARAGE */}
+                {user?.role === "GARAGE" && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard?tab=garage" className="flex items-center space-x-2">
+                        <Building2 className="h-4 w-4" />
+                        <span>My Garages</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/garage/appointments" className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Quản lý lịch hẹn</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/garage/edit" className="flex items-center space-x-2">
+                        <Settings className="h-4 w-4" />
+                        <span>Cập nhật thông tin</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span>Thông tin cá nhân</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex items-center space-x-2">
+                    <Settings className="h-4 w-4" />
+                    <span>Cài đặt</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="flex items-center space-x-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Đăng xuất</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
     )
   }
 
@@ -157,7 +181,7 @@ export function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            {user && <NotificationBell />}
+            {user && <a href="/notifications"><NotificationBell /></a>}
             <AuthButtons />
           </div>
 

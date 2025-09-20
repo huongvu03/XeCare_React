@@ -345,7 +345,7 @@ export default function UnifiedDashboard() {
                 <p className="text-slate-600 text-sm mb-4">Tìm garage sửa xe gần bạn</p>
                 <Button
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600"
-                  onClick={() => router.push("/search/page1")}
+                  onClick={() => router.push("/search")}
                 >
                   Tìm kiếm ngay
                 </Button>
