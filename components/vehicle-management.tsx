@@ -41,6 +41,11 @@ export function VehicleManagement(
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Debug vehicleTypes state changes
+  useEffect(() => {
+    console.log('🔍 [VehicleManagement] vehicleTypes state changed:', vehicleTypes);
+  }, [vehicleTypes]);
   const [submitting, setSubmitting] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
@@ -134,11 +139,14 @@ const response = res.data;
     }
     const fetchTypes = async () => {
       try {
+        console.log("🔍 [fetchTypes] Starting to fetch vehicle types...");
         const response = await axiosClient.get("/apis/v1/vehicle")
+        console.log("🔍 [fetchTypes] API response:", response);
+        console.log("🔍 [fetchTypes] Response data:", response.data);
         setVehicleTypes(response.data || [])
-        console.log("Fetched vehicle types:", response);
+        console.log("✅ [fetchTypes] Vehicle types set successfully:", response.data?.length || 0, "types");
       } catch (error) {
-        console.error("Error fetching vehicle types:", error)
+        console.error("❌ [fetchTypes] Error fetching vehicle types:", error)
         toast({
           title: "Lỗi",
           description: "Không thể tải loại xe.",
@@ -277,10 +285,31 @@ const response = res.data;
 
   // 📌 Cập nhật
   const handleUpdate = async (id: number, dto: UserVehicleTypeUpdateDto) => {
-    await VehicleApi.update(id, dto);
-    setIsFormOpen(false);
-    setEditingVehicle(null);
-    fetchVehicles();
+    try {
+      console.log('🔍 [handleUpdate] Starting update:', { id, dto });
+      console.log('🔍 [handleUpdate] User:', user);
+      const token = localStorage.getItem('token');
+      console.log('🔍 [handleUpdate] Token exists:', !!token);
+      console.log('🔍 [handleUpdate] Token preview:', token ? token.substring(0, 50) + '...' : 'No token');
+      console.log('🔍 [handleUpdate] User role:', user?.role);
+      
+      await VehicleApi.update(id, dto);
+      setIsEditDialogOpen(false);
+      setEditingVehicle(null);
+      fetchVehicles();
+      
+      toast({
+        title: "Thành công",
+        description: "Cập nhật xe thành công",
+      });
+    } catch (error: any) {
+      console.error('❌ [handleUpdate] Error:', error);
+      toast({
+        title: "Lỗi",
+        description: error.response?.data?.message || "Không thể cập nhật xe. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
   };
 
   // 📌 Xóa
@@ -514,13 +543,18 @@ const response = res.data;
           <DialogHeader>
             <DialogTitle>Chỉnh sửa thông tin xe</DialogTitle>
           </DialogHeader>
+          {console.log('🔍 [VehicleManagement] About to render VehicleForm with:', { 
+            vehicleTypes: vehicleTypes.length, 
+            categories: categories.length,
+            editingVehicle: editingVehicle?.vehicleName 
+          })}
           <VehicleForm
             initialData={editingVehicle || undefined}
             onSubmit={(dto) =>
               editingVehicle ? handleUpdate(editingVehicle.id, dto) : handleCreate(dto)
             }
             onCancel={() => {
-              setIsAddDialogOpen(false);
+              setIsEditDialogOpen(false);
               setEditingVehicle(null);
             }}
             categories={categories}

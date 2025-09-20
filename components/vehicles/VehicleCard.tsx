@@ -81,12 +81,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
                     <p className="font-mono font-medium text-slate-900">{vehicle.licensePlate}</p>
                   </div>
                   <div>
-                    <p className="font-medium text-slate-800">Năm SX</p>
-                    <p>{vehicle.year}</p>
+                    <p className="font-medium text-slate-800">Loại xe</p>
+                    <p className="truncate">{vehicle.vehicleTypeName || "Chưa cập nhật"}</p>
                   </div>
                   <div>
-                    <p className="font-medium text-slate-800">Màu sắc</p>
-                    <p className="truncate">{vehicle.color || "Chưa cập nhật"}</p>
+                    <p className="font-medium text-slate-800">Năm SX</p>
+                    <p>{vehicle.year}</p>
                   </div>
                 </div>
               </div>

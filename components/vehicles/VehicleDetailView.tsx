@@ -79,6 +79,14 @@ if (!vehicle) return null
                 <span className="text-slate-600">Màu sắc:</span>
                 <span className="font-medium">{vehicle.color || "Chưa cập nhật"}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Loại xe:</span>
+                <span className="font-medium">{vehicle.vehicleTypeName || "Chưa cập nhật"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Danh mục:</span>
+                <span className="font-medium">{vehicle.categoryName || "Chưa cập nhật"}</span>
+              </div>
             </div>
           </div>
 
