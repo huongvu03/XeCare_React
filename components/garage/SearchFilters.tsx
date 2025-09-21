@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GarageSearchParams } from '@/services/api';
-import { Search, Star, MapPin, Settings, Car } from 'lucide-react';
+import { Search, Star, MapPin, Settings, Car, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface SearchFiltersProps {
   services: string[];
@@ -17,14 +18,125 @@ interface SearchFiltersProps {
   isLoading?: boolean;
 }
 
+interface MultiSelectProps {
+  options: string[];
+  selectedValues: string[];
+  onSelectionChange: (values: string[]) => void;
+  placeholder: string;
+  label: string;
+  icon: React.ReactNode;
+  className?: string;
+}
+
+// MultiSelect Component
+function MultiSelect({ options, selectedValues, onSelectionChange, placeholder, label, icon, className }: MultiSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleOption = (option: string) => {
+    if (selectedValues.includes(option)) {
+      onSelectionChange(selectedValues.filter(v => v !== option));
+    } else {
+      onSelectionChange([...selectedValues, option]);
+    }
+    // Close dropdown after selection
+    setIsOpen(false);
+  };
+
+  const handleRemoveOption = (option: string) => {
+    onSelectionChange(selectedValues.filter(v => v !== option));
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const displayText = selectedValues.length === 0 
+    ? placeholder 
+    : selectedValues.length === 1 
+      ? selectedValues[0]
+      : `${selectedValues.length} đã chọn`;
+
+  return (
+    <div className={`space-y-2 ${className}`}>
+      <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+        {icon}
+        {label}
+      </Label>
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full h-10 px-3 py-2 text-left border border-gray-200 rounded-md bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between"
+        >
+          <span className={selectedValues.length === 0 ? 'text-gray-500' : 'text-gray-900'}>
+            {displayText}
+          </span>
+          <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {isOpen && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+            {options.map((option) => (
+              <div
+                key={option}
+                className="px-3 py-2 hover:bg-gray-50 cursor-pointer flex items-center justify-between"
+                onClick={() => handleToggleOption(option)}
+              >
+                <span className="text-sm text-gray-900">{option}</span>
+                {selectedValues.includes(option) && (
+                  <Check className="w-4 h-4 text-blue-600" />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Selected values as badges */}
+      {selectedValues.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {selectedValues.map((value) => (
+            <Badge key={value} variant="secondary" className="text-xs">
+              {value}
+              <button
+                type="button"
+                onClick={() => handleRemoveOption(value)}
+                className="ml-1 hover:text-red-600"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoading }: SearchFiltersProps) {
   const [mounted, setMounted] = useState(false);
   const [resetKey, setResetKey] = useState(0); // Key to force re-render
   const [searchParams, setSearchParams] = useState<GarageSearchParams>({
     name: '',
     address: '',
-    service: 'all',
-    vehicleType: 'all',
+    service: [],
+    vehicleType: [],
     minRating: 0,
     maxRating: 5,
     isVerified: undefined
@@ -42,13 +154,31 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
     }));
   };
 
+  const handleArrayChange = (field: 'service' | 'vehicleType', values: string[]) => {
+    setSearchParams(prev => ({
+      ...prev,
+      [field]: values
+    }));
+  };
+
   const handleSearch = () => {
     try {
+      console.log('SearchFilters: handleSearch called with params:', searchParams);
+      
       const cleanParams = Object.fromEntries(
-        Object.entries(searchParams).filter(([_, value]) => 
-          value !== '' && value !== undefined && value !== null && value !== 'all' && value !== 0
-        )
+        Object.entries(searchParams).filter(([key, value]) => {
+          if (Array.isArray(value)) {
+            return value.length > 0;
+          }
+          // Don't filter out minRating when it's 0 (means "all ratings")
+          if (key === 'minRating') {
+            return value !== undefined && value !== null;
+          }
+          return value !== '' && value !== undefined && value !== null && value !== 'all';
+        })
       );
+      
+      console.log('SearchFilters: cleaned params:', cleanParams);
       onSearch(cleanParams);
     } catch (error) {
       console.error('Search error:', error);
@@ -61,8 +191,8 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
       const resetParams: GarageSearchParams = {
         name: '',
         address: '',
-        service: 'all',
-        vehicleType: 'all',
+        service: [],
+        vehicleType: [],
         minRating: 0,
         maxRating: 5,
         isVerified: undefined
@@ -130,54 +260,28 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
           </div>
 
           {/* Dịch vụ */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-              <Settings className="w-4 h-4 text-green-500" />
-              Dịch vụ
-            </Label>
-            <Select
-              key={`service-${resetKey}`}
-              value={searchParams.service || 'all'}
-              onValueChange={(value) => handleInputChange('service', value)}
-            >
-              <SelectTrigger className="h-10 border-gray-200 focus:border-green-500 focus:ring-green-500">
-                <SelectValue placeholder="Chọn dịch vụ..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả dịch vụ</SelectItem>
-                {services && services.map((service) => (
-                  <SelectItem key={service} value={service}>
-                    {service}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <MultiSelect
+            key={`service-${resetKey}`}
+            options={services || []}
+            selectedValues={Array.isArray(searchParams.service) ? searchParams.service : []}
+            onSelectionChange={(values) => handleArrayChange('service', values)}
+            placeholder="Chọn dịch vụ..."
+            label="Dịch vụ"
+            icon={<Settings className="w-4 h-4 text-green-500" />}
+            className="space-y-2"
+          />
 
           {/* Loại xe */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-              <Car className="w-4 h-4 text-orange-500" />
-              Loại xe
-            </Label>
-            <Select
-              key={`vehicleType-${resetKey}`}
-              value={searchParams.vehicleType || 'all'}
-              onValueChange={(value) => handleInputChange('vehicleType', value)}
-            >
-              <SelectTrigger className="h-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500">
-                <SelectValue placeholder="Chọn loại xe..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả loại xe</SelectItem>
-                {vehicleTypes && vehicleTypes.map((vehicleType) => (
-                  <SelectItem key={vehicleType} value={vehicleType}>
-                    {vehicleType}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <MultiSelect
+            key={`vehicleType-${resetKey}`}
+            options={vehicleTypes || []}
+            selectedValues={Array.isArray(searchParams.vehicleType) ? searchParams.vehicleType : []}
+            onSelectionChange={(values) => handleArrayChange('vehicleType', values)}
+            placeholder="Chọn loại xe..."
+            label="Loại xe"
+            icon={<Car className="w-4 h-4 text-orange-500" />}
+            className="space-y-2"
+          />
 
           {/* Địa chỉ */}
           <div className="space-y-2">

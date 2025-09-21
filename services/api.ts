@@ -23,8 +23,8 @@ export interface PublicGarageResponseDto {
 export interface GarageSearchParams {
   name?: string;
   address?: string;
-  service?: string;
-  vehicleType?: string;
+  service?: string | string[];
+  vehicleType?: string | string[];
   minRating?: number;
   maxRating?: number;
   status?: string;
@@ -58,7 +58,16 @@ function buildQueryString(params: Record<string, any>): string {
   
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, value.toString());
+      if (Array.isArray(value)) {
+        // Xử lý arrays - thêm từng giá trị riêng biệt
+        value.forEach(item => {
+          if (item !== undefined && item !== null && item !== '') {
+            searchParams.append(key, item.toString());
+          }
+        });
+      } else {
+        searchParams.append(key, value.toString());
+      }
     }
   });
   

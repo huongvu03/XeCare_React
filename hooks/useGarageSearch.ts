@@ -60,13 +60,12 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
       setIsLoading(true);
       setError(null);
       
-      const searchParams = { ...currentParams, ...params };
-      setCurrentParams(searchParams);
+      // Use the new params directly instead of merging with currentParams
+      // This ensures fresh search every time
+      console.log('useGarageSearch: Calling searchGaragesAdvanced with params:', params);
+      setCurrentParams(params);
 
-      // Temporarily disable pagination due to backend 500 error
-      // Use basic search instead
-      console.log('useGarageSearch: Calling searchGaragesAdvanced with params:', searchParams);
-      const response = await apiWrapper.searchGaragesAdvanced(searchParams);
+      const response = await apiWrapper.searchGaragesAdvanced(params);
       setGarages(response);
       setPaginatedData(undefined);
       console.log('useGarageSearch: Received', response.length, 'garages');
@@ -76,7 +75,7 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
     } finally {
       setIsLoading(false);
     }
-  }, [currentParams]);
+  }, []);
 
   const searchAdvanced = useCallback(async (params: GarageSearchParams) => {
     await search(params);
@@ -181,10 +180,11 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
       setIsLoading(true);
       setError(null);
       
-      // Use basic search to get all garages
-      const response = await apiWrapper.searchGaragesAdvanced({});
+      // Use basic search to get all garages with status=ACTIVE
+      const response = await apiWrapper.searchGaragesAdvanced({ status: 'ACTIVE' });
       setGarages(response);
       setPaginatedData(undefined);
+      setCurrentParams({ status: 'ACTIVE' });
       console.log('useGarageSearch: Reset completed successfully, received', response.length, 'garages');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi reset');
@@ -201,8 +201,8 @@ export function useGarageSearch(options: UseGarageSearchOptions = {}): UseGarage
   useEffect(() => {
     console.log('useGarageSearch: Initial load started');
     setIsInitialLoading(true);
-    // Load all garages on mount
-    search({}).finally(() => {
+    // Load all active garages on mount
+    search({ status: 'ACTIVE' }).finally(() => {
       setIsInitialLoading(false);
       console.log('useGarageSearch: Initial load completed');
     });
