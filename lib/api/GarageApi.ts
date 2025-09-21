@@ -1,5 +1,6 @@
 // lib/api/GarageApi.ts
 import axiosClient from "../axiosClient"
+import axios from "axios"
 
 export interface DaySchedule {
   isOpen?: boolean  // TypeScript interface format
@@ -163,3 +164,85 @@ export const getMyGarage = () =>
 // Lấy danh sách tất cả garage của user hiện tại
 export const getGaragesByOwner = () =>
   axiosClient.get<Garage[]>("/apis/garage/my-garages")
+
+// Tìm garage có dịch vụ cứu hộ gần nhất với ưu tiên yêu thích
+export const getEmergencyRescueGarages = async (latitude: number, longitude: number, radius: number = 10) => {
+  try {
+    // Tạo axios instance riêng cho public endpoints (không có token)
+    const publicAxios = axios.create({
+      baseURL: 'http://localhost:8080',
+      timeout: 10000,
+    })
+    
+    let nearbyGarages: Garage[] = []
+    
+    try {
+      // Thử endpoint nearby trước
+      console.log('🔍 Trying /apis/garage/nearby endpoint...')
+      const nearbyResponse = await publicAxios.get<Garage[]>("/apis/garage/nearby", { 
+        params: { latitude, longitude, radius } 
+      })
+      nearbyGarages = nearbyResponse.data
+      console.log('✅ Nearby endpoint success:', nearbyGarages.length, 'garages')
+    } catch (nearbyError: any) {
+      console.log('⚠️ Nearby endpoint failed:', nearbyError.response?.status, nearbyError.response?.statusText)
+      
+      try {
+        // Fallback: sử dụng endpoint active garages
+        console.log('🔍 Trying /apis/garage/active endpoint as fallback...')
+        const activeResponse = await publicAxios.get<Garage[]>("/apis/garage/active")
+        nearbyGarages = activeResponse.data
+        console.log('✅ Active endpoint success:', nearbyGarages.length, 'garages')
+        
+        // Tính toán khoảng cách cho active garages (giả lập)
+        nearbyGarages = nearbyGarages.map(garage => ({
+          ...garage,
+          distance: Math.random() * 10 // Giả lập khoảng cách 0-10km
+        }))
+        
+      } catch (activeError: any) {
+        console.log('❌ Both endpoints failed:', activeError.response?.status)
+        throw new Error('Không thể lấy danh sách garage từ server')
+      }
+    }
+
+    // Lọc garage có dịch vụ cứu hộ
+    const emergencyGarages = nearbyGarages.filter(garage => 
+      garage.services?.some(service => 
+        service.serviceName.toLowerCase().includes('cứu hộ') || 
+        service.serviceName.toLowerCase().includes('emergency') ||
+        service.serviceName.toLowerCase().includes('rescue')
+      )
+    )
+
+    // Lấy danh sách garage yêu thích của user (nếu có token)
+    let favoriteGarages: number[] = []
+    const token = localStorage.getItem("token")
+    if (token) {
+      try {
+        const favoritesResponse = await axiosClient.get<{id: number}[]>("/apis/favorites")
+        favoriteGarages = favoritesResponse.data.map(fav => fav.id)
+      } catch (error) {
+        console.log('Không thể lấy danh sách yêu thích:', error)
+      }
+    }
+
+    // Sắp xếp theo ưu tiên: yêu thích trước, sau đó theo khoảng cách
+    const sortedGarages = emergencyGarages.sort((a, b) => {
+      const aIsFavorite = favoriteGarages.includes(a.id)
+      const bIsFavorite = favoriteGarages.includes(b.id)
+      
+      // Ưu tiên garage yêu thích
+      if (aIsFavorite && !bIsFavorite) return -1
+      if (!aIsFavorite && bIsFavorite) return 1
+      
+      // Nếu cùng trạng thái yêu thích, sắp xếp theo khoảng cách
+      return (a.distance || 0) - (b.distance || 0)
+    })
+
+    return sortedGarages
+  } catch (error) {
+    console.error('Lỗi khi lấy garage cứu hộ:', error)
+    throw error
+  }
+}

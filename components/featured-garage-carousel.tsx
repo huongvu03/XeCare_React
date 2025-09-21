@@ -336,10 +336,10 @@ export function FeaturedGarageCarousel() {
 
                 <div className="flex space-x-2">
                   <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700" asChild>
-                    <Link href="/booking">{isAuthenticated ? "Đặt lịch ngay" : "Đặt lịch"}</Link>
+                    <Link href={`/booking/${garage.id}`}>{isAuthenticated ? "Đặt lịch ngay" : "Đặt lịch"}</Link>
                   </Button>
                   <Button size="sm" variant="outline" className="flex-1" asChild>
-                    <Link href={`/garage/${garage.slug}`}>Xem chi tiết</Link>
+                    <Link href={`/garage-detail/${garage.id}`}>Xem chi tiết</Link>
                   </Button>
                 </div>
               </div>
