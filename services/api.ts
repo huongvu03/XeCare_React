@@ -52,6 +52,13 @@ export interface GarageStats {
   inactiveGarages: number;
 }
 
+export interface Service {
+  id: number;
+  name: string;
+  description: string;
+  isActive: boolean;
+}
+
 // Utility function để tạo query string
 function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
@@ -163,6 +170,11 @@ class ApiClient {
     return this.fetchApi<string[]>('/apis/garage/services/available');
   }
 
+  // Services API
+  async getAllServices(): Promise<Service[]> {
+    return this.fetchApi<Service[]>('/apis/admin/services');
+  }
+
   async getAvailableVehicleTypes(): Promise<string[]> {
     return this.fetchApi<string[]>('/apis/garage/vehicle-types/available');
   }
@@ -208,5 +220,5 @@ class ApiClient {
 // Export singleton instance
 export const apiClient = new ApiClient();
 // Export types
-export type { PublicGarageResponseDto, GarageSearchParams, PaginatedResponse, GarageStats };
+export type { PublicGarageResponseDto, GarageSearchParams, PaginatedResponse, GarageStats, Service };
 

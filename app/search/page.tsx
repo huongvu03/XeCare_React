@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { PublicGarageResponseDto, GarageSearchParams } from '@/services/api';
 import { useGarageSearch } from '@/hooks/useGarageSearch';
 import { useGarageOptions } from '@/hooks/useGarageOptions';
@@ -12,11 +12,15 @@ import { GarageCard } from '@/components/garage/GarageCard';
 import { GarageMap } from '@/components/garage/GarageMap';
 import { Button } from '@/components/ui/button';
 import { MapPin, Navigation, Loader2 } from 'lucide-react';
+import { getServiceNameById, getVehicleTypeNameById, getServiceNamesById } from '@/lib/utils/serviceMapping';
 
 export default function GarageSearchPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [sortByDistance, setSortByDistance] = useState(false);
+  const [initialSearchDone, setInitialSearchDone] = useState(false);
+  const [currentSearchParams, setCurrentSearchParams] = useState<GarageSearchParams>({});
 
   // Custom hooks
   const {
@@ -59,7 +63,11 @@ export default function GarageSearchPage() {
 
   // Handle search
   const handleSearch = (params: GarageSearchParams) => {
+    console.log('=== HANDLE SEARCH DEBUG ===');
+    console.log('Received params:', params);
+    setCurrentSearchParams(params);
     search(params);
+    console.log('========================');
   };
 
   // Handle view details
@@ -94,8 +102,124 @@ export default function GarageSearchPage() {
     setSortByDistance(false);
   };
 
+  // Handle URL parameters for automatic search
+  useEffect(() => {
+    if (!initialSearchDone && searchParams) {
+      const serviceParam = searchParams.get('service');
+      const vehicleTypeParam = searchParams.get('vehicleType');
+      const locationParam = searchParams.get('location');
+      
+      console.log('URL Search Params:', { serviceParam, vehicleTypeParam, locationParam });
+      console.log('Services loaded:', services.length, services);
+      console.log('Vehicle types loaded:', vehicleTypes.length, vehicleTypes);
+      
+      if (serviceParam || vehicleTypeParam || locationParam) {
+        const searchParams: GarageSearchParams = {};
+        
+        if (serviceParam) {
+          // Try to find service by ID
+          const serviceId = parseInt(serviceParam);
+          console.log('Parsed service ID:', serviceId);
+          
+          if (!isNaN(serviceId) && serviceId > 0) {
+            const serviceNames = getServiceNamesById(serviceId);
+            console.log('All possible service names for ID', serviceId, ':', serviceNames);
+            console.log('Available services array:', services);
+            
+            // Try to find a service name that exists in the available services array
+            let foundServiceName = null;
+            for (const serviceName of serviceNames) {
+              if (services.includes(serviceName)) {
+                foundServiceName = serviceName;
+                console.log('Found matching service name:', serviceName);
+                break;
+              }
+            }
+            
+            if (foundServiceName) {
+              searchParams.service = foundServiceName;
+              console.log('Using found service name:', foundServiceName);
+            } else if (serviceNames.length > 0) {
+              // Use the first service name even if not in services array
+              // The API might still handle it correctly
+              searchParams.service = serviceNames[0];
+              console.log('Using first service name (not in services array):', serviceNames[0]);
+            } else {
+              // Fallback: try to find by name in the services array
+              searchParams.service = serviceParam;
+              console.log('Using fallback service param:', serviceParam);
+            }
+          } else {
+            // If not a valid ID, try to find by name
+            searchParams.service = serviceParam;
+            console.log('Using service param as name:', serviceParam);
+          }
+        }
+        
+        if (vehicleTypeParam) {
+          // Try to find vehicle type by ID
+          const vehicleTypeId = parseInt(vehicleTypeParam);
+          if (!isNaN(vehicleTypeId) && vehicleTypeId > 0) {
+            const vehicleTypeName = getVehicleTypeNameById(vehicleTypeId);
+            if (vehicleTypeName) {
+              searchParams.vehicleType = vehicleTypeName;
+            } else {
+              // Fallback: try to find by name
+              searchParams.vehicleType = vehicleTypeParam;
+            }
+          } else {
+            // If not a valid ID, try to find by name
+            searchParams.vehicleType = vehicleTypeParam;
+          }
+        }
+        
+        if (locationParam) {
+          searchParams.address = locationParam;
+        }
+        
+        console.log('Final search params:', searchParams);
+        
+        // Save current search params for SearchFilters
+        setCurrentSearchParams(searchParams);
+        
+        // Perform the search
+        search(searchParams);
+        setInitialSearchDone(true);
+        
+        // Clear URL parameters without refreshing the page
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      } else {
+        // No specific search parameters, load all active garages
+        console.log('No URL params, loading all garages');
+        search({});
+        setInitialSearchDone(true);
+      }
+    }
+  }, [searchParams, services, vehicleTypes, initialSearchDone, search]);
+
   // Use sorted garages when available
   const displayGarages = sortByDistance && userLocation ? sortedGarages : garages;
+
+  // Get current search context for display
+  const getSearchContext = () => {
+    const serviceParam = searchParams?.get('service');
+    const vehicleTypeParam = searchParams?.get('vehicleType');
+    const locationParam = searchParams?.get('location');
+    
+    if (serviceParam) {
+      const serviceId = parseInt(serviceParam);
+      if (!isNaN(serviceId) && serviceId > 0) {
+        const serviceName = getServiceNameById(serviceId);
+        if (serviceName) {
+          return `Dịch vụ: ${serviceName}`;
+        }
+      }
+    }
+    return null;
+  };
+
+  const searchContext = getSearchContext();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -104,10 +228,13 @@ export default function GarageSearchPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Tìm kiếm Garage
+              {searchContext ? searchContext : 'Tìm kiếm Garage'}
             </h1>
             <p className="text-gray-600 mt-1">
-              Tìm garage uy tín, chất lượng gần bạn
+              {searchContext 
+                ? `Tìm garage cung cấp dịch vụ ${searchContext.toLowerCase()} gần bạn`
+                : 'Tìm garage uy tín, chất lượng gần bạn'
+              }
             </p>
           </div>
         </div>
@@ -122,6 +249,7 @@ export default function GarageSearchPage() {
             onSearch={handleSearch}
             onReset={reset}
             isLoading={isLoading}
+            initialParams={currentSearchParams}
           />
         </div>
       </div>

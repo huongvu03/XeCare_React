@@ -207,11 +207,15 @@ export const mockApiClient = {
     }
     
     if (params.service) {
+      const serviceFilters = Array.isArray(params.service) ? params.service : [params.service];
       filteredGarages = filteredGarages.filter(garage => 
-        garage.serviceNames.some(service => 
-          service.toLowerCase().includes(params.service.toLowerCase())
+        garage.serviceNames.some(garageService => 
+          serviceFilters.some(filterService => 
+            garageService.toLowerCase().includes(filterService.toLowerCase())
+          )
         )
       );
+      console.log('MockAPI: Filtering by services:', serviceFilters);
     }
     
     if (params.vehicleType) {

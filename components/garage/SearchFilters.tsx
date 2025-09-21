@@ -16,6 +16,7 @@ interface SearchFiltersProps {
   onSearch: (params: GarageSearchParams) => void;
   onReset: () => void | Promise<void>;
   isLoading?: boolean;
+  initialParams?: GarageSearchParams;
 }
 
 interface MultiSelectProps {
@@ -129,7 +130,7 @@ function MultiSelect({ options, selectedValues, onSelectionChange, placeholder, 
   );
 }
 
-export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoading }: SearchFiltersProps) {
+export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoading, initialParams }: SearchFiltersProps) {
   const [mounted, setMounted] = useState(false);
   const [resetKey, setResetKey] = useState(0); // Key to force re-render
   const [searchParams, setSearchParams] = useState<GarageSearchParams>({
@@ -139,13 +140,25 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
     vehicleType: [],
     minRating: 0,
     maxRating: 5,
-    isVerified: undefined
+    isVerified: undefined,
+    ...initialParams // Merge with initial params if provided
   });
 
   // Fix hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Update search params when initial params change
+  useEffect(() => {
+    if (initialParams) {
+      console.log('SearchFilters: Updating with initial params:', initialParams);
+      setSearchParams(prev => ({
+        ...prev,
+        ...initialParams
+      }));
+    }
+  }, [initialParams]);
 
   const handleInputChange = (field: keyof GarageSearchParams, value: any) => {
     setSearchParams(prev => ({

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,219 +8,16 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Wrench,
-  Droplets,
-  Zap,
-  Disc,
-  Settings,
-  Car,
-  Paintbrush,
-  Sparkles,
-  Gauge,
-  Wind,
-  Hammer,
-  Cog,
   Search,
   Filter,
   Clock,
   MapPin,
 } from "lucide-react"
 import Link from "next/link"
+import { apiClient, Service } from "@/services/api"
+import { mapServiceToUI } from "@/lib/utils/serviceMapper"
 
-const services = [
-  {
-    id: "thay-nhot",
-    icon: Droplets,
-    title: "Thay nhớt - Bảo dưỡng",
-    description: "Thay nhớt định kỳ, lọc gió, bugi, dây curoa. Bảo dưỡng toàn diện",
-    vehicles: ["Xe máy", "Ô tô"],
-    priceRange: "80K - 350K",
-    duration: "30-60 phút",
-    popular: true,
-    category: "maintenance",
-    details: {
-      included: ["Thay nhớt động cơ", "Thay lọc nhớt", "Kiểm tra mức dầu", "Vệ sinh bugi"],
-      process: ["Kiểm tra tình trạng xe", "Xả nhớt cũ", "Thay lọc nhớt mới", "Đổ nhớt mới", "Kiểm tra hoạt động"],
-      warranty: "3 tháng hoặc 3,000km",
-    },
-  },
-  {
-    id: "sua-dong-co",
-    icon: Settings,
-    title: "Sửa chữa động cơ",
-    description: "Chẩn đoán lỗi động cơ, sửa chữa hệ thống đánh lửa, làm mát",
-    vehicles: ["Xe máy", "Ô tô", "Xe tải"],
-    priceRange: "200K - 5M",
-    duration: "2-8 giờ",
-    popular: false,
-    category: "repair",
-    details: {
-      included: ["Chẩn đoán lỗi", "Sửa chữa động cơ", "Thay phụ tùng", "Test thử"],
-      process: ["Chẩn đoán bằng máy", "Tháo rời kiểm tra", "Sửa chữa/thay thế", "Lắp ráp lại", "Chạy thử"],
-      warranty: "6-12 tháng",
-    },
-  },
-  {
-    id: "he-thong-phanh",
-    icon: Disc,
-    title: "Hệ thống phanh",
-    description: "Thay má phanh, dầu phanh, đĩa phanh. Kiểm tra an toàn",
-    vehicles: ["Xe máy", "Ô tô", "Xe tải"],
-    priceRange: "150K - 2M",
-    duration: "1-3 giờ",
-    popular: true,
-    category: "safety",
-    details: {
-      included: ["Thay má phanh", "Thay dầu phanh", "Kiểm tra đĩa phanh", "Điều chỉnh phanh"],
-      process: ["Kiểm tra hệ thống", "Tháo bánh xe", "Thay má phanh", "Thay dầu phanh", "Test phanh"],
-      warranty: "6 tháng",
-    },
-  },
-  {
-    id: "he-thong-dien",
-    icon: Zap,
-    title: "Hệ thống điện",
-    description: "Sửa đèn, còi, bình ắc quy, máy phát điện, hệ thống đánh lửa",
-    vehicles: ["Xe máy", "Ô tô"],
-    priceRange: "100K - 1.5M",
-    duration: "1-4 giờ",
-    popular: false,
-    category: "electrical",
-    details: {
-      included: ["Kiểm tra hệ thống điện", "Sửa đèn/còi", "Thay ắc quy", "Sửa máy phát"],
-      process: ["Chẩn đoán lỗi điện", "Kiểm tra dây dẫn", "Sửa chữa/thay thế", "Test hoạt động"],
-      warranty: "3-6 tháng",
-    },
-  },
-  {
-    id: "lop-mam-xe",
-    icon: Car,
-    title: "Lốp và mâm xe",
-    description: "Thay lốp, vá lốp, cân chỉnh mâm, kiểm tra áp suất",
-    vehicles: ["Xe máy", "Ô tô"],
-    priceRange: "50K - 8M",
-    duration: "30 phút - 2 giờ",
-    popular: true,
-    category: "maintenance",
-    details: {
-      included: ["Thay lốp mới", "Vá lốp", "Cân chỉnh mâm", "Kiểm tra áp suất"],
-      process: ["Kiểm tra lốp", "Tháo lốp cũ", "Lắp lốp mới", "Cân chỉnh", "Kiểm tra áp suất"],
-      warranty: "Theo hãng sản xuất",
-    },
-  },
-  {
-    id: "dieu-hoa",
-    icon: Wind,
-    title: "Điều hòa ô tô",
-    description: "Bảo dưỡng, sửa chữa hệ thống điều hòa, thay gas lạnh",
-    vehicles: ["Ô tô"],
-    priceRange: "200K - 3M",
-    duration: "1-3 giờ",
-    popular: false,
-    category: "comfort",
-    details: {
-      included: ["Vệ sinh điều hòa", "Thay gas lạnh", "Sửa máy nén", "Thay lọc gió"],
-      process: ["Kiểm tra hệ thống", "Vệ sinh bay hơi", "Thay gas", "Test nhiệt độ"],
-      warranty: "6 tháng",
-    },
-  },
-  {
-    id: "son-xe",
-    icon: Paintbrush,
-    title: "Sơn xe - Đồng sơn",
-    description: "Sơn lại toàn bộ hoặc từng phần, xử lý trầy xước, đánh bóng",
-    vehicles: ["Xe máy", "Ô tô"],
-    priceRange: "500K - 15M",
-    duration: "1-5 ngày",
-    popular: false,
-    category: "cosmetic",
-    details: {
-      included: ["Sơn toàn bộ", "Sơn từng phần", "Xử lý trầy xước", "Đánh bóng"],
-      process: ["Chuẩn bị bề mặt", "Sơn lót", "Sơn màu", "Sơn bóng", "Đánh bóng"],
-      warranty: "12 tháng",
-    },
-  },
-  {
-    id: "rua-xe",
-    icon: Sparkles,
-    title: "Rửa xe - Chăm sóc",
-    description: "Rửa xe, đánh bóng, phủ ceramic, bảo dưỡng nội thất",
-    vehicles: ["Xe máy", "Ô tô"],
-    priceRange: "30K - 500K",
-    duration: "30 phút - 3 giờ",
-    popular: true,
-    category: "cosmetic",
-    details: {
-      included: ["Rửa xe cơ bản", "Đánh bóng", "Phủ ceramic", "Vệ sinh nội thất"],
-      process: ["Xịt nước", "Xà phòng", "Chà rửa", "Xịt sạch", "Lau khô"],
-      warranty: "1 tháng",
-    },
-  },
-  {
-    id: "kiem-dinh",
-    icon: Gauge,
-    title: "Kiểm định - Đăng kiểm",
-    description: "Hỗ trợ kiểm định an toàn kỹ thuật, đăng kiểm xe",
-    vehicles: ["Ô tô", "Xe tải"],
-    priceRange: "300K - 800K",
-    duration: "2-4 giờ",
-    popular: false,
-    category: "legal",
-    details: {
-      included: ["Kiểm tra kỹ thuật", "Hỗ trợ đăng kiểm", "Làm giấy tờ", "Tư vấn"],
-      process: ["Chuẩn bị xe", "Kiểm tra kỹ thuật", "Làm hồ sơ", "Nộp đăng kiểm"],
-      warranty: "Theo quy định",
-    },
-  },
-  {
-    id: "sua-than-vo",
-    icon: Hammer,
-    title: "Sửa chữa thân vỏ",
-    description: "Sửa móp méo, hàn xì, thay thế phụ tùng thân xe",
-    vehicles: ["Xe máy", "Ô tô"],
-    priceRange: "200K - 10M",
-    duration: "2 giờ - 3 ngày",
-    popular: false,
-    category: "repair",
-    details: {
-      included: ["Sửa móp méo", "Hàn xì", "Thay phụ tùng", "Chỉnh hình"],
-      process: ["Đánh giá hư hỏng", "Tháo rời", "Sửa chữa", "Lắp ráp", "Kiểm tra"],
-      warranty: "6-12 tháng",
-    },
-  },
-  {
-    id: "hop-so",
-    icon: Cog,
-    title: "Hộp số - Ly hợp",
-    description: "Sửa chữa hộp số, thay dầu hộp số, sửa ly hợp",
-    vehicles: ["Xe máy", "Ô tô"],
-    priceRange: "300K - 8M",
-    duration: "2-6 giờ",
-    popular: false,
-    category: "repair",
-    details: {
-      included: ["Sửa hộp số", "Thay dầu hộp số", "Sửa ly hợp", "Điều chỉnh"],
-      process: ["Chẩn đoán", "Tháo hộp số", "Sửa chữa", "Lắp ráp", "Test vận hành"],
-      warranty: "6-12 tháng",
-    },
-  },
-  {
-    id: "cuu-ho",
-    icon: Wrench,
-    title: "Cứu hộ khẩn cấp",
-    description: "Cứu hộ 24/7, kéo xe, sửa chữa tại chỗ, hỗ trợ khẩn cấp",
-    vehicles: ["Xe máy", "Ô tô", "Xe tải"],
-    priceRange: "150K - 1M",
-    duration: "15-60 phút",
-    popular: true,
-    category: "emergency",
-    details: {
-      included: ["Cứu hộ 24/7", "Kéo xe", "Sửa tại chỗ", "Hỗ trợ khẩn cấp"],
-      process: ["Nhận cuộc gọi", "Di chuyển đến", "Đánh giá tình trạng", "Xử lý", "Hoàn thành"],
-      warranty: "Theo dịch vụ",
-    },
-  },
-]
+// Services will be loaded from the database
 
 const categories = [
   { value: "all", label: "Tất cả dịch vụ" },
@@ -246,6 +43,28 @@ export default function ServicesPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedVehicle, setSelectedVehicle] = useState("all")
   const [selectedService, setSelectedService] = useState<any>(null)
+  const [services, setServices] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch services from database
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true)
+        const dbServices = await apiClient.getAllServices()
+        const mappedServices = dbServices.map(mapServiceToUI)
+        setServices(mappedServices)
+      } catch (err) {
+        console.error('Error fetching services:', err)
+        setError('Không thể tải danh sách dịch vụ. Vui lòng thử lại sau.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
+  }, [])
 
   const filteredServices = services.filter((service) => {
     const matchesSearch =
@@ -256,6 +75,51 @@ export default function ServicesPage() {
 
     return matchesSearch && matchesCategory && matchesVehicle
   })
+
+  // Loading state
+  if (loading) {
+    return (
+      <DashboardLayout
+        allowedRoles={["USER", "ADMIN", "GARAGE"]}
+        title="Dịch vụ sửa chữa xe"
+        description="Tìm hiểu chi tiết về các dịch vụ sửa chữa và bảo dưỡng xe"
+      >
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-slate-600">Đang tải danh sách dịch vụ...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <DashboardLayout
+        allowedRoles={["USER", "ADMIN", "GARAGE"]}
+        title="Dịch vụ sửa chữa xe"
+        description="Tìm hiểu chi tiết về các dịch vụ sửa chữa và bảo dưỡng xe"
+      >
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-red-500 mb-4">
+              <Search className="h-16 w-16 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">Có lỗi xảy ra</h3>
+            <p className="text-slate-600 mb-4">{error}</p>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+            >
+              Thử lại
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout
@@ -396,7 +260,7 @@ export default function ServicesPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-1">
-                      {service.vehicles.map((vehicle, idx) => (
+                      {service.vehicles.map((vehicle: string, idx: number) => (
                         <Badge key={idx} variant="secondary" className="text-xs bg-blue-100 text-blue-700">
                           {vehicle}
                         </Badge>
