@@ -213,6 +213,7 @@ export default function EmergencyDetailPage() {
                   <span className="hidden sm:inline">Quay lại</span>
                 </Button>
                 
+                
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-lg">
                     #{request.id}

@@ -46,7 +46,7 @@ export default function AppointmentsPage() {
       setLoading(true)
       console.log("✅ Loading appointments for user:", user.email)
       console.log("🔍 User ID:", user.id)
-      console.log("🔍 User roles:", user.roles)
+    
       const params = {
         page: currentPage,
         size: 10,
@@ -148,7 +148,7 @@ export default function AppointmentsPage() {
   // Show loading while auth is being checked
   if (authLoading) {
     return (
-      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+      <DashboardLayout allowedRoles={["USER", "GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -162,7 +162,7 @@ export default function AppointmentsPage() {
   // Show message if user not authenticated
   if (!user) {
     return (
-      <DashboardLayout allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+      <DashboardLayout allowedRoles={["USER", "GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -300,7 +300,7 @@ export default function AppointmentsPage() {
 
   return (
     <DashboardLayout
-      allowedRoles={["USER", "GARAGE", "USER_AND_GARAGE"]}
+      allowedRoles={["USER", "GARAGE" ]}
       title="Lịch hẹn của tôi"
       description="Quản lý các lịch hẹn sửa xe"
     >
@@ -373,66 +373,7 @@ export default function AppointmentsPage() {
       )}
 
       {/* Debug Info */}
-      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h4 className="font-medium text-yellow-800 mb-2">🔍 Debug Info:</h4>
-        <div className="text-sm text-yellow-700 space-y-1">
-          <div>Loading: {loading ? 'true' : 'false'}</div>
-          <div>Appointments array: {appointments ? 'exists' : 'null/undefined'}</div>
-          <div>Appointments length: {appointments?.length || 0}</div>
-          <div>Total pages: {totalPages}</div>
-          <div>Current page: {currentPage}</div>
-          <div>Filter status: {filterStatus || 'none'}</div>
-          <div>Error: {error || 'none'}</div>
-          <div>User: {user ? `${user.email} (ID: ${user.id})` : 'Not logged in'}</div>
-        </div>
-        <div className="mt-3 flex space-x-2">
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => {
-              console.log("🔍 Manual API test triggered");
-              loadAppointments();
-            }}
-          >
-            🔄 Retry Load
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => {
-              console.log("🔍 User object:", user);
-              console.log("🔍 Auth loading:", authLoading);
-              console.log("🔍 Current state:", { appointments, loading, error, totalPages });
-            }}
-          >
-            📋 Log State
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => {
-              window.open('/booking/1', '_blank');
-            }}
-          >
-            ➕ Create Test Appointment
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => {
-              const token = localStorage.getItem('token');
-              const user = localStorage.getItem('user');
-              console.log("🔍 Auth Debug:");
-              console.log("  - Token exists:", !!token);
-              console.log("  - Token preview:", token ? token.substring(0, 50) + "..." : "No token");
-              console.log("  - User data:", user);
-              console.log("  - User parsed:", user ? JSON.parse(user) : "No user data");
-            }}
-          >
-            🔐 Check Auth
-          </Button>
-        </div>
-      </div>
+    
 
       {/* Appointments List */}
       <div className="space-y-4">

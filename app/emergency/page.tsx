@@ -413,7 +413,7 @@ export default function EmergencyPage() {
               )}
 
               {/* Manual Location Service */}
-              <LocationService onLocationUpdate={handleLocationUpdate} className="border-blue-100" />
+              {/* <LocationService onLocationUpdate={handleLocationUpdate} className="border-blue-100" /> */}
 
               {/* Emergency Map with Garage Selection */}
               <EmergencyMap 

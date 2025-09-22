@@ -13,7 +13,6 @@ import {
   AlertTriangle,
   Car,
   MessageSquare,
-  Star,
   Timer
 } from "lucide-react"
 import { EmergencyRequest } from "@/lib/api/EmergencyApi"
@@ -227,15 +226,6 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
             Làm mới
           </Button>
 
-          {request.status === 'COMPLETED' && (
-            <Button
-              size="sm"
-              className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
-            >
-              <Star className="h-4 w-4 mr-2" />
-              Đánh giá
-            </Button>
-          )}
         </div>
 
         {/* Images if available */}

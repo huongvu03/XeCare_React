@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Bell, CheckCircle, Clock, Trash2, CheckCheck, Filter, X, Search, AlertTriangle, Star, Calendar, Settings, RefreshCw } from "lucide-react";
+import { Bell, CheckCircle, Clock, Trash2, CheckCheck, Search, RefreshCw, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,6 @@ import {
   markNotificationAsRead, 
   markAllNotificationsAsRead, 
   getUnreadNotificationCount,
-  getNotificationsByType,
-  getNotificationsByCategory,
-  getNotificationsByPriority,
-  getEmergencyNotifications,
-  searchNotifications,
   cleanupOldNotifications
 } from "@/lib/api/NotificationApi";
 import type { Notification, NotificationType } from "@/types/Users/notification";
@@ -32,12 +27,8 @@ export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [showEmergencyOnly, setShowEmergencyOnly] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -48,7 +39,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [selectedType, selectedCategory, selectedPriority, showEmergencyOnly, searchKeyword, notifications]);
+  }, [searchKeyword, notifications]);
 
   const loadNotifications = async () => {
     try {
@@ -83,26 +74,6 @@ export default function NotificationsPage() {
 
   const applyFilters = () => {
     let filtered = [...notifications];
-
-    // Filter by type
-    if (selectedType) {
-      filtered = filtered.filter(n => n.type === selectedType);
-    }
-
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(n => n.category === selectedCategory);
-    }
-
-    // Filter by priority
-    if (selectedPriority) {
-      filtered = filtered.filter(n => n.priority === selectedPriority);
-    }
-
-    // Filter emergency only
-    if (showEmergencyOnly) {
-      filtered = filtered.filter(n => n.priority === 'HIGH' || n.category === 'EMERGENCY');
-    }
 
     // Filter by search keyword
     if (searchKeyword.trim()) {
@@ -234,40 +205,6 @@ export default function NotificationsPage() {
     }
   };
 
-  const clearAllFilters = () => {
-    setSelectedType(null);
-    setSelectedCategory(null);
-    setSelectedPriority(null);
-    setShowEmergencyOnly(false);
-    setSearchKeyword("");
-  };
-
-  const notificationTypes = [
-    { value: 'EMERGENCY_REQUEST_CREATED', label: 'Tạo yêu cầu khẩn cấp', icon: '🚨' },
-    { value: 'EMERGENCY_QUOTE_RECEIVED', label: 'Báo giá khẩn cấp', icon: '💰' },
-    { value: 'EMERGENCY_STATUS_UPDATED', label: 'Cập nhật khẩn cấp', icon: '📊' },
-    { value: 'FAVORITE_ADDED', label: 'Thêm yêu thích', icon: '❤️' },
-    { value: 'FAVORITE_REMOVED', label: 'Xóa yêu thích', icon: '💔' },
-    { value: 'APPOINTMENT_CREATED', label: 'Tạo lịch hẹn', icon: '📅' },
-    { value: 'APPOINTMENT_CONFIRMED', label: 'Xác nhận lịch hẹn', icon: '✅' },
-    { value: 'APPOINTMENT_CANCELLED', label: 'Hủy lịch hẹn', icon: '❌' },
-    { value: 'APPOINTMENT_REMINDER', label: 'Nhắc nhở lịch hẹn', icon: '⏰' },
-    { value: 'SYSTEM_UPDATE', label: 'Cập nhật hệ thống', icon: '⚙️' },
-  ];
-
-  const notificationCategories = [
-    { value: 'EMERGENCY', label: 'Khẩn cấp', icon: '🚨', color: 'text-red-600 bg-red-50' },
-    { value: 'FAVORITE', label: 'Yêu thích', icon: '❤️', color: 'text-pink-600 bg-pink-50' },
-    { value: 'APPOINTMENT', label: 'Lịch hẹn', icon: '📅', color: 'text-blue-600 bg-blue-50' },
-    { value: 'SYSTEM', label: 'Hệ thống', icon: '⚙️', color: 'text-purple-600 bg-purple-50' },
-    { value: 'GARAGE', label: 'Garage', icon: '🔧', color: 'text-green-600 bg-green-50' },
-  ];
-
-  const notificationPriorities = [
-    { value: 'HIGH', label: 'Cao', icon: '🔴', color: 'text-red-600 bg-red-50' },
-    { value: 'MEDIUM', label: 'Trung bình', icon: '🟡', color: 'text-yellow-600 bg-yellow-50' },
-    { value: 'LOW', label: 'Thấp', icon: '🟢', color: 'text-green-600 bg-green-50' },
-  ];
 
   if (isLoading) {
     return (
@@ -424,131 +361,6 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
 
-        {/* Enhanced Filter Section */}
-        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl mb-8 rounded-2xl overflow-hidden">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Filter className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-800">Bộ lọc thông minh</span>
-            </div>
-            
-            {/* Enhanced Emergency Toggle */}
-            <div className="mb-6">
-              <Button
-                variant={showEmergencyOnly ? "default" : "outline"}
-                size="lg"
-                onClick={() => setShowEmergencyOnly(!showEmergencyOnly)}
-                className={`flex items-center space-x-2 rounded-xl px-6 py-3 transition-all duration-300 ${
-                  showEmergencyOnly 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 shadow-lg hover:shadow-xl' 
-                    : 'bg-white/90 border-red-200 hover:bg-red-50 hover:border-red-300 text-red-700 hover:text-red-800'
-                }`}
-              >
-                <AlertTriangle className="h-5 w-5" />
-                <span>🚨 Chỉ hiển thị khẩn cấp</span>
-              </Button>
-            </div>
-
-            {/* Enhanced Category Filters */}
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">📂</span>
-                </div>
-                Theo danh mục:
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                {notificationCategories.map((category) => (
-                  <Button
-                    key={category.value}
-                    variant={selectedCategory === category.value ? "default" : "outline"}
-                    size="lg"
-                    onClick={() => setSelectedCategory(selectedCategory === category.value ? null : category.value)}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-3 transition-all duration-300 ${
-                      selectedCategory === category.value 
-                        ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl' 
-                        : 'bg-white/90 border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 hover:scale-105 text-gray-700'
-                    }`}
-                  >
-                    <span className="text-lg">{category.icon}</span>
-                    <span className="font-medium">{category.label}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Enhanced Type Filters */}
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">🎯</span>
-                </div>
-                Theo loại:
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                {notificationTypes.map((type) => (
-                  <Button
-                    key={type.value}
-                    variant={selectedType === type.value ? "default" : "outline"}
-                    size="lg"
-                    onClick={() => setSelectedType(selectedType === type.value ? null : type.value)}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-3 transition-all duration-300 ${
-                      selectedType === type.value 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl' 
-                        : 'bg-white/90 border-gray-200 hover:bg-green-50 hover:border-green-300 hover:scale-105 text-gray-700'
-                    }`}
-                  >
-                    <span className="text-lg">{type.icon}</span>
-                    <span className="font-medium">{type.label}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Enhanced Priority Filters */}
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">⚡</span>
-                </div>
-                Theo độ ưu tiên:
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                {notificationPriorities.map((priority) => (
-                  <Button
-                    key={priority.value}
-                    variant={selectedPriority === priority.value ? "default" : "outline"}
-                    size="lg"
-                    onClick={() => setSelectedPriority(selectedPriority === priority.value ? null : priority.value)}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-3 transition-all duration-300 ${
-                      selectedPriority === priority.value 
-                        ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white border-0 shadow-lg hover:shadow-xl' 
-                        : 'bg-white/90 border-gray-200 hover:bg-orange-50 hover:border-orange-300 hover:scale-105 text-gray-700'
-                    }`}
-                  >
-                    <span className="text-lg">{priority.icon}</span>
-                    <span className="font-medium">{priority.label}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Enhanced Clear Filters */}
-            {(selectedType || selectedCategory || selectedPriority || showEmergencyOnly || searchKeyword) && (
-              <Button
-                variant="ghost"
-                size="lg"
-                onClick={clearAllFilters}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl px-6 py-3 transition-all duration-300"
-              >
-                <X className="h-5 w-5" />
-                <span className="font-medium">🧹 Xóa tất cả bộ lọc</span>
-              </Button>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Enhanced Notifications List */}
         {filteredNotifications.length === 0 ? (
@@ -561,13 +373,13 @@ export default function NotificationsPage() {
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                {searchKeyword || selectedType || selectedCategory || showEmergencyOnly 
-                  ? "Không có thông báo nào phù hợp với bộ lọc" 
+                {searchKeyword 
+                  ? "Không có thông báo nào phù hợp với từ khóa tìm kiếm" 
                   : "Không có thông báo nào"}
               </h3>
               <p className="text-gray-600 text-lg max-w-md mx-auto">
-                {searchKeyword || selectedType || selectedCategory || showEmergencyOnly
-                  ? "Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
+                {searchKeyword
+                  ? "Hãy thử thay đổi từ khóa tìm kiếm"
                   : "Bạn chưa có thông báo nào. Hãy thực hiện các hoạt động để nhận thông báo!"
                 }
               </p>
