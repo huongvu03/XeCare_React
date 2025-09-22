@@ -59,15 +59,6 @@
 - **Đăng nhập hàng tuần**: +10 điểm
 - **Giới thiệu bạn bè**: +200 điểm
 
-#### Cách sử dụng:
-1. Truy cập `/reward-points` để xem tổng điểm và lịch sử
-2. Thực hiện các hành động để tự động tích điểm
-3. Xem hướng dẫn chi tiết cách kiếm điểm
-
-#### API Endpoints:
-- `GET /apis/reward-points/me` - Lấy danh sách điểm thưởng
-- `GET /apis/reward-points/me/summary` - Lấy tổng quan điểm thưởng
-- `POST /apis/reward-points/add` - Thêm điểm thưởng (admin)
 
 ---
 
@@ -102,7 +93,6 @@ src/main/java/com/group3/xecare2/user/
 │   └── RewardPoint.java             # Entity điểm thưởng
 └── repositories/
     ├── FavoriteRepository.java      # Repository yêu thích
-    └── RewardPointRepository.java   # Repository điểm thưởng
 ```
 
 ### Frontend:
@@ -111,7 +101,6 @@ XeCare_React/
 ├── app/
 │   ├── favorites/page.tsx           # Trang garage yêu thích
 │   ├── notifications/page.tsx       # Trang thông báo
-│   └── reward-points/page.tsx       # Trang điểm thưởng
 ├── components/ui/
 │   ├── FavoriteButton.tsx           # Nút yêu thích
 │   └── NotificationBell.tsx         # Icon thông báo
@@ -119,13 +108,9 @@ XeCare_React/
 │   ├── api/
 │   │   ├── FavoriteApi.ts           # API yêu thích
 │   │   ├── NotificationApi.ts       # API thông báo
-│   │   └── RewardPointApi.ts        # API điểm thưởng
-│   └── services/
-│       └── RewardPointService.ts    # Service điểm thưởng
 └── types/Users/
     ├── favorite.ts                   # Types yêu thích
     ├── notification.ts               # Types thông báo
-    └── rewardPoint.ts                # Types điểm thưởng
 ```
 
 ---
@@ -169,7 +154,7 @@ XeCare_React/
 - User phải đăng nhập để sử dụng các chức năng
 
 ### 2. Database:
-- Cần có các bảng: `Favorites`, `Reward_Points`, `Notifications`
+- Cần có các bảng: `Favorites`, `Notifications`
 - Đảm bảo foreign key constraints đúng
 
 ### 3. Performance:
@@ -184,10 +169,6 @@ XeCare_React/
 - Thông báo real-time qua browser
 - Mobile push notifications
 
-### 2. Gamification:
-- Badges và achievements
-- Leaderboard điểm thưởng
-- Challenges hàng tuần/tháng
 
 ### 3. Social Features:
 - Chia sẻ garage yêu thích

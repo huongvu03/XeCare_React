@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, LogOut, User, Settings, LayoutDashboard, Heart, Gift, Bell, Calendar, Building2 } from "lucide-react"
+import { ChevronDown, LogOut, User, Settings, LayoutDashboard, Heart, Bell, Calendar, Building2 } from "lucide-react"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 
 function AuthButtons() {
@@ -216,10 +216,6 @@ export function Header() {
                   <a href="/notifications" className="text-slate-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
                     <Bell className="h-4 w-4" />
                     <span>Thông báo</span>
-                  </a>
-                  <a href="/reward-points" className="text-slate-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
-                    <Gift className="h-4 w-4" />
-                    <span>Điểm thưởng</span>
                   </a>
                 </>
               )}

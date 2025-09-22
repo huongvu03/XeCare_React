@@ -127,20 +127,43 @@ class EmergencyApi {
   // Cập nhật trạng thái yêu cầu cứu hộ - Chấp nhận request (public endpoint)
   async updateRequestStatus(requestId: number, status: string) {
     try {
-      console.log('📡 [EmergencyApi] Updating request status:', requestId, 'to', status);
+      console.log('🚀 [EmergencyApi] Updating request status:', requestId, 'to', status);
       
       // Use specific endpoint for ACCEPTED status  
       if (status.toUpperCase() === 'ACCEPTED') {
-        console.log('📡 [EmergencyApi] Using accept-request endpoint');
-        const response = await axiosClient.get(`/apis/emergency/accept-request/${requestId}`);
+        console.log('✅ [EmergencyApi] Using NO-AUTH accept endpoint - NO AUTH REQUIRED');
+        const response = await axiosClient.get(`/noauth/emergency/accept/${requestId}`);
+        console.log('🎉 [EmergencyApi] Accept request successful:', response.data);
+        
+        if (response.data && response.data.success) {
+          console.log('✅ [EmergencyApi] Request accepted successfully:', response.data.message);
+        } else {
+          console.log('⚠️ [EmergencyApi] Accept response indicates failure:', response.data);
+        }
+        
         return response;
       }
       
-      // For other statuses, fallback to original endpoint
-      console.log('📡 [EmergencyApi] Fallback to auth endpoint for other status updates');
-      return axiosClient.put<EmergencyRequest>(`/apis/emergency/requests/${requestId}/status?status=${status}`);
-    } catch (error) {
-      console.log('📡 [EmergencyApi] Error updating status:', error);
+      // For CANCELLED status, use delete endpoint
+      if (status.toUpperCase() === 'CANCELLED') {
+        console.log('🗑️ [EmergencyApi] Using delete-request endpoint for cancellation');
+        const response = await axiosClient.delete(`/apis/emergency/delete-request/${requestId}`);
+        console.log('✅ [EmergencyApi] Delete request successful:', response.data);
+        return response;
+      }
+      
+      // For other statuses, use change-status endpoint (public)
+      console.log('🔄 [EmergencyApi] Using change-status endpoint for status:', status);
+      const response = await axiosClient.get(`/apis/emergency/change-status/${requestId}/${status}`);
+      console.log('✅ [EmergencyApi] Change status successful:', response.data);
+      return response;
+    } catch (error: any) {
+      console.log('❌ [EmergencyApi] Error updating status:', error);
+      console.log('❌ [EmergencyApi] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       throw error;
     }
   }
@@ -151,9 +174,32 @@ class EmergencyApi {
     return axiosClient.delete(`/apis/emergency/delete-request/${requestId}`);
   }
 
-  // Hoàn thành yêu cầu cứu hộ
-  completeRequest(requestId: number) {
-    return axiosClient.post<EmergencyRequest>(`/apis/emergency/requests/${requestId}/complete`);
+  // Hoàn thành yêu cầu cứu hộ (sử dụng public endpoint)
+  async completeRequest(requestId: number) {
+    try {
+      console.log('🚀 [EmergencyApi] Completing request:', requestId);
+      
+      // Use change-status endpoint to set status to COMPLETED (public)
+      console.log('✅ [EmergencyApi] Using NO-AUTH change-status endpoint for COMPLETED - NO AUTH REQUIRED');
+      const response = await axiosClient.get(`/noauth/emergency/change-status/${requestId}/COMPLETED`);
+      console.log('🎉 [EmergencyApi] Complete request successful:', response.data);
+      
+      if (response.data && response.data.success) {
+        console.log('✅ [EmergencyApi] Request completed successfully:', response.data.message);
+      } else {
+        console.log('⚠️ [EmergencyApi] Complete response indicates failure:', response.data);
+      }
+      
+      return response;
+    } catch (error: any) {
+      console.log('❌ [EmergencyApi] Error completing request:', error);
+      console.log('❌ [EmergencyApi] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      throw error;
+    }
   }
 
   // Lấy chi tiết yêu cầu cứu hộ

@@ -288,46 +288,53 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header với animation */}
-        <div className="text-center mb-12">
-          <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full blur-xl opacity-30 animate-pulse"></div>
-            <div className="relative w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-2xl">
-              <Bell className="w-10 h-10 text-white" />
+        {/* Professional Header */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-2xl mb-12">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full"></div>
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full"></div>
+          
+          <div className="relative p-8 text-white text-center">
+            <div className="flex flex-col items-center gap-6">
+              <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
+                <Bell className="h-12 w-12 text-white" />
+              </div>
+              <div>
+                <h1 className="text-5xl font-bold tracking-tight mb-4">Thông Báo</h1>
+                <p className="text-indigo-100 text-xl max-w-2xl leading-relaxed">
+                  Quản lý tất cả thông báo của bạn với giao diện hiện đại và trực quan
+                </p>
+              </div>
             </div>
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-            Thông Báo
-          </h1>
-          <p className="text-gray-600 text-xl max-w-2xl mx-auto leading-relaxed">
-            Quản lý tất cả thông báo của bạn với giao diện hiện đại và trực quan
-          </p>
         </div>
 
-        {/* Stats Cards với glassmorphism */}
+        {/* Enhanced Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <Card className="group bg-white/70 backdrop-blur-xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/90">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+          <Card className="group bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl overflow-hidden">
+            <CardContent className="p-6 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
+              <div className="relative flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Tổng cộng</p>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <p className="text-3xl font-bold text-indigo-600">
                     {notifications.length}
                   </p>
                 </div>
-                <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <div className="w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Bell className="w-7 h-7 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="group bg-white/70 backdrop-blur-xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/90">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+          <Card className="group bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl overflow-hidden">
+            <CardContent className="p-6 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5"></div>
+              <div className="relative flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Chưa đọc</p>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-red-500 to-pink-600 bg-clip-text text-transparent">
+                  <p className="text-3xl font-bold text-red-600">
                     {unreadCount}
                   </p>
                 </div>
@@ -338,12 +345,13 @@ export default function NotificationsPage() {
             </CardContent>
           </Card>
 
-          <Card className="group bg-white/70 backdrop-blur-xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/90">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+          <Card className="group bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl overflow-hidden">
+            <CardContent className="p-6 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5"></div>
+              <div className="relative flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Ưu tiên cao</p>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                  <p className="text-3xl font-bold text-orange-600">
                     {notifications.filter(n => n.priority === 'HIGH').length}
                   </p>
                 </div>
@@ -354,12 +362,13 @@ export default function NotificationsPage() {
             </CardContent>
           </Card>
 
-          <Card className="group bg-white/70 backdrop-blur-xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/90">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+          <Card className="group bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl overflow-hidden">
+            <CardContent className="p-6 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
+              <div className="relative flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Hôm nay</p>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
+                  <p className="text-3xl font-bold text-green-600">
                     {notifications.filter(n => {
                       const today = new Date();
                       const notificationDate = new Date(n.createdAt);
@@ -375,14 +384,14 @@ export default function NotificationsPage() {
           </Card>
         </div>
 
-        {/* Actions Bar */}
+        {/* Enhanced Actions Bar */}
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             {unreadCount > 0 && (
               <Button
                 onClick={handleMarkAllAsRead}
                 disabled={isMarkingAll}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-3"
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-3"
               >
                 <CheckCheck className="h-5 w-5 mr-2" />
                 {isMarkingAll ? "Đang xử lý..." : "Đánh dấu tất cả đã đọc"}
@@ -392,49 +401,49 @@ export default function NotificationsPage() {
               onClick={handleCleanup}
               disabled={isCleaning}
               variant="outline"
-              className="bg-white/60 border-gray-200 hover:bg-white hover:border-gray-300 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-3"
+              className="bg-white/90 border-gray-200 hover:bg-white hover:border-indigo-300 text-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-3"
             >
               <RefreshCw className={`h-5 w-5 mr-2 ${isCleaning ? 'animate-spin' : ''}`} />
               {isCleaning ? "Đang dọn dẹp..." : "Dọn dẹp cũ"}
             </Button>
-            
-
           </div>
         </div>
 
-        {/* Search Bar với glassmorphism */}
-        <Card className="bg-white/70 backdrop-blur-xl border-0 shadow-xl mb-8">
+        {/* Enhanced Search Bar */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl mb-8 rounded-2xl overflow-hidden">
           <CardContent className="p-6">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-indigo-400 h-5 w-5" />
               <Input
                 placeholder="🔍 Tìm kiếm thông báo..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                className="pl-12 py-3 bg-white/60 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-lg"
+                className="pl-12 py-4 bg-white/80 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl text-lg shadow-sm"
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* Filter Section với glassmorphism */}
-        <Card className="bg-white/70 backdrop-blur-xl border-0 shadow-xl mb-8">
+        {/* Enhanced Filter Section */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl mb-8 rounded-2xl overflow-hidden">
           <CardContent className="p-6">
-            <div className="flex items-center space-x-2 mb-6">
-              <Filter className="h-6 w-6 text-gray-500" />
-              <span className="text-lg font-semibold text-gray-700">Bộ lọc thông minh</span>
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Filter className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-800">Bộ lọc thông minh</span>
             </div>
             
-            {/* Emergency Toggle */}
+            {/* Enhanced Emergency Toggle */}
             <div className="mb-6">
               <Button
                 variant={showEmergencyOnly ? "default" : "outline"}
                 size="lg"
                 onClick={() => setShowEmergencyOnly(!showEmergencyOnly)}
-                className={`flex items-center space-x-2 rounded-xl px-6 py-3 ${
+                className={`flex items-center space-x-2 rounded-xl px-6 py-3 transition-all duration-300 ${
                   showEmergencyOnly 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 shadow-lg' 
-                    : 'bg-white/60 border-gray-200 hover:bg-white hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 shadow-lg hover:shadow-xl' 
+                    : 'bg-white/90 border-red-200 hover:bg-red-50 hover:border-red-300 text-red-700 hover:text-red-800'
                 }`}
               >
                 <AlertTriangle className="h-5 w-5" />
@@ -442,9 +451,14 @@ export default function NotificationsPage() {
               </Button>
             </div>
 
-            {/* Category Filters */}
+            {/* Enhanced Category Filters */}
             <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-700 mb-3">📂 Theo danh mục:</h4>
+              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm">📂</span>
+                </div>
+                Theo danh mục:
+              </h4>
               <div className="flex flex-wrap gap-3">
                 {notificationCategories.map((category) => (
                   <Button
@@ -452,22 +466,27 @@ export default function NotificationsPage() {
                     variant={selectedCategory === category.value ? "default" : "outline"}
                     size="lg"
                     onClick={() => setSelectedCategory(selectedCategory === category.value ? null : category.value)}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2 transition-all duration-300 ${
+                    className={`flex items-center space-x-2 rounded-xl px-4 py-3 transition-all duration-300 ${
                       selectedCategory === category.value 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-lg' 
-                        : 'bg-white/60 border-gray-200 hover:bg-white hover:border-gray-300 hover:scale-105'
+                        ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl' 
+                        : 'bg-white/90 border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 hover:scale-105 text-gray-700'
                     }`}
                   >
                     <span className="text-lg">{category.icon}</span>
-                    <span>{category.label}</span>
+                    <span className="font-medium">{category.label}</span>
                   </Button>
                 ))}
               </div>
             </div>
 
-            {/* Type Filters */}
+            {/* Enhanced Type Filters */}
             <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-700 mb-3">🎯 Theo loại:</h4>
+              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm">🎯</span>
+                </div>
+                Theo loại:
+              </h4>
               <div className="flex flex-wrap gap-3">
                 {notificationTypes.map((type) => (
                   <Button
@@ -475,22 +494,27 @@ export default function NotificationsPage() {
                     variant={selectedType === type.value ? "default" : "outline"}
                     size="lg"
                     onClick={() => setSelectedType(selectedType === type.value ? null : type.value)}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2 transition-all duration-300 ${
+                    className={`flex items-center space-x-2 rounded-xl px-4 py-3 transition-all duration-300 ${
                       selectedType === type.value 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg' 
-                        : 'bg-white/60 border-gray-200 hover:bg-white hover:border-gray-300 hover:scale-105'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl' 
+                        : 'bg-white/90 border-gray-200 hover:bg-green-50 hover:border-green-300 hover:scale-105 text-gray-700'
                     }`}
                   >
                     <span className="text-lg">{type.icon}</span>
-                    <span>{type.label}</span>
+                    <span className="font-medium">{type.label}</span>
                   </Button>
                 ))}
               </div>
             </div>
 
-            {/* Priority Filters */}
+            {/* Enhanced Priority Filters */}
             <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-700 mb-3">⚡ Theo độ ưu tiên:</h4>
+              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm">⚡</span>
+                </div>
+                Theo độ ưu tiên:
+              </h4>
               <div className="flex flex-wrap gap-3">
                 {notificationPriorities.map((priority) => (
                   <Button
@@ -498,50 +522,50 @@ export default function NotificationsPage() {
                     variant={selectedPriority === priority.value ? "default" : "outline"}
                     size="lg"
                     onClick={() => setSelectedPriority(selectedPriority === priority.value ? null : priority.value)}
-                    className={`flex items-center space-x-2 rounded-xl px-4 py-2 transition-all duration-300 ${
+                    className={`flex items-center space-x-2 rounded-xl px-4 py-3 transition-all duration-300 ${
                       selectedPriority === priority.value 
-                        ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white border-0 shadow-lg' 
-                        : 'bg-white/60 border-gray-200 hover:bg-white hover:border-gray-300 hover:scale-105'
+                        ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white border-0 shadow-lg hover:shadow-xl' 
+                        : 'bg-white/90 border-gray-200 hover:bg-orange-50 hover:border-orange-300 hover:scale-105 text-gray-700'
                     }`}
                   >
                     <span className="text-lg">{priority.icon}</span>
-                    <span>{priority.label}</span>
+                    <span className="font-medium">{priority.label}</span>
                   </Button>
                 ))}
               </div>
             </div>
 
-            {/* Clear Filters */}
+            {/* Enhanced Clear Filters */}
             {(selectedType || selectedCategory || selectedPriority || showEmergencyOnly || searchKeyword) && (
               <Button
                 variant="ghost"
                 size="lg"
                 onClick={clearAllFilters}
-                className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl px-6 py-3"
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl px-6 py-3 transition-all duration-300"
               >
                 <X className="h-5 w-5" />
-                <span>🧹 Xóa tất cả bộ lọc</span>
+                <span className="font-medium">🧹 Xóa tất cả bộ lọc</span>
               </Button>
             )}
           </CardContent>
         </Card>
 
-        {/* Notifications List với animation */}
+        {/* Enhanced Notifications List */}
         {filteredNotifications.length === 0 ? (
-          <Card className="bg-white/70 backdrop-blur-xl border-0 shadow-xl">
+          <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
             <CardContent className="p-16 text-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
-                <div className="relative w-24 h-24 bg-gradient-to-r from-gray-300 to-gray-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Bell className="w-12 h-12 text-gray-500" />
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+                <div className="relative w-24 h-24 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <Bell className="w-12 h-12 text-indigo-500" />
                 </div>
               </div>
-              <h3 className="text-2xl font-semibold text-gray-600 mb-3">
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">
                 {searchKeyword || selectedType || selectedCategory || showEmergencyOnly 
                   ? "Không có thông báo nào phù hợp với bộ lọc" 
                   : "Không có thông báo nào"}
               </h3>
-              <p className="text-gray-500 text-lg max-w-md mx-auto">
+              <p className="text-gray-600 text-lg max-w-md mx-auto">
                 {searchKeyword || selectedType || selectedCategory || showEmergencyOnly
                   ? "Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
                   : "Bạn chưa có thông báo nào. Hãy thực hiện các hoạt động để nhận thông báo!"
@@ -554,10 +578,10 @@ export default function NotificationsPage() {
             {filteredNotifications.map((notification, index) => (
               <Card 
                 key={notification.id} 
-                className={`group bg-white/70 backdrop-blur-xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] cursor-pointer ${
+                className={`group bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer rounded-2xl overflow-hidden ${
                   notification.isRead 
                     ? "" 
-                    : "ring-2 ring-blue-300 bg-gradient-to-r from-blue-50/80 to-indigo-50/80"
+                    : "ring-2 ring-indigo-300 bg-gradient-to-r from-indigo-50/90 to-purple-50/90"
                 }`}
                 onClick={() => handleNotificationClick(notification)}
                 style={{ animationDelay: `${index * 100}ms` }}
@@ -568,7 +592,7 @@ export default function NotificationsPage() {
                       <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 ${
                         notification.isRead 
                           ? 'bg-gradient-to-r from-gray-100 to-gray-200' 
-                          : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+                          : 'bg-gradient-to-r from-indigo-500 to-purple-600'
                       }`}>
                         <span className="text-2xl">{getNotificationIcon(notification.type)}</span>
                       </div>
@@ -579,12 +603,12 @@ export default function NotificationsPage() {
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-3">
                             <h3 className={`text-xl font-bold leading-tight ${
-                              notification.isRead ? 'text-gray-900' : 'text-blue-900'
+                              notification.isRead ? 'text-gray-900' : 'text-indigo-900'
                             }`}>
                               {notification.title}
                             </h3>
                             {!notification.isRead && (
-                              <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 shadow-lg px-3 py-1 rounded-full text-sm font-semibold">
+                              <Badge className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 shadow-lg px-3 py-1 rounded-full text-sm font-semibold">
                                 ✨ Mới
                               </Badge>
                             )}
@@ -636,7 +660,7 @@ export default function NotificationsPage() {
                                 e.stopPropagation();
                                 handleMarkAsRead(notification.id);
                               }}
-                              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-4 py-2"
+                              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-4 py-2"
                             >
                               <CheckCircle className="w-4 h-4 mr-2" />
                               Đã đọc
@@ -652,12 +676,12 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {/* Summary */}
+        {/* Enhanced Summary */}
         {filteredNotifications.length > 0 && (
           <div className="mt-8 text-center">
-            <Card className="bg-white/70 backdrop-blur-xl border-0 shadow-xl inline-block">
-              <CardContent className="p-4">
-                <p className="text-sm text-gray-600">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl inline-block rounded-2xl overflow-hidden">
+              <CardContent className="p-6">
+                <p className="text-sm text-gray-700 font-medium">
                   📊 Hiển thị {filteredNotifications.length} / {notifications.length} thông báo
                   {unreadCount > 0 && ` • ${unreadCount} chưa đọc`}
                 </p>
