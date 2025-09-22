@@ -257,7 +257,7 @@ export function Services() {
                         Tìm garage
                       </Link>
                     </Button>
-                    <Button
+                    {/* <Button
                       size="sm"
                       variant="outline"
                       className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
@@ -267,7 +267,7 @@ export function Services() {
                         <Calendar className="h-4 w-4 mr-2" />
                         Đặt lịch
                       </Link>
-                    </Button>
+                    </Button> */}
                   </div>
                 </CardContent>
               </Card>

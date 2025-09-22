@@ -3,10 +3,26 @@
 import { Button } from "@/components/ui/button"
 import { Search, MapPin, Phone } from "lucide-react"
 import Link from "next/link"
-import { FeaturedGarageCarousel } from "./featured-garage-carousel"
-import { EmergencyRescueSlider } from "./emergency-rescue-slider"
+import { useRouter } from "next/navigation"
 
-export function Hero() {
+export function HeroSimple() {
+  const router = useRouter()
+
+  const handleSearchClick = () => {
+    console.log("🔍 Search button clicked")
+    router.push("/search")
+  }
+
+  const handleEmergencyClick = () => {
+    console.log("🚨 Emergency button clicked")
+    router.push("/emergency")
+  }
+
+  const handleBookingClick = () => {
+    console.log("📅 Booking button clicked")
+    router.push("/search")
+  }
+
   return (
     <section className="relative bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 py-8 md:py-16 lg:py-20 overflow-hidden">
       {/* Background decorations */}
@@ -42,9 +58,9 @@ export function Hero() {
               </div>
               <Button
                 className="absolute right-1 md:right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 px-4 md:px-6 py-2 md:py-3 text-sm md:text-base"
-                asChild
+                onClick={handleSearchClick}
               >
-                <Link href="/search">Tìm kiếm</Link>
+                Tìm kiếm
               </Button>
             </div>
 
@@ -53,23 +69,19 @@ export function Hero() {
               <Button
                 size="lg"
                 className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-sm md:text-base py-3 md:py-4"
-                asChild
+                onClick={handleBookingClick}
               >
-                <Link href="/search">
-                  <MapPin className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                  Đặt lịch ngay
-                </Link>
+                <MapPin className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                Đặt lịch ngay
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="flex-1 border-blue-200 text-blue-600 hover:bg-blue-50 text-sm md:text-base py-3 md:py-4 bg-transparent"
-                asChild
+                onClick={handleEmergencyClick}
               >
-                <Link href="/emergency">
-                  <Phone className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                  Cứu hộ 24/7
-                </Link>
+                <Phone className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                Cứu hộ 24/7
               </Button>
             </div>
 
@@ -93,10 +105,45 @@ export function Hero() {
           {/* Right content - responsive */}
           <div className="relative space-y-4 md:space-y-6">
             {/* Emergency Rescue Slider */}
-            <EmergencyRescueSlider />
+            <div className="bg-gradient-to-br from-blue-500 to-green-600 rounded-xl md:rounded-2xl p-2 md:p-3 shadow-md md:shadow-lg border border-blue-200 relative overflow-hidden">
+              <div className="text-center py-8">
+                <h3 className="text-white font-bold text-sm md:text-base mb-2">🚨 CỨU HỘ KHẨN CẤP</h3>
+                <p className="text-white/90 text-xs md:text-sm mb-4">Garage cứu hộ 24/7</p>
+                <Button 
+                  size="sm"
+                  className="bg-white text-red-600 hover:bg-red-50"
+                  onClick={handleEmergencyClick}
+                >
+                  <Phone className="mr-2 h-3 w-3" />
+                  Gọi ngay
+                </Button>
+              </div>
+            </div>
 
-            {/* Featured garage carousel */}
-            <FeaturedGarageCarousel />
+            {/* Featured garage placeholder */}
+            <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-md border">
+              <h3 className="font-semibold text-slate-900 mb-4">Garage nổi bật</h3>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">G1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Garage ABC</p>
+                    <p className="text-xs text-slate-600">4.8★ • 0.5km</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
+                  <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">G2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Garage XYZ</p>
+                    <p className="text-xs text-slate-600">4.9★ • 1.2km</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

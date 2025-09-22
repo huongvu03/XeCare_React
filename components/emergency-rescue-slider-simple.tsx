@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Phone, MapPin, Star, ChevronLeft, ChevronRight, AlertTriangle, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { getEmergencyRescueGarages, type Garage } from "@/lib/api/GarageApi"
 
 interface EmergencyGarage {
   id: number
@@ -18,115 +17,23 @@ interface EmergencyGarage {
   status: string
 }
 
-export function EmergencyRescueSlider() {
+export function EmergencyRescueSliderSimple() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [emergencyGarages, setEmergencyGarages] = useState<EmergencyGarage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Hàm chuyển đổi garage từ API sang format hiển thị
-  const transformGarage = (garage: Garage): EmergencyGarage => {
-    // Tạo logo từ tên garage
-    const words = garage.name.split(' ')
-    const logo = words.length > 1 
-      ? words[0].charAt(0) + words[1].charAt(0)
-      : garage.name.substring(0, 2)
-    
-    // Màu sắc ngẫu nhiên cho logo
-    const colors = [
-      "from-green-600 to-emerald-600",
-      "from-blue-600 to-cyan-600", 
-      "from-purple-600 to-pink-600",
-      "from-orange-600 to-red-600",
-      "from-indigo-600 to-purple-600",
-      "from-teal-600 to-green-600"
-    ]
-    const logoColor = colors[garage.id % colors.length]
-
-    // Ước tính thời gian phản hồi dựa trên khoảng cách
-    const responseTime = garage.distance && garage.distance < 1 
-      ? "2-3 phút" 
-      : garage.distance && garage.distance < 2 
-        ? "3-5 phút" 
-        : "5-10 phút"
-
-    return {
-      id: garage.id,
-      name: garage.name,
-      logo: logo.toUpperCase(),
-      logoColor,
-      distance: garage.distance || 0,
-      rating: 4.5 + (Math.random() * 0.5), // Rating giả lập
-      responseTime,
-      phone: garage.phone,
-      status: garage.status === "ACTIVE" ? "online" : "offline"
-    }
-  }
-
-  // Lấy vị trí người dùng và tải garage cứu hộ
   useEffect(() => {
     const loadEmergencyGarages = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // Lấy vị trí người dùng
-        if (!navigator.geolocation) {
-          throw new Error("Trình duyệt không hỗ trợ định vị")
-        }
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 2000))
 
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 10000,
-            enableHighAccuracy: true
-          })
-        })
-
-        const { latitude, longitude } = position.coords
-
-        // Lấy garage cứu hộ gần nhất
-        const garages = await getEmergencyRescueGarages(latitude, longitude, 15)
-        
-        // Chuyển đổi và giới hạn số lượng
-        const transformedGarages = garages.slice(0, 5).map(transformGarage)
-        setEmergencyGarages(transformedGarages)
-
-        // Nếu không có garage cứu hộ, sử dụng dữ liệu mẫu
-        if (transformedGarages.length === 0) {
-          console.log('⚠️ No emergency garages found, using fallback data')
-          const fallbackGarages: EmergencyGarage[] = [
-            {
-              id: 1,
-              name: "Garage 24/7 Express",
-              logo: "24",
-              logoColor: "from-green-600 to-emerald-600",
-              distance: 0.8,
-              rating: 4.9,
-              responseTime: "2 phút",
-              phone: "1900 1234",
-              status: "online",
-            },
-            {
-              id: 2,
-              name: "Garage SOS Auto", 
-              logo: "SOS",
-              logoColor: "from-blue-600 to-cyan-600",
-              distance: 1.2,
-              rating: 4.8,
-              responseTime: "3 phút",
-              phone: "1900 5678",
-              status: "online",
-            }
-          ]
-          setEmergencyGarages(fallbackGarages)
-        }
-
-      } catch (err) {
-        console.error('Lỗi khi tải garage cứu hộ:', err)
-        setError('Không thể tải danh sách garage cứu hộ')
-        
-        // Sử dụng dữ liệu mẫu khi có lỗi
-        const fallbackGarages: EmergencyGarage[] = [
+        // Test data - sẽ được thay thế bằng API call thật
+        const testGarages: EmergencyGarage[] = [
           {
             id: 1,
             name: "Garage 24/7 Express",
@@ -136,6 +43,49 @@ export function EmergencyRescueSlider() {
             rating: 4.9,
             responseTime: "2 phút",
             phone: "1900 1234",
+            status: "online",
+          },
+          {
+            id: 2,
+            name: "Garage SOS Auto",
+            logo: "SOS",
+            logoColor: "from-blue-600 to-cyan-600",
+            distance: 1.2,
+            rating: 4.8,
+            responseTime: "3 phút",
+            phone: "1900 5678",
+            status: "online",
+          },
+          {
+            id: 3,
+            name: "Garage Rescue Pro",
+            logo: "RP",
+            logoColor: "from-purple-600 to-pink-600",
+            distance: 1.5,
+            rating: 4.7,
+            responseTime: "5 phút",
+            phone: "1900 9999",
+            status: "online",
+          }
+        ]
+
+        setEmergencyGarages(testGarages)
+
+      } catch (err) {
+        console.error('Lỗi khi tải garage cứu hộ:', err)
+        setError('Không thể tải danh sách garage cứu hộ')
+        
+        // Fallback data
+        const fallbackGarages: EmergencyGarage[] = [
+          {
+            id: 1,
+            name: "Garage Emergency 24/7",
+            logo: "EM",
+            logoColor: "from-red-600 to-orange-600",
+            distance: 1.0,
+            rating: 4.9,
+            responseTime: "2 phút",
+            phone: "1900 0000",
             status: "online",
           }
         ]
