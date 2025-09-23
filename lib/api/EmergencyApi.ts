@@ -131,8 +131,8 @@ class EmergencyApi {
       
       // Use specific endpoint for ACCEPTED status  
       if (status.toUpperCase() === 'ACCEPTED') {
-        console.log('✅ [EmergencyApi] Using accept-first endpoint - NO AUTH REQUIRED');
-        const response = await axiosClient.get(`/apis/emergency/accept-first`);
+        console.log('✅ [EmergencyApi] Using accept-specific endpoint for request:', requestId);
+        const response = await axiosClient.post(`/apis/emergency/accept-specific`, { requestId });
         console.log('🎉 [EmergencyApi] Accept request successful:', response.data);
         
         if (response.data && response.data.success) {
@@ -171,8 +171,8 @@ class EmergencyApi {
   // Xóa yêu cầu cứu hộ (public endpoint for demo)
   async deleteRequest(requestId: number) {
     console.log('📡 [EmergencyApi] Deleting emergency request:', requestId);
-    // Use delete-first endpoint instead of path variable endpoint
-    return axiosClient.get(`/apis/emergency/delete-first`);
+    // Use delete-specific endpoint instead of delete-first
+    return axiosClient.post(`/apis/emergency/delete-specific`, { requestId });
   }
 
   // Hoàn thành yêu cầu cứu hộ (sử dụng public endpoint)
@@ -180,9 +180,9 @@ class EmergencyApi {
     try {
       console.log('🚀 [EmergencyApi] Completing request:', requestId);
       
-      // Use complete-first endpoint
-      console.log('✅ [EmergencyApi] Using complete-first endpoint - NO AUTH REQUIRED');
-      const response = await axiosClient.get(`/apis/emergency/complete-first`);
+      // Use complete-specific endpoint
+      console.log('✅ [EmergencyApi] Using complete-specific endpoint for request:', requestId);
+      const response = await axiosClient.post(`/apis/emergency/complete-specific`, { requestId });
       console.log('🎉 [EmergencyApi] Complete request successful:', response.data);
       
       if (response.data && response.data.success) {
