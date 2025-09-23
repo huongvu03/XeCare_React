@@ -4,9 +4,38 @@ import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, Building, Calendar, Star, TrendingUp, Shield, Settings, BarChart3, AlertTriangle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Users, Building, Calendar, Star, TrendingUp, Shield, Settings, BarChart3, AlertTriangle, Eye, RefreshCw, Loader2, Clock3, CheckCircle2, XCircle, AlertCircle, DollarSign, MapPin, Phone, User, MessageSquare, Building as BuildingIcon, MoreVertical } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { getGarageStats } from "@/lib/api/AdminApi"
+import EmergencyApi from "@/lib/api/EmergencyApi"
+import Swal from 'sweetalert2'
+
+interface EmergencyRequest {
+  id: number
+  user: {
+    id: number
+    name: string
+    phone: string
+  } | null
+  garage?: {
+    id: number
+    name: string
+    phone: string
+    address: string
+  } | null
+  description: string
+  latitude: number
+  longitude: number
+  status: 'PENDING' | 'QUOTED' | 'ACCEPTED' | 'CANCELLED' | 'COMPLETED'
+  createdAt: string
+  images: number | Array<{
+    id: number
+    imageUrl: string
+  }>
+}
 
 export default function AdminDashboard() {
   const [garageStats, setGarageStats] = useState({
@@ -16,6 +45,49 @@ export default function AdminDashboard() {
     inactiveGarages: 0
   })
   const [loading, setLoading] = useState(true)
+  
+  // Emergency Management State
+  const [emergencyRequests, setEmergencyRequests] = useState<EmergencyRequest[]>([])
+  const [emergencyLoading, setEmergencyLoading] = useState(true)
+  const [emergencyError, setEmergencyError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  // Load emergency requests
+  const loadEmergencyRequests = async () => {
+    try {
+      setEmergencyLoading(true)
+      setEmergencyError(null)
+      console.log('🚀 [Admin] Loading emergency requests...')
+      
+      const response = await EmergencyApi.getAllRequests()
+      console.log('✅ [Admin] Emergency API Response:', response)
+      
+      if (response.data) {
+        setEmergencyRequests(response.data)
+        console.log(`📊 [Admin] Loaded ${response.data.length} emergency requests`)
+        
+        toast({
+          title: "Thành công", 
+          description: `Đã tải ${response.data.length} yêu cầu cứu hộ`,
+        })
+      } else {
+        console.log('⚠️ [Admin] No data received from API')
+        setEmergencyRequests([])
+      }
+    } catch (error: any) {
+      console.error('❌ [Admin] Error loading emergency requests:', error)
+      setEmergencyRequests([])
+      setEmergencyError('Không thể tải dữ liệu yêu cầu cứu hộ')
+      
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải dữ liệu yêu cầu cứu hộ",
+        variant: "destructive",
+      })
+    } finally {
+      setEmergencyLoading(false)
+    }
+  }
 
   useEffect(() => {
     const fetchGarageStats = async () => {
@@ -30,15 +102,96 @@ export default function AdminDashboard() {
     }
 
     fetchGarageStats()
+    loadEmergencyRequests()
   }, [])
 
   // Số đơn chờ duyệt (PENDING)
   const totalPendingRequests = garageStats.pendingGarages
 
+  // Get status badge variant
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border border-yellow-200 shadow-sm">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+            <Clock3 className="w-3 h-3 mr-1" />
+            Chờ xử lý
+          </div>
+        )
+      case 'QUOTED':
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200 shadow-sm">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+            <DollarSign className="w-3 h-3 mr-1" />
+            Đã báo giá
+          </div>
+        )
+      case 'ACCEPTED':
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+            <CheckCircle2 className="w-3 h-3 mr-1" />
+            Đã chấp nhận
+          </div>
+        )
+      case 'COMPLETED':
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border border-emerald-200 shadow-sm">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+            <CheckCircle2 className="w-3 h-3 mr-1" />
+            Hoàn thành
+          </div>
+        )
+      case 'CANCELLED':
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 shadow-sm">
+            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+            <XCircle className="w-3 h-3 mr-1" />
+            Đã hủy
+          </div>
+        )
+      default:
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200 shadow-sm">
+            <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
+            <AlertCircle className="w-3 h-3 mr-1" />
+            {status}
+          </div>
+        )
+    }
+  }
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    } catch {
+      return 'N/A'
+    }
+  }
+
+  // Calculate emergency stats
+  const emergencyStats = {
+    total: emergencyRequests.length,
+    pending: emergencyRequests.filter(r => r.status === 'PENDING').length,
+    quoted: emergencyRequests.filter(r => r.status === 'QUOTED').length,
+    accepted: emergencyRequests.filter(r => r.status === 'ACCEPTED').length,
+    completed: emergencyRequests.filter(r => r.status === 'COMPLETED').length,
+    cancelled: emergencyRequests.filter(r => r.status === 'CANCELLED').length,
+  }
+
   return (
     <DashboardLayout allowedRoles={["ADMIN"]} title="Admin Dashboard" description="Quản lý toàn bộ hệ thống XeCare">
       {/* System Stats */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card className="border-blue-100">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -87,6 +240,20 @@ export default function AdminDashboard() {
                 <p className="text-xs text-green-600">+0.1 tháng này</p>
               </div>
               <Star className="h-8 w-8 text-yellow-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Emergency Stats */}
+        <Card className="border-red-100">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Yêu cầu cứu hộ</p>
+                <p className="text-2xl font-bold text-red-600">{emergencyStats.total}</p>
+                <p className="text-xs text-orange-600">{emergencyStats.pending} chờ xử lý</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
@@ -206,6 +373,45 @@ export default function AdminDashboard() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Emergency Management Card */}
+        <Card className="border-red-100 hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between text-lg">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <span>Quản lý Cứu hộ</span>
+              </div>
+              {emergencyStats.pending > 0 && (
+                <div className="flex items-center space-x-1">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <span className="text-sm font-medium text-orange-600">
+                    {emergencyStats.pending} chờ xử lý
+                  </span>
+                </div>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-600 text-sm mb-4">
+              Quản lý yêu cầu cứu hộ khẩn cấp
+              {emergencyStats.pending > 0 && (
+                <span className="text-orange-600 font-medium">
+                  {" "}- {emergencyStats.pending} yêu cầu chờ xử lý
+                </span>
+              )}
+            </p>
+            <Button 
+              variant={emergencyStats.pending > 0 ? "default" : "outline"} 
+              className={`w-full ${emergencyStats.pending > 0 ? "bg-red-600 hover:bg-red-700" : "border-red-200 text-red-600"}`} 
+              asChild
+            >
+              <Link href="/admin/emergency">
+                {emergencyStats.pending > 0 ? `Xử lý ${emergencyStats.pending} yêu cầu` : "Quản lý Cứu hộ"}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Activities */}
@@ -233,6 +439,117 @@ export default function AdminDashboard() {
                 <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Đã duyệt</span>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Emergency Requests */}
+        <Card className="border-red-100">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <span>Yêu cầu cứu hộ gần đây</span>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={loadEmergencyRequests}
+                disabled={emergencyLoading}
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <RefreshCw className={`h-4 w-4 mr-1 ${emergencyLoading ? 'animate-spin' : ''}`} />
+                Làm mới
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {emergencyLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-red-600" />
+                <span className="ml-2 text-slate-600">Đang tải...</span>
+              </div>
+            ) : emergencyError ? (
+              <div className="text-center py-8">
+                <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                <p className="text-red-600 text-sm">{emergencyError}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={loadEmergencyRequests}
+                  className="mt-2 border-red-200 text-red-600"
+                >
+                  Thử lại
+                </Button>
+              </div>
+            ) : emergencyRequests.length === 0 ? (
+              <div className="text-center py-8">
+                <AlertTriangle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                <p className="text-slate-500 text-sm">Chưa có yêu cầu cứu hộ nào</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {emergencyRequests.slice(0, 3).map((request) => (
+                  <div key={request.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-slate-900">#{request.id}</span>
+                        {getStatusBadge(request.status)}
+                      </div>
+                      <p className="text-sm text-slate-600 mb-1">
+                        {request.user?.name || 'N/A'} - {request.description?.substring(0, 50)}...
+                      </p>
+                      <p className="text-xs text-red-600">
+                        {formatDate(request.createdAt)}
+                      </p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="w-8 h-8 border-red-300 hover:bg-red-100 text-red-700 rounded-lg p-0"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            console.log('View emergency request:', request)
+                            window.open(`/emergency/${request.id}`, '_blank')
+                          }}
+                          className="text-blue-700 hover:bg-blue-50 cursor-pointer"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Xem chi tiết
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            window.open('/admin/emergency', '_blank')
+                          }}
+                          className="text-red-700 hover:bg-red-50 cursor-pointer"
+                        >
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Quản lý
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))}
+                {emergencyRequests.length > 3 && (
+                  <div className="text-center pt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open('/admin/emergency', '_blank')}
+                      className="border-red-200 text-red-600 hover:bg-red-50"
+                    >
+                      Xem tất cả ({emergencyRequests.length})
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
