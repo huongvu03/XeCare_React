@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Animation với Tốc độ</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .improvement-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .improvement-section h3 {
+            color: #16a34a;
+            margin-bottom: 15px;
+        }
+        
+        .demo-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .animation-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .car-icon {
+            font-size: 24px;
+            margin: 10px 0;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .info-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .info-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .info-card .unit {
+            font-size: 12px;
+            color: #666;
+            margin-left: 5px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        .status-display {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .status-value {
+            color: #6b7280;
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        .speed-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1s infinite;
+        }
+        
+        .speed-low { background: #22c55e; }
+        .speed-medium { background: #f59e0b; }
+        .speed-high { background: #ef4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .comparison-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Animation với Tốc độ</h1>
+            <p>Animation nhanh gấp đôi + Hiển thị tốc độ di chuyển thực tế</p>
+        </div>
+        
+        <div class="improvement-section">
+            <h3>⚡ Cải tiến mới:</h3>
+            <ul>
+                <li><strong>Animation nhanh gấp đôi:</strong> Chỉ mất 1/2 thời gian thực tế để hoàn thành</li>
+                <li><strong>Tốc độ hiện tại:</strong> Hiển thị tốc độ di chuyển theo km/h</li>
+                <li><strong>Khoảng cách:</strong> Hiển thị tổng khoảng cách cần di chuyển</li>
+                <li><strong>Thời gian thực tế:</strong> Vẫn hiển thị thời gian ước tính thực tế</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h3>🎮 Demo Animation với Tốc độ:</h3>
+            
+            <div class="animation-container">
+                <div class="car-icon">🚗</div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4>Tiến độ</h4>
+                        <div class="value" id="progressValue">0</div>
+                        <span class="unit">%</span>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h4>Tốc độ hiện tại</h4>
+                        <div class="value" id="speedValue">0</div>
+                        <span class="unit">km/h</span>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h4>Khoảng cách</h4>
+                        <div class="value" id="distanceValue">5.2</div>
+                        <span class="unit">km</span>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h4>Thời gian còn lại</h4>
+                        <div class="value" id="timeValue">12:30</div>
+                        <span class="unit">phút:giây</span>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="startAnimation()">
+                        ▶️ Bắt đầu
+                    </button>
+                    <button class="btn btn-secondary" onclick="restartAnimation()">
+                        🔄 Xem lại
+                    </button>
+                    <button class="btn btn-danger" onclick="stopAnimation()">
+                        ⏹️ Dừng
+                    </button>
+                </div>
+                
+                <div class="status-display">
+                    <h4>📊 Thông tin chi tiết:</h4>
+                    <div class="status-item">
+                        <span class="status-label">Trạng thái:</span>
+                        <span class="status-value" id="statusValue">Dừng</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Vị trí hiện tại:</span>
+                        <span class="status-value" id="locationValue">Garage</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Tốc độ trung bình:</span>
+                        <span class="status-value" id="avgSpeedValue">0 km/h</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Thời gian thực tế:</span>
+                        <span class="status-value" id="realTimeValue">25 phút</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Thời gian animation:</span>
+                        <span class="status-value" id="animTimeValue">12.5 phút</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="improvement-section">
+            <h3>📋 So sánh Trước và Sau:</h3>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Tính năng</th>
+                        <th>Trước</th>
+                        <th>Sau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Thời gian animation</td>
+                        <td>25 phút (thời gian thực tế)</td>
+                        <td>12.5 phút (1/2 thời gian thực tế)</td>
+                    </tr>
+                    <tr>
+                        <td>Hiển thị tốc độ</td>
+                        <td>❌ Không có</td>
+                        <td>✅ Có (km/h)</td>
+                    </tr>
+                    <tr>
+                        <td>Hiển thị khoảng cách</td>
+                        <td>❌ Không có</td>
+                        <td>✅ Có (km)</td>
+                    </tr>
+                    <tr>
+                        <td>Thời gian thực tế</td>
+                        <td>✅ Có</td>
+                        <td>✅ Có + ghi chú animation</td>
+                    </tr>
+                    <tr>
+                        <td>Trải nghiệm người dùng</td>
+                        <td>Chậm, thiếu thông tin</td>
+                        <td>Nhanh, đầy đủ thông tin</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="improvement-section">
+            <h3>🔧 Chi tiết kỹ thuật:</h3>
+            
+            <h4>1. Tính toán tốc độ:</h4>
+            <pre style="background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+const distanceTraveled = (progress / 100) * distanceKm
+const speedKmh = (distanceTraveled / elapsedSeconds) * 3600
+currentSpeed = Math.round(speedKmh)
+            </pre>
+            
+            <h4>2. Animation duration:</h4>
+            <pre style="background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+const estimatedTotalSeconds = estimatedTimeMinutes * 60
+const animationDurationSeconds = estimatedTotalSeconds / 2  // 1/2 thời gian thực tế
+            </pre>
+            
+            <h4>3. UI Components mới:</h4>
+            <ul>
+                <li><strong>Tốc độ hiện tại:</strong> Hiển thị khi đang di chuyển</li>
+                <li><strong>Khoảng cách:</strong> Tổng quãng đường cần đi</li>
+                <li><strong>Ghi chú animation:</strong> "Animation: 1/2 thời gian thực tế"</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let progress = 0;
+        let isAnimating = false;
+        let animationInterval;
+        let startTime;
+        let distanceKm = 5.2;
+        let realTimeMinutes = 25;
+        
+        function updateDisplay() {
+            const elapsedSeconds = (Date.now() - startTime) / 1000;
+            const animationDurationSeconds = (realTimeMinutes * 60) / 2;
+            const remainingSeconds = Math.max(0, animationDurationSeconds - elapsedSeconds);
+            
+            // Update progress
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressValue').textContent = Math.round(progress);
+            
+            // Update time
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = Math.floor(remainingSeconds % 60);
+            document.getElementById('timeValue').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update speed
+            let currentSpeed = 0;
+            if (progress > 0 && elapsedSeconds > 0) {
+                const distanceTraveled = (progress / 100) * distanceKm;
+                currentSpeed = Math.round((distanceTraveled / elapsedSeconds) * 3600);
+            }
+            document.getElementById('speedValue').textContent = currentSpeed;
+            
+            // Update status
+            let status = 'Dừng';
+            let location = 'Garage';
+            let avgSpeed = 0;
+            
+            if (isAnimating) {
+                if (progress < 15) {
+                    status = 'Chuẩn bị';
+                    location = 'Đang rời garage';
+                } else if (progress < 100) {
+                    status = 'Di chuyển';
+                    if (progress < 35) location = 'Trên đường chính';
+                    else if (progress < 60) location = 'Tiếp tục hành trình';
+                    else if (progress < 80) location = 'Gần đến khu vực';
+                    else location = 'Sắp đến vị trí sự cố';
+                    avgSpeed = Math.round(currentSpeed * 0.8); // Giả lập tốc độ trung bình
+                } else {
+                    status = 'Hoàn thành';
+                    location = 'Đã đến vị trí sự cố';
+                }
+            }
+            
+            document.getElementById('statusValue').textContent = status;
+            document.getElementById('locationValue').textContent = location;
+            document.getElementById('avgSpeedValue').textContent = avgSpeed + ' km/h';
+            document.getElementById('realTimeValue').textContent = realTimeMinutes + ' phút';
+            document.getElementById('animTimeValue').textContent = (realTimeMinutes / 2) + ' phút';
+        }
+        
+        function startAnimation() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            progress = 0;
+            startTime = Date.now();
+            
+            const animationDurationSeconds = (realTimeMinutes * 60) / 2;
+            const totalSteps = animationDurationSeconds * 10; // Update mỗi 100ms
+            let currentStep = 0;
+            
+            animationInterval = setInterval(() => {
+                currentStep++;
+                progress = Math.min((currentStep / totalSteps) * 100, 100);
+                
+                updateDisplay();
+                
+                if (progress >= 100) {
+                    clearInterval(animationInterval);
+                    isAnimating = false;
+                    updateDisplay();
+                }
+            }, 100);
+            
+            updateDisplay();
+        }
+        
+        function restartAnimation() {
+            stopAnimation();
+            setTimeout(() => {
+                startAnimation();
+            }, 100);
+        }
+        
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+            isAnimating = false;
+            progress = 0;
+            updateDisplay();
+        }
+        
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>

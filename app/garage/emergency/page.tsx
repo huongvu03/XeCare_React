@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/hooks/use-auth'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -62,6 +64,8 @@ interface EmergencyRequest {
 }
 
 export default function GarageEmergencyPage() {
+  const { user, isGarageOwner } = useAuth()
+  const router = useRouter()
   const [requests, setRequests] = useState<EmergencyRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -129,11 +133,30 @@ export default function GarageEmergencyPage() {
     }
   }
 
-  // Load data on mount
+  // Check access permission on mount
   useEffect(() => {
     setMounted(true)
+    
+    // Check if user is logged in and has GARAGE role
+    if (!user) {
+      router.push('/auth')
+      return
+    }
+    
+    if (!isGarageOwner()) {
+      // User doesn't have GARAGE role, show access denied
+      toast({
+        title: "Không có quyền truy cập",
+        description: "Chỉ garage mới có thể truy cập trang này",
+        variant: "destructive",
+      })
+      router.push('/dashboard')
+      return
+    }
+    
+    // User has GARAGE role, load data
     loadRequests()
-  }, [])
+  }, [user, isGarageOwner, router])
 
   // Filter requests based on active tab and filters
   const filteredRequests = requests.filter(request => {
@@ -479,8 +502,50 @@ export default function GarageEmergencyPage() {
     cancelled: requests.filter(r => r.status === 'CANCELLED').length,
   }
 
-  if (!mounted) {
-    return null
+  // Show loading while checking permissions
+  if (!mounted || !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-slate-600 text-lg">Đang kiểm tra quyền truy cập...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show access denied if user doesn't have GARAGE role
+  if (!isGarageOwner()) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-pink-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center space-y-6 p-8">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+            <AlertTriangle className="h-10 w-10 text-red-600" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-gray-900">Không có quyền truy cập</h1>
+            <p className="text-gray-600">
+              Chỉ tài khoản garage mới có thể truy cập trang quản lý cứu hộ khẩn cấp.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <Button 
+              onClick={() => router.push('/dashboard')}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Quay về Dashboard
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => router.push('/garage/register')}
+              className="w-full"
+            >
+              Đăng ký Garage
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

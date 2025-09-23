@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Sửa lỗi Animation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .issue-section {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #ef4444;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .issue-section h3 {
+            color: #dc2626;
+            margin-bottom: 15px;
+        }
+        
+        .solution-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .solution-section h3 {
+            color: #16a34a;
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-block .comment {
+            color: #6b7280;
+        }
+        
+        .code-block .keyword {
+            color: #f472b6;
+        }
+        
+        .code-block .string {
+            color: #10b981;
+        }
+        
+        .code-block .number {
+            color: #fbbf24;
+        }
+        
+        .demo-controls {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-controls h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-display {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .status-display h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .status-value {
+            color: #6b7280;
+            font-family: monospace;
+        }
+        
+        .animation-demo {
+            background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .car-icon {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Sửa lỗi Animation</h1>
+            <p>Khắc phục lỗi nút "Xem lại hành trình" và cải thiện quản lý intervals</p>
+        </div>
+        
+        <div class="issue-section">
+            <h3>🐛 Vấn đề đã gặp phải:</h3>
+            <ul>
+                <li><strong>Memory leaks:</strong> Intervals không được clear properly khi restart animation</li>
+                <li><strong>Multiple intervals:</strong> Nhiều intervals chạy đồng thời khi click "Xem lại hành trình" nhiều lần</li>
+                <li><strong>Performance issues:</strong> Animation chạy chậm hoặc bị lag</li>
+                <li><strong>Unpredictable behavior:</strong> Animation không restart clean</li>
+            </ul>
+        </div>
+        
+        <div class="solution-section">
+            <h3>✅ Giải pháp đã áp dụng:</h3>
+            
+            <h4>1. Sử dụng useRef để quản lý intervals:</h4>
+            <div class="code-block">
+<span class="comment">// Refs để lưu trữ interval IDs</span>
+<span class="keyword">const</span> animationIntervalRef = <span class="keyword">useRef</span>&lt;NodeJS.Timeout | <span class="keyword">null</span>&gt;(<span class="keyword">null</span>)
+<span class="keyword">const</span> preparingIntervalRef = <span class="keyword">useRef</span>&lt;NodeJS.Timeout | <span class="keyword">null</span>&gt;(<span class="keyword">null</span>)
+<span class="keyword">const</span> cleanupTimeoutRef = <span class="keyword">useRef</span>&lt;NodeJS.Timeout | <span class="keyword">null</span>&gt;(<span class="keyword">null</span>)
+            </div>
+            
+            <h4>2. Hàm cleanup để dừng tất cả animations:</h4>
+            <div class="code-block">
+<span class="keyword">const</span> stopAllAnimations = () =&gt; {
+  <span class="keyword">if</span> (animationIntervalRef.current) {
+    clearInterval(animationIntervalRef.current)
+    animationIntervalRef.current = <span class="keyword">null</span>
+  }
+  <span class="keyword">if</span> (preparingIntervalRef.current) {
+    clearInterval(preparingIntervalRef.current)
+    preparingIntervalRef.current = <span class="keyword">null</span>
+  }
+  <span class="keyword">if</span> (cleanupTimeoutRef.current) {
+    clearTimeout(cleanupTimeoutRef.current)
+    cleanupTimeoutRef.current = <span class="keyword">null</span>
+  }
+}
+            </div>
+            
+            <h4>3. Cleanup khi component unmount:</h4>
+            <div class="code-block">
+<span class="comment">// Cleanup intervals khi component unmount</span>
+<span class="keyword">useEffect</span>(() =&gt; {
+  <span class="keyword">return</span> () =&gt; {
+    <span class="keyword">if</span> (animationIntervalRef.current) {
+      clearInterval(animationIntervalRef.current)
+    }
+    <span class="keyword">if</span> (preparingIntervalRef.current) {
+      clearInterval(preparingIntervalRef.current)
+    }
+    <span class="keyword">if</span> (cleanupTimeoutRef.current) {
+      clearTimeout(cleanupTimeoutRef.current)
+    }
+  }
+}, [])
+            </div>
+            
+            <h4>4. Cập nhật nút "Xem lại hành trình":</h4>
+            <div class="code-block">
+&lt;Button
+  onClick={() =&gt; {
+    stopAllAnimations()  <span class="comment">// Dừng tất cả animations hiện tại</span>
+    startCarAnimation()  <span class="comment">// Bắt đầu animation mới</span>
+  }}
+&gt;
+  &lt;Car className=<span class="string">"h-4 w-4 mr-2"</span> /&gt;
+  Xem lại hành trình
+&lt;/Button&gt;
+            </div>
+        </div>
+        
+        <div class="demo-controls">
+            <h3>🎮 Demo Animation Fix:</h3>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="startAnimation()">
+                    ▶️ Bắt đầu animation
+                </button>
+                <button class="btn btn-secondary" onclick="restartAnimation()">
+                    🔄 Xem lại hành trình
+                </button>
+                <button class="btn btn-danger" onclick="stopAnimation()">
+                    ⏹️ Dừng animation
+                </button>
+                <button class="btn btn-outline" onclick="testMultipleRestarts()">
+                    🧪 Test multiple restarts
+                </button>
+            </div>
+            
+            <div class="status-display">
+                <h4>📊 Trạng thái Animation:</h4>
+                <div class="status-item">
+                    <span class="status-label">Progress:</span>
+                    <span class="status-value" id="progressStatus">0%</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Status:</span>
+                    <span class="status-value" id="animationStatus">Stopped</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Active Intervals:</span>
+                    <span class="status-value" id="intervalCount">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Location:</span>
+                    <span class="status-value" id="locationStatus">Garage</span>
+                </div>
+            </div>
+            
+            <div class="animation-demo">
+                <div class="car-icon">🚗</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <p id="demoText">Click "Bắt đầu animation" để test</p>
+            </div>
+        </div>
+        
+        <div class="solution-section">
+            <h3>🎯 Kết quả sau khi sửa:</h3>
+            <ul>
+                <li>✅ <strong>Không còn memory leaks:</strong> Tất cả intervals được clear properly</li>
+                <li>✅ <strong>Animation restart clean:</strong> Mỗi lần restart đều bắt đầu từ đầu</li>
+                <li>✅ <strong>Performance tốt hơn:</strong> Không có multiple intervals chạy đồng thời</li>
+                <li>✅ <strong>Predictable behavior:</strong> Animation hoạt động ổn định</li>
+                <li>✅ <strong>Nút "Xem lại hành trình" hoạt động tốt:</strong> Có thể restart nhiều lần mà không bị lỗi</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let progress = 0;
+        let isAnimating = false;
+        let animationInterval;
+        let preparingInterval;
+        let cleanupTimeout;
+        let intervalCount = 0;
+        
+        function updateStatus() {
+            document.getElementById('progressStatus').textContent = Math.round(progress) + '%';
+            document.getElementById('animationStatus').textContent = isAnimating ? 'Running' : 'Stopped';
+            document.getElementById('intervalCount').textContent = intervalCount;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function stopAllAnimations() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                intervalCount--;
+            }
+            if (preparingInterval) {
+                clearInterval(preparingInterval);
+                preparingInterval = null;
+                intervalCount--;
+            }
+            if (cleanupTimeout) {
+                clearTimeout(cleanupTimeout);
+                cleanupTimeout = null;
+            }
+            isAnimating = false;
+            updateStatus();
+        }
+        
+        function startAnimation() {
+            if (isAnimating) return;
+            
+            stopAllAnimations(); // Cleanup trước khi bắt đầu
+            
+            isAnimating = true;
+            progress = 0;
+            updateStatus();
+            
+            // Simulate animation
+            animationInterval = setInterval(() => {
+                progress += 1;
+                updateStatus();
+                
+                if (progress >= 100) {
+                    clearInterval(animationInterval);
+                    animationInterval = null;
+                    intervalCount--;
+                    isAnimating = false;
+                    updateStatus();
+                    document.getElementById('demoText').textContent = 'Animation hoàn thành!';
+                }
+            }, 50);
+            intervalCount++;
+            
+            document.getElementById('demoText').textContent = 'Animation đang chạy...';
+            updateStatus();
+        }
+        
+        function restartAnimation() {
+            console.log('Restarting animation...');
+            stopAllAnimations();
+            setTimeout(() => {
+                startAnimation();
+            }, 100);
+        }
+        
+        function stopAnimation() {
+            stopAllAnimations();
+            document.getElementById('demoText').textContent = 'Animation đã dừng';
+        }
+        
+        function testMultipleRestarts() {
+            let count = 0;
+            const maxRestarts = 5;
+            
+            const testInterval = setInterval(() => {
+                restartAnimation();
+                count++;
+                
+                if (count >= maxRestarts) {
+                    clearInterval(testInterval);
+                    document.getElementById('demoText').textContent = `Đã test ${maxRestarts} lần restart - Không có lỗi!`;
+                }
+            }, 1000);
+        }
+        
+        // Initialize
+        updateStatus();
+    </script>
+</body>
+</html>

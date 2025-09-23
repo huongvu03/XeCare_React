@@ -26,6 +26,8 @@ export interface EmergencyRequest {
     name: string;
     phone: string;
     address: string;
+    latitude?: number;
+    longitude?: number;
   } | null;
   description: string;
   latitude: number;
@@ -46,6 +48,8 @@ export interface EmergencyQuote {
     name: string;
     phone: string;
     address: string;
+    latitude?: number;
+    longitude?: number;
   };
   price: number;
   message: string;

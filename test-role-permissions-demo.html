@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Phân quyền theo Role</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .permission-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .permission-section h3 {
+            color: #16a34a;
+            margin-bottom: 15px;
+        }
+        
+        .role-selector {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .role-selector h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .role-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-user {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        
+        .btn-user:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-garage {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-garage:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-admin {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-active {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .access-demo {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .access-demo h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .page-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .page-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .page-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .page-item.allowed {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #22c55e;
+        }
+        
+        .page-item.denied {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #ef4444;
+        }
+        
+        .page-item.restricted {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #f59e0b;
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .page-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .page-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .page-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .access-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status-allowed {
+            color: #16a34a;
+        }
+        
+        .status-denied {
+            color: #dc2626;
+        }
+        
+        .status-restricted {
+            color: #d97706;
+        }
+        
+        .current-role {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            border: 2px solid #8b5cf6;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .current-role h3 {
+            color: #7c3aed;
+            margin-bottom: 10px;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 18px;
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .role-badge.user {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        
+        .role-badge.garage {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .role-badge.admin {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .comparison-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .access-yes {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        
+        .access-no {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .access-conditional {
+            color: #d97706;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Phân quyền theo Role</h1>
+            <p>Kiểm tra quyền truy cập cho các trang khác nhau theo vai trò người dùng</p>
+        </div>
+        
+        <div class="current-role">
+            <h3>Vai trò hiện tại:</h3>
+            <div class="role-badge" id="currentRoleBadge">USER</div>
+        </div>
+        
+        <div class="role-selector">
+            <h3>🎭 Chọn vai trò để test:</h3>
+            <div class="role-buttons">
+                <button class="btn btn-user" onclick="setRole('USER')">
+                    👤 USER
+                </button>
+                <button class="btn btn-garage" onclick="setRole('GARAGE')">
+                    🏢 GARAGE
+                </button>
+                <button class="btn btn-admin" onclick="setRole('ADMIN')">
+                    👑 ADMIN
+                </button>
+            </div>
+        </div>
+        
+        <div class="access-demo">
+            <h3>📋 Quyền truy cập các trang:</h3>
+            
+            <div class="page-list">
+                <!-- Garage Emergency Page -->
+                <div class="page-item" id="garageEmergencyPage">
+                    <div class="page-header">
+                        <div class="page-icon" style="background: #ef4444;">🚨</div>
+                        <div class="page-title">Garage Emergency</div>
+                    </div>
+                    <div class="page-description">
+                        Trang quản lý cứu hộ khẩn cấp cho garage
+                    </div>
+                    <div class="access-status" id="garageEmergencyStatus">
+                        <span>❌ Không được phép</span>
+                    </div>
+                </div>
+                
+                <!-- Dashboard -->
+                <div class="page-item" id="dashboardPage">
+                    <div class="page-header">
+                        <div class="page-icon" style="background: #3b82f6;">📊</div>
+                        <div class="page-title">Dashboard</div>
+                    </div>
+                    <div class="page-description">
+                        Trang tổng quan với các card quản lý
+                    </div>
+                    <div class="access-status" id="dashboardStatus">
+                        <span>✅ Được phép</span>
+                    </div>
+                </div>
+                
+                <!-- Dashboard Emergency Card -->
+                <div class="page-item" id="dashboardEmergencyCard">
+                    <div class="page-header">
+                        <div class="page-icon" style="background: #f59e0b;">🔧</div>
+                        <div class="page-title">Card Quản lý Cứu hộ</div>
+                    </div>
+                    <div class="page-description">
+                        Card quản lý cứu hộ trong dashboard
+                    </div>
+                    <div class="access-status" id="dashboardEmergencyCardStatus">
+                        <span>❌ Bị ẩn</span>
+                    </div>
+                </div>
+                
+                <!-- Emergency Request Page -->
+                <div class="page-item" id="emergencyRequestPage">
+                    <div class="page-header">
+                        <div class="page-icon" style="background: #dc2626;">📞</div>
+                        <div class="page-title">Tạo Yêu cầu Cứu hộ</div>
+                    </div>
+                    <div class="page-description">
+                        Trang tạo yêu cầu cứu hộ khẩn cấp
+                    </div>
+                    <div class="access-status" id="emergencyRequestStatus">
+                        <span>✅ Được phép</span>
+                    </div>
+                </div>
+                
+                <!-- Garage Register -->
+                <div class="page-item" id="garageRegisterPage">
+                    <div class="page-header">
+                        <div class="page-icon" style="background: #059669;">🏢</div>
+                        <div class="page-title">Đăng ký Garage</div>
+                    </div>
+                    <div class="page-description">
+                        Trang đăng ký garage mới
+                    </div>
+                    <div class="access-status" id="garageRegisterStatus">
+                        <span>✅ Được phép</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="permission-section">
+            <h3>📋 Bảng quyền truy cập chi tiết:</h3>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Trang/Chức năng</th>
+                        <th>USER</th>
+                        <th>GARAGE</th>
+                        <th>ADMIN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Garage Emergency Page</strong><br><small>Quản lý cứu hộ khẩn cấp</small></td>
+                        <td><span class="access-no">❌ Không</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dashboard</strong><br><small>Trang tổng quan</small></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Card Quản lý Cứu hộ</strong><br><small>Trong dashboard</small></td>
+                        <td><span class="access-no">❌ Ẩn</span></td>
+                        <td><span class="access-yes">✅ Hiện</span></td>
+                        <td><span class="access-yes">✅ Hiện</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tạo Yêu cầu Cứu hộ</strong><br><small>Gọi cứu hộ khẩn cấp</small></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Đăng ký Garage</strong><br><small>Tạo tài khoản garage</small></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                        <td><span class="access-yes">✅ Có</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="permission-section">
+            <h3>🔧 Chi tiết kỹ thuật:</h3>
+            
+            <h4>1. Garage Emergency Page - Phân quyền:</h4>
+            <pre style="background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+// Kiểm tra quyền truy cập
+if (!user) {
+  router.push('/auth')
+  return
+}
+
+if (!isGarageOwner()) {
+  toast({
+    title: "Không có quyền truy cập",
+    description: "Chỉ garage mới có thể truy cập trang này",
+    variant: "destructive",
+  })
+  router.push('/dashboard')
+  return
+}
+            </pre>
+            
+            <h4>2. Dashboard Card - Conditional Rendering:</h4>
+            <pre style="background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+// Chỉ hiển thị cho GARAGE role
+{user && user.role === 'GARAGE' && (
+  &lt;Card className="border-red-100"&gt;
+    &lt;CardTitle&gt;Quản lý Cứu hộ&lt;/CardTitle&gt;
+    &lt;Button onClick={() =&gt; router.push("/garage/emergency")}&gt;
+      Quản lý cứu hộ
+    &lt;/Button&gt;
+  &lt;/Card&gt;
+)}
+            </pre>
+            
+            <h4>3. Access Control Logic:</h4>
+            <ul>
+                <li><strong>Garage Emergency Page:</strong> Chỉ ROLE = 'GARAGE' mới được truy cập</li>
+                <li><strong>Dashboard Card:</strong> Chỉ hiển thị khi user.role === 'GARAGE'</li>
+                <li><strong>Fallback:</strong> Redirect về dashboard với thông báo lỗi</li>
+                <li><strong>UX:</strong> Hiển thị trang "Không có quyền" với options</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let currentRole = 'USER';
+        
+        function setRole(role) {
+            currentRole = role;
+            updateUI();
+        }
+        
+        function updateUI() {
+            // Update current role badge
+            const roleBadge = document.getElementById('currentRoleBadge');
+            roleBadge.textContent = currentRole;
+            roleBadge.className = `role-badge ${currentRole.toLowerCase()}`;
+            
+            // Update page access status
+            updatePageAccess('garageEmergencyPage', 'garageEmergencyStatus', 
+                currentRole === 'GARAGE' || currentRole === 'ADMIN');
+            
+            updatePageAccess('dashboardPage', 'dashboardStatus', true);
+            
+            updatePageAccess('dashboardEmergencyCard', 'dashboardEmergencyCardStatus', 
+                currentRole === 'GARAGE' || currentRole === 'ADMIN');
+            
+            updatePageAccess('emergencyRequestPage', 'emergencyRequestStatus', true);
+            
+            updatePageAccess('garageRegisterPage', 'garageRegisterStatus', true);
+        }
+        
+        function updatePageAccess(pageId, statusId, hasAccess) {
+            const pageElement = document.getElementById(pageId);
+            const statusElement = document.getElementById(statusId);
+            
+            // Remove all access classes
+            pageElement.classList.remove('allowed', 'denied', 'restricted');
+            
+            if (hasAccess) {
+                pageElement.classList.add('allowed');
+                statusElement.innerHTML = '<span class="status-allowed">✅ Được phép</span>';
+            } else {
+                pageElement.classList.add('denied');
+                statusElement.innerHTML = '<span class="status-denied">❌ Không được phép</span>';
+            }
+        }
+        
+        // Initialize
+        updateUI();
+    </script>
+</body>
+</html>

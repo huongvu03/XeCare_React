@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Tab Hành trình theo Trạng thái</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .status-selector {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .status-selector select {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            font-size: 16px;
+            background: white;
+            margin-right: 15px;
+        }
+        
+        .tab-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #e1e8ed;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            background: rgba(255,255,255,0.9);
+        }
+        
+        .tab:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+        
+        .tab.active {
+            background: white;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .route-tab {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #3b82f6;
+        }
+        
+        .route-tab.hidden {
+            display: none;
+        }
+        
+        .status-info {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .status-card.active {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .status-pending .status-icon {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .status-accepted .status-icon {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .status-completed .status-icon {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        
+        .status-quoted .status-icon {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .status-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .status-card p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .explanation {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #f59e0b;
+            margin-top: 20px;
+        }
+        
+        .explanation h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .explanation p {
+            margin: 0;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .demo-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Tab Hành trình theo Trạng thái</h1>
+            <p>Chỉ hiển thị tab "Hành trình" khi status = ACCEPTED</p>
+        </div>
+        
+        <div class="status-selector">
+            <label for="statusSelect">Chọn trạng thái Emergency Request:</label>
+            <select id="statusSelect" onchange="changeStatus()">
+                <option value="PENDING">PENDING - Chờ garage phản hồi</option>
+                <option value="QUOTED">QUOTED - Garage đã gửi báo giá</option>
+                <option value="ACCEPTED">ACCEPTED - Garage đã chấp nhận</option>
+                <option value="COMPLETED">COMPLETED - Hoàn thành cứu hộ</option>
+                <option value="CANCELLED">CANCELLED - Đã hủy</option>
+            </select>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('details')">
+                    📋 Chi tiết yêu cầu
+                </div>
+                <div class="tab" onclick="showTab('location')">
+                    📍 Vị trí sự cố
+                </div>
+                <div class="tab route-tab" id="routeTab" onclick="showTab('route')">
+                    🚗 Hành trình
+                </div>
+            </div>
+            
+            <div class="tab-content active" id="detailsContent">
+                <h3>Chi tiết yêu cầu cứu hộ</h3>
+                <p>Thông tin chi tiết về yêu cầu cứu hộ, khách hàng và garage.</p>
+            </div>
+            
+            <div class="tab-content" id="locationContent">
+                <h3>Vị trí sự cố</h3>
+                <p>Thông tin tọa độ và bản đồ vị trí xảy ra sự cố.</p>
+            </div>
+            
+            <div class="tab-content" id="routeContent">
+                <h3>Hành trình cứu hộ</h3>
+                <p>Animation xe di chuyển từ garage đến vị trí sự cố với thời gian dự tính thực tế.</p>
+                <div style="background: #f0f9ff; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                    <strong>✨ Tính năng:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Timeline animation với xe di chuyển</li>
+                        <li>Thời gian dự tính thực tế</li>
+                        <li>Countdown timer</li>
+                        <li>Google Maps integration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-info">
+            <h3>📊 Trạng thái hiện tại: <span id="currentStatus">PENDING</span></h3>
+            <p>Tab "Hành trình" chỉ hiển thị khi trạng thái = ACCEPTED</p>
+            
+            <div class="status-grid">
+                <div class="status-card status-pending" id="pendingCard">
+                    <div class="status-icon">⏳</div>
+                    <h3>PENDING</h3>
+                    <p>Chờ garage phản hồi</p>
+                </div>
+                
+                <div class="status-card status-quoted" id="quotedCard">
+                    <div class="status-icon">💰</div>
+                    <h3>QUOTED</h3>
+                    <p>Garage đã gửi báo giá</p>
+                </div>
+                
+                <div class="status-card status-accepted" id="acceptedCard">
+                    <div class="status-icon">✅</div>
+                    <h3>ACCEPTED</h3>
+                    <p>Garage đã chấp nhận</p>
+                </div>
+                
+                <div class="status-card status-completed" id="completedCard">
+                    <div class="status-icon">🏁</div>
+                    <h3>COMPLETED</h3>
+                    <p>Hoàn thành cứu hộ</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h4>🎯 Logic hiển thị tab "Hành trình":</h4>
+            <p>
+                <strong>Hiển thị:</strong> Chỉ khi status = "ACCEPTED" (garage đã chấp nhận yêu cầu)<br>
+                <strong>Ẩn:</strong> Khi status = "PENDING", "QUOTED", "COMPLETED", "CANCELLED"<br>
+                <strong>Lý do:</strong> Hành trình chỉ có ý nghĩa khi garage đã chấp nhận và bắt đầu di chuyển đến vị trí sự cố.
+            </p>
+        </div>
+        
+        <div class="demo-actions">
+            <button class="btn btn-primary" onclick="simulateWorkflow()">
+                🔄 Mô phỏng quy trình
+            </button>
+            <button class="btn btn-secondary" onclick="resetDemo()">
+                🔄 Reset demo
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        let currentStatus = 'PENDING';
+        let currentTab = 'details';
+        
+        function changeStatus() {
+            const select = document.getElementById('statusSelect');
+            currentStatus = select.value;
+            updateStatusDisplay();
+            updateRouteTabVisibility();
+        }
+        
+        function updateStatusDisplay() {
+            document.getElementById('currentStatus').textContent = currentStatus;
+            
+            // Reset all cards
+            document.querySelectorAll('.status-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Activate current status card
+            const statusMap = {
+                'PENDING': 'pendingCard',
+                'QUOTED': 'quotedCard',
+                'ACCEPTED': 'acceptedCard',
+                'COMPLETED': 'completedCard'
+            };
+            
+            const activeCard = document.getElementById(statusMap[currentStatus]);
+            if (activeCard) {
+                activeCard.classList.add('active');
+            }
+        }
+        
+        function updateRouteTabVisibility() {
+            const routeTab = document.getElementById('routeTab');
+            
+            if (currentStatus === 'ACCEPTED') {
+                routeTab.classList.remove('hidden');
+                routeTab.style.display = 'flex';
+            } else {
+                routeTab.classList.add('hidden');
+                routeTab.style.display = 'none';
+            }
+        }
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + 'Content').classList.add('active');
+            
+            // Activate selected tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+        
+        function simulateWorkflow() {
+            const workflow = ['PENDING', 'QUOTED', 'ACCEPTED', 'COMPLETED'];
+            let currentIndex = 0;
+            
+            const interval = setInterval(() => {
+                if (currentIndex < workflow.length) {
+                    currentStatus = workflow[currentIndex];
+                    document.getElementById('statusSelect').value = currentStatus;
+                    updateStatusDisplay();
+                    updateRouteTabVisibility();
+                    currentIndex++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 2000);
+        }
+        
+        function resetDemo() {
+            currentStatus = 'PENDING';
+            document.getElementById('statusSelect').value = currentStatus;
+            updateStatusDisplay();
+            updateRouteTabVisibility();
+            showTab('details');
+        }
+        
+        // Initialize
+        updateStatusDisplay();
+        updateRouteTabVisibility();
+    </script>
+</body>
+</html>

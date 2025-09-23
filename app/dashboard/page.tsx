@@ -33,7 +33,16 @@ import { useAuth } from "@/hooks/use-auth"
 import { getUserProfile } from "@/lib/api/UserApi"
 import { getGaragesByOwner } from "@/lib/api/GarageApi"
 import { getUserAppointments, getPendingAppointmentsCount, type Appointment } from "@/lib/api/AppointmentApi"
-import { getMyFavorites, type FavoriteGarage } from "@/lib/api/FavoriteApi"
+import { getMyFavorites } from "@/lib/api/FavoriteApi"
+
+interface FavoriteGarage {
+  id: number
+  garageId: number
+  garageName: string
+  garageAddress: string
+  garagePhone: string
+  createdAt?: string
+}
 import Link from "next/link"
 import type { User } from "@/lib/api/UserApi"
 import type { Garage } from "@/lib/api/GarageApi"
@@ -459,7 +468,7 @@ export default function UnifiedDashboard() {
             </Card>
 
             {/* Garage Emergency Management - Only for GARAGE role */}
-            {isGarageOwner && (
+            {user && user.role === 'GARAGE' && (
               <Card className="border-red-100 hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center space-x-2 text-lg">
