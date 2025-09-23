@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Appointments</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Garage Appointments</h1>
+        
+        <div>
+            <button onclick="testGarageId11()">Test Garage ID 11</button>
+            <button onclick="testAllGarages()">Test All Garages</button>
+            <button onclick="testCreateAppointment()">Create Test Appointment</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testGarageId11() {
+            showResult('🔄 Testing garage ID 11 appointments...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                // Test garage appointments for ID 11
+                const response = await fetch('http://localhost:8080/apis/user/appointments/garage/11?page=0&size=100', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 Testing Garage ID 11 Appointments\n\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Total Elements: ${data.totalElements}\n`;
+                    result += `Total Pages: ${data.totalPages}\n`;
+                    result += `Current Page: ${data.number + 1}\n`;
+                    result += `Page Size: ${data.size}\n\n`;
+                    
+                    if (data.content && data.content.length > 0) {
+                        result += `Appointments Found:\n`;
+                        data.content.forEach((appointment, index) => {
+                            result += `${index + 1}. ${appointment.userName || 'N/A'} - ${appointment.serviceName || 'N/A'} - ${appointment.status || 'N/A'}\n`;
+                            result += `   Date: ${appointment.appointmentDate} Time: ${appointment.appointmentTime}\n`;
+                            result += `   Phone: ${appointment.userPhone || appointment.contactPhone || 'N/A'}\n\n`;
+                        });
+                    } else {
+                        result += `No appointments found for garage ID 11.`;
+                    }
+                    
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllGarages() {
+            showResult('🔄 Testing all garages...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                // Test all garages
+                const response = await fetch('http://localhost:8080/apis/admin/garages?page=0&size=100', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 Testing All Garages\n\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Total Garages: ${data.totalElements}\n\n`;
+                    
+                    result += `Garage List:\n`;
+                    data.content.forEach((garage, index) => {
+                        result += `${index + 1}. ID: ${garage.id} - ${garage.name} - Status: ${garage.status}\n`;
+                    });
+                    
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateAppointment() {
+            showResult('🔄 Creating test appointment...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                // Create test appointment for garage ID 11
+                const appointmentData = {
+                    garageId: 11,
+                    serviceId: 1, // Assuming service ID 1 exists
+                    appointmentDate: "2025-01-25",
+                    appointmentTime: "10:00",
+                    notes: "Test appointment created from debug tool",
+                    vehicleTypeId: 1,
+                    vehicleBrand: "Test Brand",
+                    vehicleModel: "Test Model",
+                    licensePlate: "TEST123"
+                };
+                
+                const response = await fetch('http://localhost:8080/apis/user/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+                
+                let result = `🔍 Creating Test Appointment\n\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Created Appointment:\n${JSON.stringify(data, null, 2)}\n\n`;
+                    result += `Now test garage appointments again to see if it appears.`;
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

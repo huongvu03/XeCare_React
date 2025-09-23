@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Appointments After Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .appointment-card { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Appointments After Backend Fix</h1>
+        
+        <div>
+            <button onclick="testGarage11Appointments()">Test Garage 11 Appointments</button>
+            <button onclick="testAllUserGarages()">Test All User Garages</button>
+            <button onclick="testPendingCount()">Test Pending Count</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testGarage11Appointments() {
+            showResult('🔄 Testing garage 11 appointments after fix...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Testing Garage 11 Appointments (After Fix)\n\n`;
+                
+                // Test appointments for garage 11
+                const response = await fetch('http://localhost:8080/apis/user/appointments/garage/11?page=0&size=100', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Total Elements: ${data.totalElements}\n`;
+                    result += `Total Pages: ${data.totalPages}\n`;
+                    result += `Current Page: ${data.number + 1}\n`;
+                    result += `Page Size: ${data.size}\n\n`;
+                    
+                    if (data.content && data.content.length > 0) {
+                        result += `Found ${data.content.length} appointments:\n\n`;
+                        
+                        data.content.forEach((appointment, index) => {
+                            result += `Appointment ${index + 1}:\n`;
+                            result += `  ID: ${appointment.id}\n`;
+                            result += `  Customer: ${appointment.userName || 'N/A'}\n`;
+                            result += `  Phone: ${appointment.userPhone || appointment.contactPhone || 'N/A'}\n`;
+                            result += `  Service: ${appointment.serviceName || 'N/A'}\n`;
+                            result += `  Date: ${appointment.appointmentDate}\n`;
+                            result += `  Time: ${appointment.appointmentTime || 'N/A'}\n`;
+                            result += `  Status: ${appointment.status}\n`;
+                            result += `  Vehicle: ${appointment.vehicleTypeName || 'N/A'}\n`;
+                            if (appointment.vehicleBrand) result += `  Brand: ${appointment.vehicleBrand}\n`;
+                            if (appointment.vehicleModel) result += `  Model: ${appointment.vehicleModel}\n`;
+                            if (appointment.licensePlate) result += `  License: ${appointment.licensePlate}\n`;
+                            result += `\n`;
+                        });
+                    } else {
+                        result += `No appointments found for garage 11.\n`;
+                    }
+                    
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllUserGarages() {
+            showResult('🔄 Testing all user garages...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Testing All User Garages\n\n`;
+                
+                // Get user profile to see all garages
+                const profileResponse = await fetch('http://localhost:8080/apis/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    result += `User: ${profileData.name} (${profileData.email})\n`;
+                    result += `Role: ${profileData.role}\n\n`;
+                    
+                    if (profileData.garage) {
+                        result += `Primary Garage:\n`;
+                        result += `  ID: ${profileData.garage.id}\n`;
+                        result += `  Name: ${profileData.garage.name}\n`;
+                        result += `  Status: ${profileData.garage.status}\n\n`;
+                        
+                        // Test appointments for primary garage
+                        const primaryGarageId = profileData.garage.id;
+                        result += `Testing appointments for primary garage (ID: ${primaryGarageId}):\n`;
+                        
+                        const appointmentsResponse = await fetch(`http://localhost:8080/apis/user/appointments/garage/${primaryGarageId}?page=0&size=100`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (appointmentsResponse.ok) {
+                            const appointmentsData = await appointmentsResponse.json();
+                            result += `✅ Found ${appointmentsData.totalElements} appointments\n`;
+                        } else {
+                            const error = await appointmentsResponse.text();
+                            result += `❌ Error: ${error}\n`;
+                        }
+                    }
+                }
+                
+                // Also check all garages via admin endpoint
+                result += `\nChecking all garages via admin endpoint:\n`;
+                const allGaragesResponse = await fetch('http://localhost:8080/apis/admin/garages?page=0&size=100', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (allGaragesResponse.ok) {
+                    const allGaragesData = await allGaragesResponse.json();
+                    result += `Total garages in system: ${allGaragesData.totalElements}\n`;
+                    
+                    // Find user's garages
+                    const userGarages = allGaragesData.content.filter(garage => 
+                        garage.ownerEmail === profileData.email
+                    );
+                    
+                    result += `User's garages: ${userGarages.length}\n`;
+                    userGarages.forEach(garage => {
+                        result += `  - ID: ${garage.id}, Name: ${garage.name}, Status: ${garage.status}\n`;
+                    });
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPendingCount() {
+            showResult('🔄 Testing pending appointments count...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Testing Pending Appointments Count\n\n`;
+                
+                // Test pending count for garage 11
+                const response = await fetch('http://localhost:8080/apis/user/appointments/garage/11/pending-count', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Pending Count: ${data.pendingCount}\n`;
+                    result += `This matches the dashboard notification!\n`;
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

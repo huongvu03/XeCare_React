@@ -20,7 +20,6 @@ import {
   XCircle,
   Clock as ClockIcon,
   Loader2,
-  Plus,
   Filter,
   Search
 } from "lucide-react"
@@ -187,7 +186,7 @@ export default function AppointmentsPage() {
     >
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <Button
             variant="outline"
             onClick={() => router.push(`/garage/${garageId}?owner=true`)}
@@ -195,11 +194,6 @@ export default function AppointmentsPage() {
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Quay lại</span>
-          </Button>
-          
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Tạo lịch hẹn mới
           </Button>
         </div>
 

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Garage Ownership Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 User Garage Ownership Test</h1>
+        
+        <div>
+            <button onclick="testOwnership()">Test Ownership</button>
+            <button onclick="compareUsers()">Compare Users</button>
+            <button onclick="testCorrectGarage()">Test Correct Garage</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testOwnership() {
+            showResult('🔄 Testing ownership...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Testing Ownership\n\n`;
+                
+                // Get current user
+                const profileResponse = await fetch('http://localhost:8080/apis/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    result += `Current User:\n`;
+                    result += `  ID: ${profileData.id}\n`;
+                    result += `  Name: ${profileData.name}\n`;
+                    result += `  Email: ${profileData.email}\n`;
+                    result += `  Role: ${profileData.role}\n\n`;
+                    
+                    // Get user's garages
+                    const garagesResponse = await fetch('http://localhost:8080/apis/user/my-garages', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (garagesResponse.ok) {
+                        const garagesData = await garagesResponse.json();
+                        result += `User's Garages:\n`;
+                        garagesData.forEach((garage, index) => {
+                            result += `  ${index + 1}. ID: ${garage.id} - ${garage.name} - Status: ${garage.status}\n`;
+                        });
+                        
+                        // Check if garage 11 is in user's garages
+                        const garage11 = garagesData.find(g => g.id === 11);
+                        if (garage11) {
+                            result += `\n✅ Garage 11 is owned by current user\n`;
+                        } else {
+                            result += `\n❌ Garage 11 is NOT owned by current user\n`;
+                        }
+                    } else {
+                        result += `❌ Failed to get user garages: ${await garagesResponse.text()}\n`;
+                    }
+                } else {
+                    result += `❌ Failed to get profile: ${await profileResponse.text()}\n`;
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function compareUsers() {
+            showResult('🔄 Comparing users...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Comparing Users\n\n`;
+                
+                // Get current user
+                const profileResponse = await fetch('http://localhost:8080/apis/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    result += `Current User:\n`;
+                    result += `  ID: ${profileData.id}\n`;
+                    result += `  Email: ${profileData.email}\n\n`;
+                    
+                    // Get garage 11 details via admin endpoint
+                    const garage11Response = await fetch('http://localhost:8080/apis/admin/garages/11', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (garage11Response.ok) {
+                        const garage11Data = await garage11Response.json();
+                        result += `Garage 11 Details:\n`;
+                        result += `  ID: ${garage11Data.id}\n`;
+                        result += `  Name: ${garage11Data.name}\n`;
+                        result += `  Owner ID: ${garage11Data.ownerId}\n`;
+                        result += `  Owner Name: ${garage11Data.ownerName}\n`;
+                        result += `  Owner Email: ${garage11Data.ownerEmail}\n\n`;
+                        
+                        // Compare IDs
+                        if (profileData.id === garage11Data.ownerId) {
+                            result += `✅ OWNERSHIP MATCH: User ID ${profileData.id} = Garage Owner ID ${garage11Data.ownerId}\n`;
+                        } else {
+                            result += `❌ OWNERSHIP MISMATCH: User ID ${profileData.id} ≠ Garage Owner ID ${garage11Data.ownerId}\n`;
+                        }
+                        
+                        // Compare emails
+                        if (profileData.email === garage11Data.ownerEmail) {
+                            result += `✅ EMAIL MATCH: ${profileData.email} = ${garage11Data.ownerEmail}\n`;
+                        } else {
+                            result += `❌ EMAIL MISMATCH: ${profileData.email} ≠ ${garage11Data.ownerEmail}\n`;
+                        }
+                    } else {
+                        result += `❌ Failed to get garage 11: ${await garage11Response.text()}\n`;
+                    }
+                } else {
+                    result += `❌ Failed to get profile: ${await profileResponse.text()}\n`;
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCorrectGarage() {
+            showResult('🔄 Testing correct garage...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Testing Correct Garage\n\n`;
+                
+                // Get user's garages
+                const garagesResponse = await fetch('http://localhost:8080/apis/user/my-garages', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (garagesResponse.ok) {
+                    const garagesData = await garagesResponse.json();
+                    result += `User's Garages:\n`;
+                    garagesData.forEach((garage, index) => {
+                        result += `  ${index + 1}. ID: ${garage.id} - ${garage.name} - Status: ${garage.status}\n`;
+                    });
+                    
+                    // Test appointments for each garage
+                    for (const garage of garagesData) {
+                        result += `\nTesting appointments for garage ${garage.id} (${garage.name}):\n`;
+                        
+                        const appointmentsResponse = await fetch(`http://localhost:8080/apis/user/appointments/garage/${garage.id}?page=0&size=100`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (appointmentsResponse.ok) {
+                            const appointmentsData = await appointmentsResponse.json();
+                            result += `  ✅ SUCCESS: ${appointmentsData.totalElements} appointments found\n`;
+                            
+                            if (appointmentsData.content && appointmentsData.content.length > 0) {
+                                result += `  Appointments:\n`;
+                                appointmentsData.content.forEach((appointment, index) => {
+                                    result += `    ${index + 1}. ${appointment.userName || 'N/A'} - ${appointment.status}\n`;
+                                });
+                            }
+                        } else {
+                            const errorText = await appointmentsResponse.text();
+                            result += `  ❌ FAILED: ${appointmentsResponse.status} - ${errorText}\n`;
+                        }
+                    }
+                } else {
+                    result += `❌ Failed to get user garages: ${await garagesResponse.text()}\n`;
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

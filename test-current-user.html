@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Current User</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Current User</h1>
+        
+        <div>
+            <button onclick="checkCurrentUser()">Check Current User</button>
+            <button onclick="testGarage11Access()">Test Garage 11 Access</button>
+            <button onclick="checkAppointments()">Check Appointments</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function checkCurrentUser() {
+            showResult('🔄 Checking current user...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Checking Current User\n\n`;
+                
+                // Decode token to see payload
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    result += `Token Payload:\n`;
+                    result += `  Subject: ${payload.sub}\n`;
+                    result += `  Email: ${payload.email || 'N/A'}\n`;
+                    result += `  Role: ${payload.role || 'N/A'}\n`;
+                    result += `  Exp: ${new Date(payload.exp * 1000)}\n\n`;
+                } catch (e) {
+                    result += `❌ Cannot decode token: ${e.message}\n\n`;
+                }
+                
+                // Get user profile
+                const profileResponse = await fetch('http://localhost:8080/apis/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    result += `✅ Current User Profile:\n`;
+                    result += `  ID: ${profileData.id}\n`;
+                    result += `  Name: ${profileData.name}\n`;
+                    result += `  Email: ${profileData.email}\n`;
+                    result += `  Role: ${profileData.role}\n`;
+                    result += `  Phone: ${profileData.phone || 'N/A'}\n`;
+                    result += `  Address: ${profileData.address || 'N/A'}\n`;
+                    
+                    if (profileData.garage) {
+                        result += `\n  Garage Info:\n`;
+                        result += `    ID: ${profileData.garage.id}\n`;
+                        result += `    Name: ${profileData.garage.name}\n`;
+                        result += `    Status: ${profileData.garage.status}\n`;
+                    }
+                    
+                    // Check if this is the correct user
+                    if (profileData.email === 'user@gmail.com' && profileData.id === 1) {
+                        result += `\n✅ This is the correct user (user@gmail.com, ID: 1)\n`;
+                    } else {
+                        result += `\n❌ This is NOT the correct user!\n`;
+                        result += `  Expected: user@gmail.com (ID: 1)\n`;
+                        result += `  Actual: ${profileData.email} (ID: ${profileData.id})\n`;
+                    }
+                } else {
+                    result += `❌ Failed to get profile: ${await profileResponse.text()}\n`;
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGarage11Access() {
+            showResult('🔄 Testing garage 11 access...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Testing Garage 11 Access\n\n`;
+                
+                // Test garage 11 access
+                const garageResponse = await fetch('http://localhost:8080/apis/garage/my-garages/11', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result += `Garage 11 Access Response: ${garageResponse.status} ${garageResponse.statusText}\n\n`;
+                
+                if (garageResponse.ok) {
+                    const garageData = await garageResponse.json();
+                    result += `✅ SUCCESS! Garage 11 Access Granted:\n`;
+                    result += `  ID: ${garageData.id}\n`;
+                    result += `  Name: ${garageData.name}\n`;
+                    result += `  Owner ID: ${garageData.ownerId}\n`;
+                    result += `  Owner Name: ${garageData.ownerName}\n`;
+                    result += `  Owner Email: ${garageData.ownerEmail}\n`;
+                    result += `  Status: ${garageData.status}\n`;
+                } else {
+                    const errorText = await garageResponse.text();
+                    result += `❌ FAILED! Garage 11 Access Denied:\n`;
+                    result += `  Error: ${errorText}\n`;
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAppointments() {
+            showResult('🔄 Checking appointments...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Checking Appointments\n\n`;
+                
+                // Test appointments access
+                const appointmentsResponse = await fetch('http://localhost:8080/apis/user/appointments/garage/11?page=0&size=100', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result += `Appointments Response: ${appointmentsResponse.status} ${appointmentsResponse.statusText}\n\n`;
+                
+                if (appointmentsResponse.ok) {
+                    const appointmentsData = await appointmentsResponse.json();
+                    result += `✅ SUCCESS! Appointments Access Granted:\n`;
+                    result += `  Total Elements: ${appointmentsData.totalElements}\n`;
+                    result += `  Content Length: ${appointmentsData.content?.length || 0}\n`;
+                    
+                    if (appointmentsData.content && appointmentsData.content.length > 0) {
+                        result += `\n  Appointments Found:\n`;
+                        appointmentsData.content.forEach((appointment, index) => {
+                            result += `    ${index + 1}. ID: ${appointment.id}\n`;
+                            result += `       Customer: ${appointment.userName || 'N/A'}\n`;
+                            result += `       Service: ${appointment.serviceName || 'N/A'}\n`;
+                            result += `       Status: ${appointment.status}\n`;
+                            result += `       Date: ${appointment.appointmentDate}\n`;
+                            result += `       Time: ${appointment.appointmentTime || 'N/A'}\n\n`;
+                        });
+                    } else {
+                        result += `\n  No appointments found.\n`;
+                    }
+                } else {
+                    const errorText = await appointmentsResponse.text();
+                    result += `❌ FAILED! Appointments Access Denied:\n`;
+                    result += `  Error: ${errorText}\n`;
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

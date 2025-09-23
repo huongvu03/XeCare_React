@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Garage Ownership</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Check Garage Ownership</h1>
+        
+        <div>
+            <button onclick="checkCurrentUser()">Check Current User</button>
+            <button onclick="checkGarage11()">Check Garage 11</button>
+            <button onclick="checkAllMyGarages()">Check All My Garages</button>
+            <button onclick="testAppointmentAccess()">Test Appointment Access</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function checkCurrentUser() {
+            showResult('🔄 Checking current user...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                const response = await fetch('http://localhost:8080/apis/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 Current User Information\n\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `User Data:\n${JSON.stringify(data, null, 2)}\n\n`;
+                    
+                    // Check if user has garage
+                    if (data.garage) {
+                        result += `✅ User has garage: ID ${data.garage.id} - ${data.garage.name}\n`;
+                        result += `Garage Status: ${data.garage.status}\n`;
+                    } else {
+                        result += `❌ User has no garage\n`;
+                    }
+                    
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkGarage11() {
+            showResult('🔄 Checking garage 11...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                // Check garage 11 details
+                const response = await fetch('http://localhost:8080/apis/admin/garages/11', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 Garage 11 Information\n\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Garage Data:\n${JSON.stringify(data, null, 2)}\n\n`;
+                    
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAllMyGarages() {
+            showResult('🔄 Checking all my garages...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                // Check all garages (admin endpoint)
+                const response = await fetch('http://localhost:8080/apis/admin/garages?page=0&size=100', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 All Garages Information\n\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Total Garages: ${data.totalElements}\n\n`;
+                    
+                    result += `Garage List:\n`;
+                    data.content.forEach((garage, index) => {
+                        result += `${index + 1}. ID: ${garage.id} - ${garage.name} - Owner: ${garage.ownerName} (${garage.ownerEmail}) - Status: ${garage.status}\n`;
+                    });
+                    
+                    // Check if garage 11 is in the list
+                    const garage11 = data.content.find(g => g.id === 11);
+                    if (garage11) {
+                        result += `\n✅ Garage 11 found: ${garage11.name} - Owner: ${garage11.ownerName}\n`;
+                    } else {
+                        result += `\n❌ Garage 11 not found in list\n`;
+                    }
+                    
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAppointmentAccess() {
+            showResult('🔄 Testing appointment access...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = `🔍 Testing Appointment Access\n\n`;
+                
+                // Test 1: Try to access garage 11 appointments
+                result += `Test 1: Access garage 11 appointments\n`;
+                const response1 = await fetch('http://localhost:8080/apis/user/appointments/garage/11?page=0&size=10', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result += `Response Status: ${response1.status} ${response1.statusText}\n`;
+                
+                if (response1.ok) {
+                    const data1 = await response1.json();
+                    result += `✅ SUCCESS! Found ${data1.totalElements} appointments\n`;
+                } else {
+                    const error1 = await response1.text();
+                    result += `❌ FAILED: ${error1}\n`;
+                }
+                
+                result += `\n`;
+                
+                // Test 2: Try to access user's own garage appointments
+                result += `Test 2: Access user's own garage appointments\n`;
+                const response2 = await fetch('http://localhost:8080/apis/user/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response2.ok) {
+                    const userData = await response2.json();
+                    if (userData.garage) {
+                        const myGarageId = userData.garage.id;
+                        result += `User's garage ID: ${myGarageId}\n`;
+                        
+                        const response3 = await fetch(`http://localhost:8080/apis/user/appointments/garage/${myGarageId}?page=0&size=10`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        result += `Response Status: ${response3.status} ${response3.statusText}\n`;
+                        
+                        if (response3.ok) {
+                            const data3 = await response3.json();
+                            result += `✅ SUCCESS! Found ${data3.totalElements} appointments in user's garage\n`;
+                        } else {
+                            const error3 = await response3.text();
+                            result += `❌ FAILED: ${error3}\n`;
+                        }
+                    } else {
+                        result += `❌ User has no garage\n`;
+                    }
+                }
+                
+                showResult(result, 'success');
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
