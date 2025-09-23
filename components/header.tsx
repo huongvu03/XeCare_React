@@ -149,13 +149,13 @@ export function Header() {
 
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8" suppressHydrationWarning>
 
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16" suppressHydrationWarning>
           {/* Logo */}
           <a href="/" >
-            <div className="flex items-center space-x-2">
-              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg">
+            <div className="flex items-center space-x-2" suppressHydrationWarning>
+              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg" suppressHydrationWarning>
                 <Wrench className="h-6 w-6 text-white" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
@@ -164,7 +164,7 @@ export function Header() {
             </div>
           </a>
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-8" suppressHydrationWarning>
             <a href="/#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
               Giới thiệu
             </a>
@@ -180,21 +180,21 @@ export function Header() {
           </nav>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4" suppressHydrationWarning>
             {user && <a href="/notifications"><NotificationBell /></a>}
             <AuthButtons />
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)} suppressHydrationWarning>
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-blue-100">
-            <nav className="flex flex-col space-y-4">
+          <div className="md:hidden py-4 border-t border-blue-100" suppressHydrationWarning>
+            <nav className="flex flex-col space-y-4" suppressHydrationWarning>
               <a href="/#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Giới thiệu
               </a>

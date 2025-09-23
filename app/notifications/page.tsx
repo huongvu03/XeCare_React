@@ -221,12 +221,12 @@ export default function NotificationsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-32">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
-              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-600 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6" suppressHydrationWarning>
+        <div className="max-w-7xl mx-auto" suppressHydrationWarning>
+          <div className="text-center py-32" suppressHydrationWarning>
+            <div className="relative" suppressHydrationWarning>
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6" suppressHydrationWarning></div>
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-600 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} suppressHydrationWarning></div>
             </div>
             <p className="text-gray-600 text-lg font-medium">Đang tải thông báo...</p>
           </div>

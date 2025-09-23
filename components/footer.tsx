@@ -17,12 +17,12 @@ import {
 export function Footer() {
   return (
     <footer id="contact" className="bg-slate-900 text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16" suppressHydrationWarning>
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8" suppressHydrationWarning>
           {/* Company info */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center space-x-2">
-              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg">
+          <div className="lg:col-span-2 space-y-6" suppressHydrationWarning>
+            <div className="flex items-center space-x-2" suppressHydrationWarning>
+              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg" suppressHydrationWarning>
                 <Wrench className="h-6 w-6 text-white" />
               </div>
               <span className="text-xl font-bold">XeCare</span>
@@ -47,7 +47,7 @@ export function Footer() {
             </div> */}
 
             {/* Social links */}
-            <div className="flex space-x-4">
+            <div className="flex space-x-4" suppressHydrationWarning>
               <Button size="sm" variant="ghost" className="text-slate-400 hover:text-white p-2">
                 <Facebook className="h-5 w-5" />
               </Button>
@@ -64,9 +64,9 @@ export function Footer() {
           </div>
 
           {/* Quick links */}
-          <div className="space-y-4">
+          <div className="space-y-4" suppressHydrationWarning>
             <h3 className="text-lg font-semibold">Dịch vụ</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2" suppressHydrationWarning>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
                   Tìm garage gần tôi
@@ -96,9 +96,9 @@ export function Footer() {
           </div>
 
           {/* Support */}
-          <div className="space-y-4">
+          <div className="space-y-4" suppressHydrationWarning>
             <h3 className="text-lg font-semibold">Hỗ trợ</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2" suppressHydrationWarning>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
                   Trung tâm trợ giúp
@@ -128,10 +128,10 @@ export function Footer() {
           </div>
 
           {/* Contact & Download */}
-          <div className="space-y-4">
+          <div className="space-y-4" suppressHydrationWarning>
             <h3 className="text-lg font-semibold">Liên hệ</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
+            <div className="space-y-3" suppressHydrationWarning>
+              <div className="flex items-center space-x-3" suppressHydrationWarning>
                 <MapPin className="h-4 w-4 text-blue-400 flex-shrink-0" />
                 <span className="text-slate-400 text-sm">
                   Tầng 10, Tòa nhà ABC
@@ -139,20 +139,20 @@ export function Footer() {
                   123 Nguyễn Huệ, Q1, TP.HCM
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3" suppressHydrationWarning>
                 <Phone className="h-4 w-4 text-blue-400" />
                 <span className="text-slate-400 text-sm">Hotline: 1900 1234</span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3" suppressHydrationWarning>
                 <Mail className="h-4 w-4 text-blue-400" />
                 <span className="text-slate-400 text-sm">support@xecare.vn</span>
               </div>
             </div>
 
             {/* App download */}
-            <div className="space-y-3">
+            <div className="space-y-3" suppressHydrationWarning>
               <h4 className="font-semibold text-white">Tải ứng dụng</h4>
-              <div className="space-y-2">
+              <div className="space-y-2" suppressHydrationWarning>
                 <Button
                   variant="outline"
                   size="sm"
@@ -175,11 +175,11 @@ export function Footer() {
         </div>
 
         {/* Bottom section */}
-        <div className="border-t border-slate-800 mt-12 pt-8">
-          <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-slate-400">
+        <div className="border-t border-slate-800 mt-12 pt-8" suppressHydrationWarning>
+          <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0" suppressHydrationWarning>
+            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-slate-400" suppressHydrationWarning>
               <p>© 2024 XeCare. Tất cả quyền được bảo lưu.</p>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4" suppressHydrationWarning>
                 <a href="/terms" className="hover:text-white transition-colors">
                   Điều khoản sử dụng
                 </a>
@@ -193,12 +193,12 @@ export function Footer() {
             </div>
 
             {/* Certifications */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-xs text-slate-400">
+            <div className="flex items-center space-x-4" suppressHydrationWarning>
+              <div className="flex items-center space-x-2 text-xs text-slate-400" suppressHydrationWarning>
                 <Shield className="h-4 w-4" />
                 <span>ISO 27001</span>
               </div>
-              <div className="flex items-center space-x-2 text-xs text-slate-400">
+              <div className="flex items-center space-x-2 text-xs text-slate-400" suppressHydrationWarning>
                 <Award className="h-4 w-4" />
                 <span>Đã xác thực</span>
               </div>
