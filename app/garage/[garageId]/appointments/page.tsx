@@ -102,7 +102,13 @@ export default function AppointmentsPage() {
         setLoading(false)
       } catch (err: any) {
         console.error("Error loading data:", err)
-        setError("Không thể tải dữ liệu")
+        if (err.response?.status === 403) {
+          setError("Bạn không có quyền truy cập lịch hẹn của garage này")
+        } else if (err.response?.status === 401) {
+          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại")
+        } else {
+          setError("Không thể tải dữ liệu")
+        }
         setLoading(false)
       }
     }
