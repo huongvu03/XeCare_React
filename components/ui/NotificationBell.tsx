@@ -26,17 +26,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
     setPreviousCount(unreadCount);
   }, [unreadCount, previousCount]);
 
-  // Auto-refresh unread count every 3 seconds để cập nhật real-time
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Trigger refresh from useNotifications hook
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('refreshNotifications'));
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Removed auto-refresh to prevent infinite loop
 
   // Listen for custom events from other components
   useEffect(() => {
@@ -47,10 +37,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
     const handleRefreshNotifications = () => {
       // Refresh unread count when notifications are updated
-      console.log('🔄 [NotificationBell] Refreshing unread count...');
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('refreshNotifications'));
-      }
+      // Removed recursive dispatch to prevent infinite loop
     };
 
     // Listen for custom events

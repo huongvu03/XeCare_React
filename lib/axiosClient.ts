@@ -10,21 +10,13 @@ axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     
-    console.log("🔍 [axiosClient] Request:", {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: (config.baseURL || "") + (config.url || ""),
-      hasToken: !!token,
-      tokenPreview: token ? token.substring(0, 50) + "..." : "No token",
-      headers: config.headers
-    });
+    // Removed excessive logging
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("✅ [axiosClient] Authorization header set");
+      // Authorization header set
     } else {
-      console.log("⚠️ [axiosClient] No token found in localStorage");
+      // No token found
     }
     
     return config;
@@ -38,11 +30,7 @@ axiosClient.interceptors.request.use(
 // Response interceptor
 axiosClient.interceptors.response.use(
   (response) => {
-    console.log("✅ [axiosClient] Response success:", {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    });
+    // Response success
     return response;
   },
   (error) => {
