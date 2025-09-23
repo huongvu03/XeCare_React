@@ -160,7 +160,7 @@ export default function AdminGaragesPage() {
       <div className="mb-6">
         <Button
           variant="outline"
-          onClick={() => router.push('/admin')}
+          onClick={() => router.push('/admin/dashboard')}
           className="flex items-center space-x-2"
         >
           <ArrowLeft className="h-4 w-4" />

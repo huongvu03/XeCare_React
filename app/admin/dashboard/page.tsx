@@ -1,6 +1,5 @@
 "use client";
 
-<<<<<<< Updated upstream
 import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,32 +36,12 @@ interface EmergencyRequest {
     imageUrl: string
   }>
 }
-=======
-import { useState, useEffect } from "react";
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Users,
-  Building,
-  Calendar,
-  Star,
-  TrendingUp,
-  Shield,
-  Settings,
-  BarChart3,
-  AlertTriangle,
-} from "lucide-react";
-import Link from "next/link";
-import { getGarageStats } from "@/lib/api/AdminApi";
->>>>>>> Stashed changes
 
 export default function AdminDashboard() {
   const [garageStats, setGarageStats] = useState({
     totalGarages: 0,
     activeGarages: 0,
     pendingGarages: 0,
-<<<<<<< Updated upstream
     inactiveGarages: 0
   })
   const [loading, setLoading] = useState(true)
@@ -109,11 +88,6 @@ export default function AdminDashboard() {
       setEmergencyLoading(false)
     }
   }
-=======
-    inactiveGarages: 0,
-  });
-  const [loading, setLoading] = useState(true);
->>>>>>> Stashed changes
 
   useEffect(() => {
     const fetchGarageStats = async () => {
@@ -127,14 +101,9 @@ export default function AdminDashboard() {
       }
     };
 
-<<<<<<< Updated upstream
     fetchGarageStats()
     loadEmergencyRequests()
   }, [])
-=======
-    fetchGarageStats();
-  }, []);
->>>>>>> Stashed changes
 
   // Số đơn chờ duyệt (PENDING)
   const totalPendingRequests = garageStats.pendingGarages;

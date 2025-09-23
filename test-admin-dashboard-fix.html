@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Dashboard Fix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .test-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .test-button.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .test-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .test-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+        .fix-summary {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .fix-summary h4 {
+            color: #0369a1;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .fix-summary ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .fix-summary li {
+            margin: 5px 0;
+            color: #0c4a6e;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🔧 Test Admin Dashboard Fix</h1>
+        
+        <div class="fix-summary">
+            <h4>✅ Đã sửa các lỗi sau:</h4>
+            <ul>
+                <li><strong>Git Merge Conflict:</strong> Loại bỏ các dấu <<<<<<< Updated upstream, =======, >>>>>>> Stashed changes</li>
+                <li><strong>Duplicate Imports:</strong> Gộp và dọn dẹp imports trùng lặp</li>
+                <li><strong>Missing Admin Page:</strong> Tạo file /admin/page.tsx để redirect đến /admin/dashboard</li>
+                <li><strong>Navigation Update:</strong> Cập nhật nút "Quay lại" để redirect đúng</li>
+                <li><strong>Emergency Management:</strong> Giữ lại tính năng quản lý cứu hộ từ nhóm khác</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Admin Dashboard Pages</h3>
+            <p>Kiểm tra các trang admin sau khi sửa:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                    <h4 style="color: #374151; margin-bottom: 10px;">Admin Root</h4>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Redirect đến dashboard</p>
+                    <a href="http://localhost:3000/admin" class="test-button" style="font-size: 12px; padding: 8px 16px;">Test /admin</a>
+                </div>
+                
+                <div style="padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                    <h4 style="color: #374151; margin-bottom: 10px;">Admin Dashboard</h4>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Trang chính admin</p>
+                    <a href="http://localhost:3000/admin/dashboard" class="test-button" style="font-size: 12px; padding: 8px 16px;">Test Dashboard</a>
+                </div>
+                
+                <div style="padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                    <h4 style="color: #374151; margin-bottom: 10px;">Admin Garages</h4>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Quản lý garage</p>
+                    <a href="http://localhost:3000/admin/garages" class="test-button" style="font-size: 12px; padding: 8px 16px;">Test Garages</a>
+                </div>
+                
+                <div style="padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                    <h4 style="color: #374151; margin-bottom: 10px;">Garage Approval</h4>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Phê duyệt garage</p>
+                    <a href="http://localhost:3000/admin/garages/11/approval" class="test-button" style="font-size: 12px; padding: 8px 16px;">Test Approval</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Test Navigation Flow</h3>
+            <p>Kiểm tra luồng điều hướng:</p>
+            
+            <div class="test-result test-info">
+                <strong>Navigation Flow mong đợi:</strong>
+
+                1. <strong>/admin</strong> → Redirect đến <strong>/admin/dashboard</strong>
+                2. <strong>/admin/dashboard</strong> → Click "Quản lý garage" → <strong>/admin/garages</strong>
+                3. <strong>/admin/garages</strong> → Click "Xem chi tiết" → <strong>/admin/garages/11/approval</strong>
+                4. <strong>/admin/garages/11/approval</strong> → Click "Quay lại" → <strong>/admin/garages</strong>
+                5. <strong>/admin/garages</strong> → Click "Quay lại" → <strong>/admin/dashboard</strong>
+
+                <strong>Features được giữ lại:</strong>
+                - Emergency Management (từ nhóm khác)
+                - Garage Statistics
+                - Admin Dashboard với đầy đủ tính năng
+                - SweetAlert notifications
+                - Responsive design
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Expected Results</h3>
+            <div class="test-result test-success">
+                <strong>Kết quả mong đợi sau khi sửa:</strong>
+
+                1. <strong>Admin Dashboard:</strong>
+                   - Không còn lỗi Git merge conflict
+                   - Hiển thị đầy đủ thống kê garage
+                   - Hiển thị emergency management
+                   - Navigation buttons hoạt động bình thường
+
+                2. <strong>Navigation:</strong>
+                   - /admin → Redirect đến /admin/dashboard
+                   - Nút "Quay lại" hoạt động đúng
+                   - Không có lỗi 404 hoặc 500
+
+                3. <strong>Features:</strong>
+                   - Emergency requests loading
+                   - Garage statistics
+                   - Admin management cards
+                   - Responsive layout
+
+                <strong>Files đã sửa:</strong>
+                - app/admin/dashboard/page.tsx (sửa merge conflict)
+                - app/admin/page.tsx (tạo mới - redirect)
+                - app/admin/garages/page.tsx (cập nhật navigation)
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Manual Test Steps</h3>
+            <div class="test-result test-info">
+                <strong>Hướng dẫn test thủ công:</strong>
+
+                1. <strong>Test Admin Root Redirect:</strong>
+                   - Truy cập: http://localhost:3000/admin
+                   - Kiểm tra có redirect đến /admin/dashboard không
+                   - Kiểm tra không có lỗi console
+
+                2. <strong>Test Admin Dashboard:</strong>
+                   - Truy cập: http://localhost:3000/admin/dashboard
+                   - Kiểm tra trang load bình thường
+                   - Kiểm tra emergency requests load
+                   - Kiểm tra garage statistics hiển thị
+
+                3. <strong>Test Navigation:</strong>
+                   - Click "Quản lý garage" → Kiểm tra chuyển đến /admin/garages
+                   - Click "Quay lại" → Kiểm tra chuyển về /admin/dashboard
+                   - Test complete flow: Dashboard → Garages → Approval → Back
+
+                4. <strong>Test Emergency Management:</strong>
+                   - Kiểm tra emergency requests load
+                   - Kiểm tra emergency stats hiển thị
+                   - Click "Quản lý Cứu hộ" → Kiểm tra chuyển đến /admin/emergency
+
+                5. <strong>Check Console:</strong>
+                   - Mở Developer Tools (F12)
+                   - Kiểm tra không có lỗi JavaScript
+                   - Kiểm tra API calls thành công
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto test navigation
+        function testNavigation() {
+            console.log('🔧 Testing admin dashboard fix...');
+            
+            // Test current URL
+            const currentUrl = window.location.href;
+            console.log('Current URL:', currentUrl);
+            
+            // Test if we're on admin pages
+            if (currentUrl.includes('/admin')) {
+                console.log('✅ On Admin page - checking for errors...');
+                
+                // Check for common errors
+                const errorElements = document.querySelectorAll('[class*="error"], [class*="Error"]');
+                if (errorElements.length > 0) {
+                    console.warn('⚠️ Found potential error elements:', errorElements);
+                } else {
+                    console.log('✅ No error elements found');
+                }
+            }
+        }
+        
+        // Run test on load
+        setTimeout(testNavigation, 1000);
+    </script>
+</body>
+</html>
