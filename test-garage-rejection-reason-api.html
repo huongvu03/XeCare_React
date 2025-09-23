@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Garage Rejection Reason API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Garage Rejection Reason API</h1>
+        
+        <div>
+            <label>Garage ID:</label>
+            <input type="number" id="garageId" value="11" placeholder="Enter garage ID">
+            <button onclick="testGarageAPI()">Test Garage API</button>
+        </div>
+        
+        <div>
+            <button onclick="testMyGarageAPI()">Test My Garage API</button>
+            <button onclick="testPublicGarageAPI()">Test Public Garage API</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testGarageAPI() {
+            const garageId = document.getElementById('garageId').value;
+            if (!garageId) {
+                showResult('Please enter garage ID', 'error');
+                return;
+            }
+            
+            showResult('🔄 Testing garage API...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                // Test getMyGarageById API
+                const response = await fetch(`http://localhost:8080/apis/garage/my-garage/${garageId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 Testing Garage API (My Garage)\n\n`;
+                result += `Garage ID: ${garageId}\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Garage Name: ${data.name}\n`;
+                    result += `Status: ${data.status}\n`;
+                    result += `Rejection Reason: ${data.rejectionReason || 'None'}\n\n`;
+                    result += `Full Response:\n${JSON.stringify(data, null, 2)}`;
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMyGarageAPI() {
+            showResult('🔄 Testing My Garage API...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                const response = await fetch('http://localhost:8080/apis/garage/my-garages', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 Testing My Garages API\n\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Total Garages: ${data.length}\n\n`;
+                    
+                    data.forEach((garage, index) => {
+                        result += `Garage ${index + 1}:\n`;
+                        result += `  ID: ${garage.id}\n`;
+                        result += `  Name: ${garage.name}\n`;
+                        result += `  Status: ${garage.status}\n`;
+                        result += `  Rejection Reason: ${garage.rejectionReason || 'None'}\n\n`;
+                    });
+                    
+                    result += `Full Response:\n${JSON.stringify(data, null, 2)}`;
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPublicGarageAPI() {
+            const garageId = document.getElementById('garageId').value;
+            if (!garageId) {
+                showResult('Please enter garage ID', 'error');
+                return;
+            }
+            
+            showResult('🔄 Testing Public Garage API...', 'info');
+            
+            try {
+                const response = await fetch(`http://localhost:8080/apis/garage/${garageId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `🔍 Testing Public Garage API\n\n`;
+                result += `Garage ID: ${garageId}\n`;
+                result += `Response Status: ${response.status} ${response.statusText}\n\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Garage Name: ${data.name}\n`;
+                    result += `Status: ${data.status}\n`;
+                    result += `Rejection Reason: ${data.rejectionReason || 'None'}\n\n`;
+                    result += `Full Response:\n${JSON.stringify(data, null, 2)}`;
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error: ${errorText}`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Auth Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Quick Authentication Check</h1>
+        
+        <button onclick="checkAuth()">Kiểm tra Authentication</button>
+        <button onclick="testAdminAPI()">Test Admin API</button>
+        <button onclick="testGarageStatusUpdate()">Test Garage Status Update</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        function checkAuth() {
+            try {
+                const token = localStorage.getItem('token');
+                const user = localStorage.getItem('user');
+                
+                let result = '<h3>🔍 Authentication Status:</h3>';
+                
+                if (!token) {
+                    result += '<p class="error">❌ No token found in localStorage</p>';
+                    result += '<p>👉 Please login first</p>';
+                    showResult(result, 'error');
+                    return;
+                }
+                
+                result += '<p class="success">✅ Token found</p>';
+                
+                // Decode token
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    result += '<h4>Token Info:</h4>';
+                    result += `<pre>${JSON.stringify(payload, null, 2)}</pre>`;
+                    
+                    // Check expiry
+                    const now = Date.now() / 1000;
+                    if (payload.exp < now) {
+                        result += '<p class="error">❌ Token expired!</p>';
+                    } else {
+                        result += '<p class="success">✅ Token valid</p>';
+                    }
+                    
+                    // Check admin role
+                    const roles = payload.roles || payload.authorities || [];
+                    const hasAdmin = Array.isArray(roles) ? 
+                        roles.includes('ADMIN') || roles.includes('ROLE_ADMIN') :
+                        roles.includes('ADMIN');
+                    
+                    if (hasAdmin) {
+                        result += '<p class="success">✅ User has ADMIN role</p>';
+                    } else {
+                        result += '<p class="error">❌ User does NOT have ADMIN role</p>';
+                        result += `<p>Current roles: ${Array.isArray(roles) ? roles.join(', ') : roles}</p>`;
+                    }
+                    
+                } catch (e) {
+                    result += `<p class="error">❌ Error decoding token: ${e.message}</p>`;
+                }
+                
+                if (user) {
+                    const userData = JSON.parse(user);
+                    result += '<h4>User Info:</h4>';
+                    result += `<pre>${JSON.stringify(userData, null, 2)}</pre>`;
+                }
+                
+                showResult(result, 'info');
+                
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminAPI() {
+            showResult('🔄 Testing admin API...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                const response = await fetch('http://localhost:8080/apis/admin/garages/stats', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let result = `<h3>🔍 Admin API Test Results:</h3>`;
+                result += `<p><strong>Status:</strong> ${response.status} ${response.statusText}</p>`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '<p class="success">✅ Admin API working!</p>';
+                    result += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `<p class="error">❌ Admin API failed: ${errorText}</p>`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Error testing admin API: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGarageStatusUpdate() {
+            showResult('🔄 Testing garage status update...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                // Test with garage ID 1
+                const garageId = 1;
+                const requestBody = {
+                    status: "INACTIVE",
+                    rejectionReason: "Test reason"
+                };
+                
+                const response = await fetch(`http://localhost:8080/apis/admin/garages/${garageId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                let result = `<h3>🔍 Garage Status Update Test:</h3>`;
+                result += `<p><strong>Garage ID:</strong> ${garageId}</p>`;
+                result += `<p><strong>Status:</strong> ${response.status} ${response.statusText}</p>`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '<p class="success">✅ Garage status update successful!</p>';
+                    result += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    showResult(result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `<p class="error">❌ Garage status update failed: ${errorText}</p>`;
+                    showResult(result, 'error');
+                }
+                
+            } catch (error) {
+                showResult(`❌ Error testing garage status update: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto check on load
+        setTimeout(checkAuth, 1000);
+    </script>
+</body>
+</html>

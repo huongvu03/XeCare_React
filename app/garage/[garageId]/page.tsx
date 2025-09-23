@@ -128,18 +128,7 @@ export default function GarageDetailPage() {
           </Button>
           
           <div className="flex items-center space-x-2">
-            <StatusBadge status={garage.status} />
-            {/* Only show edit button if user is the owner of this garage */}
-            {isOwner && (
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/garage/${garageId}/edit`)}
-                className="flex items-center space-x-2"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Chỉnh sửa</span>
-              </Button>
-            )}
+            <StatusBadge status={garage.status} rejectionReason={(garage as any).rejectionReason} />
           </div>
         </div>
 
@@ -295,7 +284,7 @@ export default function GarageDetailPage() {
 }
 
 // Status Badge Component
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, rejectionReason }: { status: string, rejectionReason?: string }) {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "ACTIVE":
@@ -314,8 +303,16 @@ function StatusBadge({ status }: { status: string }) {
   const config = getStatusConfig(status)
 
   return (
-    <Badge className={config.className}>
-      {config.label}
-    </Badge>
+    <div className="flex flex-col space-y-2">
+      <Badge className={config.className}>
+        {config.label}
+      </Badge>
+      {status === "INACTIVE" && rejectionReason && (
+        <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded border border-red-200">
+          <div className="font-medium">Lý do tạm ngưng:</div>
+          <div className="mt-1">{rejectionReason}</div>
+        </div>
+      )}
+    </div>
   )
 }

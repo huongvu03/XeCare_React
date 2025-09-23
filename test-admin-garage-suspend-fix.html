@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Garage Suspend Fix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .test-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .test-button.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .test-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+        .test-warning {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+        .test-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .fix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .fix-card {
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+        }
+        .fix-card h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .fix-card.success {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        .fix-card.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🔧 Test Admin Garage Suspend Fix</h1>
+        
+        <div class="test-section">
+            <h3>🐛 Lỗi đã sửa</h3>
+            
+            <div class="fix-grid">
+                <div class="fix-card error">
+                    <h4>❌ Lỗi Backend</h4>
+                    <p><strong>Error:</strong> <code>Name for argument of type [java.lang.Long] not specified</code></p>
+                    <p><strong>Nguyên nhân:</strong> Parameter <code>garageId</code> trong AdminController không có annotation rõ ràng</p>
+                </div>
+                
+                <div class="fix-card success">
+                    <h4>✅ Đã sửa</h4>
+                    <p><strong>Fix:</strong> Thêm <code>@PathVariable("garageId")</code> vào parameter</p>
+                    <p><strong>File:</strong> <code>AdminController.java</code> line 266</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Admin Garage Suspend</h3>
+            <p>Kiểm tra chức năng tạm ngưng garage sau khi sửa lỗi:</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="http://localhost:3000/admin/garages" class="test-button">Test Admin Garage Management</a>
+            </div>
+            
+            <div class="test-result test-info">
+                <strong>Kiểm tra cần thực hiện:</strong>
+
+                1. <strong>Backend Status:</strong>
+                   - Đảm bảo backend đã restart và chạy trên port 8080
+                   - Không có lỗi trong console
+                   - API endpoint hoạt động bình thường
+
+                2. <strong>Test Tạm ngưng Garage:</strong>
+                   - Truy cập: http://localhost:3000/admin/garages
+                   - Tìm garage có status "Hoạt động" (ACTIVE)
+                   - Click dropdown menu (3 chấm) → "Tạm ngưng hoạt động"
+                   - Modal popup hiện ra
+                   - Nhập lý do tạm ngưng
+                   - Click "Tạm ngưng"
+
+                3. <strong>Kiểm tra kết quả:</strong>
+                   - Không có lỗi 500 Internal Server Error
+                   - Garage status chuyển thành "Bị khóa" (INACTIVE)
+                   - Hiển thị lý do tạm ngưng dưới status badge
+                   - Toast notification hiện "Đã tạm ngưng garage thành công!"
+
+                4. <strong>Test Kích hoạt lại:</strong>
+                   - Tìm garage có status "Bị khóa" (INACTIVE)
+                   - Click dropdown menu → "Kích hoạt lại"
+                   - Click để xác nhận
+                   - Garage chuyển thành "Hoạt động" (ACTIVE)
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Technical Fix Details</h3>
+            <div class="test-result test-success">
+                <strong>Backend Fix (AdminController.java):</strong>
+
+                <strong>Before (Lỗi):</strong>
+                @PutMapping("/garages/{garageId}/status")
+                public ResponseEntity<GarageResponseDto> updateGarageStatus(
+                    @PathVariable Long garageId,  // ❌ Thiếu tên parameter
+                    @RequestBody UpdateStatusRequest request) {
+
+                <strong>After (Đã sửa):</strong>
+                @PutMapping("/garages/{garageId}/status")
+                public ResponseEntity<GarageResponseDto> updateGarageStatus(
+                    @PathVariable("garageId") Long garageId,  // ✅ Có tên parameter rõ ràng
+                    @RequestBody UpdateStatusRequest request) {
+
+                <strong>Nguyên nhân lỗi:</strong>
+                - Spring Boot không thể xác định tên parameter từ reflection
+                - Cần annotation @PathVariable với tên rõ ràng
+                - Compiler flag -parameters có thể giúp nhưng annotation rõ ràng tốt hơn
+
+                <strong>API Endpoint:</strong>
+                - PUT /apis/admin/garages/{garageId}/status
+                - Request Body: { "status": "INACTIVE", "rejectionReason": "Lý do..." }
+                - Response: GarageResponseDto với status mới
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 User Experience Flow</h3>
+            <div class="test-result test-info">
+                <strong>Admin Experience (Đã sửa):</strong>
+
+                1. <strong>Tạm ngưng Garage:</strong>
+                   - Admin click "Tạm ngưng hoạt động"
+                   - Modal popup hiện ra
+                   - Nhập lý do → Click "Tạm ngưng"
+                   - ✅ Không có lỗi 500
+                   - ✅ Garage chuyển thành INACTIVE
+                   - ✅ Hiển thị lý do tạm ngưng
+
+                2. <strong>Kích hoạt lại Garage:</strong>
+                   - Admin click "Kích hoạt lại"
+                   - Click để xác nhận
+                   - ✅ Garage chuyển thành ACTIVE
+                   - ✅ Notification gửi cho chủ garage
+
+                <strong>Garage Owner Experience:</strong>
+                - Nhận notification khi bị tạm ngưng
+                - Nhận notification khi được kích hoạt lại
+                - Xem lý do tạm ngưng trong notification
+
+                <strong>System Behavior:</strong>
+                - Garage INACTIVE không nhận lịch hẹn mới
+                - Garage ACTIVE hoạt động bình thường
+                - Notification system hoạt động ổn định
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Expected Results</h3>
+            <div class="test-result test-success">
+                <strong>Kết quả mong đợi sau khi sửa:</strong>
+
+                1. <strong>Backend:</strong>
+                   - Không có lỗi IllegalArgumentException
+                   - API endpoint hoạt động bình thường
+                   - Database update thành công
+                   - Notification gửi đúng
+
+                2. <strong>Frontend:</strong>
+                   - Modal popup hiện ra khi click "Tạm ngưng hoạt động"
+                   - Validation hoạt động (lý do bắt buộc)
+                   - Loading state hiển thị khi đang xử lý
+                   - Toast notification hiện khi thành công
+
+                3. <strong>UI/UX:</strong>
+                   - Status badge cập nhật real-time
+                   - Lý do tạm ngưng hiển thị dưới status
+                   - Nút "Kích hoạt lại" hiện với garage INACTIVE
+                   - Nút "Tạm ngưng hoạt động" hiện với garage ACTIVE
+
+                4. <strong>Data Consistency:</strong>
+                   - Garage status được lưu đúng trong database
+                   - Lý do tạm ngưng được lưu và hiển thị
+                   - Notification được tạo và gửi
+                   - Audit trail được duy trì
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Test Checklist</h3>
+            <div class="test-result test-warning">
+                <strong>Checklist kiểm tra:</strong>
+
+                □ Backend đã restart và chạy ổn định
+                □ Không có lỗi trong console
+                □ Truy cập /admin/garages thành công
+                □ Dropdown menu hiển thị đúng nút theo status
+                □ Modal popup hiện ra khi click "Tạm ngưng hoạt động"
+                □ Validation hoạt động (không cho submit khi thiếu lý do)
+                □ API call thành công (không có lỗi 500)
+                □ Garage status chuyển đổi đúng
+                □ Lý do tạm ngưng hiển thị trong UI
+                □ Toast notification hiện khi thành công
+                □ Nút "Kích hoạt lại" hoạt động với garage INACTIVE
+                □ Notification gửi cho chủ garage
+                □ Garage INACTIVE không nhận lịch hẹn mới
+                □ Garage ACTIVE hoạt động bình thường
+
+                <strong>Nếu vẫn có lỗi:</strong>
+                - Kiểm tra console browser (F12)
+                - Kiểm tra console backend
+                - Kiểm tra network tab trong DevTools
+                - Đảm bảo backend đã restart
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto test
+        function testGarageSuspendFix() {
+            console.log('🔧 Testing garage suspend fix...');
+            
+            // Test current URL
+            const currentUrl = window.location.href;
+            console.log('Current URL:', currentUrl);
+            
+            // Check if we're on admin garages page
+            if (currentUrl.includes('/admin/garages')) {
+                console.log('✅ On Admin Garage Management page - checking for suspend button...');
+                
+                // Look for suspend button
+                const suspendButton = document.querySelector('button:has(span:contains("Tạm ngưng hoạt động"))');
+                if (suspendButton) {
+                    console.log('✅ Suspend button found');
+                } else {
+                    console.log('ℹ️ Suspend button not found (no ACTIVE garages or not visible)');
+                }
+                
+                // Check for activate button
+                const activateButton = document.querySelector('button:has(span:contains("Kích hoạt lại"))');
+                if (activateButton) {
+                    console.log('✅ Activate button found');
+                } else {
+                    console.log('ℹ️ Activate button not found (no INACTIVE garages or not visible)');
+                }
+            }
+        }
+        
+        // Run test on load
+        setTimeout(testGarageSuspendFix, 1000);
+    </script>
+</body>
+</html>

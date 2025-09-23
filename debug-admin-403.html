@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin 403 Error</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 12px 24px; margin: 8px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #0056b3; }
+        .step { margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; }
+        .debug-section { margin: 20px 0; padding: 15px; background: #fff; border: 1px solid #dee2e6; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Admin 403 Error</h1>
+        
+        <div class="step">
+            <h3>Bước 1: Kiểm tra Token chi tiết</h3>
+            <button onclick="checkTokenDetailed()">Check Token Detailed</button>
+            <div id="token-result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Bước 2: Test Admin API với debug</h3>
+            <button onclick="testAdminWithDebug()">Test Admin API with Debug</button>
+            <div id="admin-result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Bước 3: Test Garage Update với debug</h3>
+            <button onclick="testGarageUpdateWithDebug()">Test Garage Update with Debug</button>
+            <div id="garage-result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Bước 4: Kiểm tra Backend Logs</h3>
+            <p>🔍 <strong>Mở Eclipse console và xem logs khi test API</strong></p>
+            <p>Tìm các dòng log bắt đầu với:</p>
+            <ul>
+                <li><code>isAdmin() - authentication:</code></li>
+                <li><code>isAdmin() - userDetails.getUser().getRole():</code></li>
+                <li><code>isAdmin() - result:</code></li>
+            </ul>
+        </div>
+        
+        <div class="debug-section">
+            <h3>🔧 Possible Issues & Solutions</h3>
+            <div class="result info">
+<strong>Nếu vẫn lỗi 403 với tài khoản ADMIN:</strong>
+
+1. <strong>Token Format Issue:</strong>
+   - Token có thể bị corrupt
+   - JWT payload không đúng format
+   - Role không được encode đúng
+
+2. <strong>Backend Authentication Issue:</strong>
+   - SecurityContext không được set đúng
+   - JWT filter không hoạt động
+   - Role comparison không đúng
+
+3. <strong>Database Role Issue:</strong>
+   - User trong database không có role ADMIN
+   - Role được lưu dưới dạng khác (ROLE_ADMIN vs ADMIN)
+
+4. <strong>Security Configuration Issue:</strong>
+   - Endpoint không được config đúng
+   - Role mapping không đúng
+
+<strong>Solutions:</strong>
+- Kiểm tra database user role
+- Restart backend
+- Clear browser cache và login lại
+- Kiểm tra JWT token format
+- Xem backend console logs
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        function checkTokenDetailed() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            let result = '🔍 Detailed Token Analysis:\n\n';
+            
+            if (!token) {
+                result += '❌ No token found in localStorage\n';
+                showResult('token-result', result, 'error');
+                return;
+            }
+            
+            result += '✅ Token found\n';
+            result += `Length: ${token.length}\n`;
+            result += `Full token: ${token}\n\n`;
+            
+            try {
+                // Split JWT token
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    result += '❌ Invalid JWT format (should have 3 parts)\n';
+                    showResult('token-result', result, 'error');
+                    return;
+                }
+                
+                result += '✅ Valid JWT format\n';
+                result += `Header: ${parts[0]}\n`;
+                result += `Payload: ${parts[1]}\n`;
+                result += `Signature: ${parts[2].substring(0, 20)}...\n\n`;
+                
+                // Decode header
+                try {
+                    const header = JSON.parse(atob(parts[0]));
+                    result += '📋 JWT Header:\n';
+                    result += `${JSON.stringify(header, null, 2)}\n\n`;
+                } catch (e) {
+                    result += `❌ Error decoding header: ${e.message}\n\n`;
+                }
+                
+                // Decode payload
+                try {
+                    const payload = JSON.parse(atob(parts[1]));
+                    result += '📋 JWT Payload:\n';
+                    result += `${JSON.stringify(payload, null, 2)}\n\n`;
+                    
+                    // Check expiry
+                    const now = Date.now() / 1000;
+                    if (payload.exp < now) {
+                        result += '⚠️ Token expired!\n';
+                        result += `Expired at: ${new Date(payload.exp * 1000).toLocaleString()}\n`;
+                        result += `Current time: ${new Date().toLocaleString()}\n\n`;
+                    } else {
+                        result += '✅ Token valid (not expired)\n';
+                        result += `Expires at: ${new Date(payload.exp * 1000).toLocaleString()}\n\n`;
+                    }
+                    
+                    // Check roles
+                    const roles = payload.roles || payload.authorities || [];
+                    result += '🔐 Role Analysis:\n';
+                    result += `Raw roles: ${JSON.stringify(roles)}\n`;
+                    result += `Type: ${typeof roles}\n`;
+                    result += `Is Array: ${Array.isArray(roles)}\n`;
+                    
+                    if (Array.isArray(roles)) {
+                        result += `Roles list: ${roles.join(', ')}\n`;
+                        const hasAdmin = roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
+                        result += `Has ADMIN: ${hasAdmin}\n`;
+                        result += `Has ROLE_ADMIN: ${roles.includes('ROLE_ADMIN')}\n`;
+                    } else if (typeof roles === 'string') {
+                        result += `Roles string: ${roles}\n`;
+                        const hasAdmin = roles.includes('ADMIN');
+                        result += `Has ADMIN: ${hasAdmin}\n`;
+                    }
+                    
+                    result += '\n';
+                    
+                } catch (e) {
+                    result += `❌ Error decoding payload: ${e.message}\n\n`;
+                }
+                
+                showResult('token-result', result, 'info');
+                
+            } catch (error) {
+                result += `❌ Error analyzing token: ${error.message}\n`;
+                showResult('token-result', result, 'error');
+            }
+        }
+
+        async function testAdminWithDebug() {
+            showResult('admin-result', '🔄 Testing admin API with detailed debug...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                let result = '🔍 Admin API Test with Debug:\n\n';
+                result += `Token: ${token.substring(0, 50)}...\n`;
+                result += `Full URL: http://localhost:8080/apis/admin/garages/stats\n`;
+                result += `Method: GET\n`;
+                result += `Authorization Header: Bearer ${token}\n\n`;
+                
+                console.log('🔍 Testing admin API...');
+                console.log('Token:', token);
+                console.log('URL:', 'http://localhost:8080/apis/admin/garages/stats');
+                
+                const response = await fetch('http://localhost:8080/apis/admin/garages/stats', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result += `Response Status: ${response.status} ${response.statusText}\n`;
+                result += `Response Headers:\n`;
+                for (let [key, value] of response.headers.entries()) {
+                    result += `  ${key}: ${value}\n`;
+                }
+                result += '\n';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Response Data:\n${JSON.stringify(data, null, 2)}\n`;
+                    showResult('admin-result', result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error Response: ${errorText}\n`;
+                    showResult('admin-result', result, 'error');
+                }
+                
+            } catch (error) {
+                const result = `❌ Network Error: ${error.message}\n`;
+                showResult('admin-result', result, 'error');
+            }
+        }
+
+        async function testGarageUpdateWithDebug() {
+            showResult('garage-result', '🔄 Testing garage status update with detailed debug...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+                
+                const garageId = 1;
+                const requestBody = {
+                    status: "INACTIVE",
+                    rejectionReason: "Test reason from debug"
+                };
+                
+                let result = '🔍 Garage Status Update Test with Debug:\n\n';
+                result += `Token: ${token.substring(0, 50)}...\n`;
+                result += `Full URL: http://localhost:8080/apis/admin/garages/${garageId}/status\n`;
+                result += `Method: PUT\n`;
+                result += `Request Body: ${JSON.stringify(requestBody, null, 2)}\n`;
+                result += `Authorization Header: Bearer ${token}\n\n`;
+                
+                console.log('🔍 Testing garage update...');
+                console.log('Token:', token);
+                console.log('URL:', `http://localhost:8080/apis/admin/garages/${garageId}/status`);
+                console.log('Request Body:', requestBody);
+                
+                const response = await fetch(`http://localhost:8080/apis/admin/garages/${garageId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                result += `Response Status: ${response.status} ${response.statusText}\n`;
+                result += `Response Headers:\n`;
+                for (let [key, value] of response.headers.entries()) {
+                    result += `  ${key}: ${value}\n`;
+                }
+                result += '\n';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += '✅ SUCCESS!\n';
+                    result += `Response Data:\n${JSON.stringify(data, null, 2)}\n`;
+                    showResult('garage-result', result, 'success');
+                } else {
+                    const errorText = await response.text();
+                    result += `❌ FAILED!\n`;
+                    result += `Error Response: ${errorText}\n`;
+                    showResult('garage-result', result, 'error');
+                }
+                
+            } catch (error) {
+                const result = `❌ Network Error: ${error.message}\n`;
+                showResult('garage-result', result, 'error');
+            }
+        }
+
+        // Auto check token on load
+        setTimeout(checkTokenDetailed, 1000);
+    </script>
+</body>
+</html>

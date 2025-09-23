@@ -33,6 +33,7 @@ export interface PublicGarageInfo {
   vehicleTypeNames: string[]
   latitude: number
   longitude: number
+  rejectionReason?: string
 }
 
 export interface GarageRegistrationData {

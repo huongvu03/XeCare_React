@@ -9,10 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Search, MoreHorizontal, Eye, Check, X, Star, MapPin, Building, AlertCircle, Loader2, ArrowLeft } from "lucide-react"
-import { getAllGarages, approveGarage, type GarageInfo, type GarageApprovalData } from "@/lib/api/AdminApi"
+import { Search, MoreHorizontal, Eye, Check, X, Star, MapPin, Building, AlertCircle, Loader2, ArrowLeft, Pause, Play } from "lucide-react"
+import { getAllGarages, approveGarage, updateGarageStatus, type GarageInfo, type GarageApprovalData } from "@/lib/api/AdminApi"
 import { toast } from "sonner"
 
 export default function AdminGaragesPage() {
@@ -26,6 +28,11 @@ export default function AdminGaragesPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
   const [approvingGarage, setApprovingGarage] = useState<number | null>(null)
+  const [showInactiveModal, setShowInactiveModal] = useState(false)
+  const [selectedGarage, setSelectedGarage] = useState<GarageInfo | null>(null)
+  const [inactiveReason, setInactiveReason] = useState("")
+  const [inactivatingGarage, setInactivatingGarage] = useState<number | null>(null)
+  const [activatingGarage, setActivatingGarage] = useState<number | null>(null)
 
   // Fetch garages from API
   const fetchGarages = async () => {
@@ -41,6 +48,7 @@ export default function AdminGaragesPage() {
       setGarages(response.data.content)
       setTotalPages(response.data.totalPages)
       setTotalElements(response.data.totalElements)
+      
     } catch (err: any) {
       console.error("Error fetching garages:", err)
       setError("Không thể tải danh sách garage. Vui lòng thử lại.")
@@ -124,6 +132,64 @@ export default function AdminGaragesPage() {
       toast.error("Có lỗi xảy ra khi từ chối garage. Vui lòng thử lại.")
     } finally {
       setApprovingGarage(null)
+    }
+  }
+
+  const handleInactiveGarage = (garage: GarageInfo) => {
+    setSelectedGarage(garage)
+    setInactiveReason("")
+    setShowInactiveModal(true)
+  }
+
+  const confirmInactiveGarage = async () => {
+    if (!selectedGarage || !inactiveReason.trim()) {
+      toast.error("Vui lòng nhập lý do tạm ngưng")
+      return
+    }
+
+    try {
+      setInactivatingGarage(selectedGarage.id)
+      
+      await updateGarageStatus(selectedGarage.id, {
+        status: "INACTIVE",
+        rejectionReason: inactiveReason.trim()
+      })
+      
+      toast.success(`Đã tạm ngưng garage "${selectedGarage.name}" thành công!`)
+      
+      // Refresh the garage list
+      fetchGarages()
+      
+      // Close modal
+      setShowInactiveModal(false)
+      setSelectedGarage(null)
+      setInactiveReason("")
+    } catch (err: any) {
+      console.error("Error inactivating garage:", err)
+      toast.error("Có lỗi xảy ra khi tạm ngưng garage. Vui lòng thử lại.")
+    } finally {
+      setInactivatingGarage(null)
+    }
+  }
+
+  const handleActivateGarage = async (garage: GarageInfo) => {
+    try {
+      setActivatingGarage(garage.id)
+      
+      await updateGarageStatus(garage.id, {
+        status: "ACTIVE",
+        rejectionReason: undefined
+      })
+      
+      toast.success(`Đã kích hoạt lại garage "${garage.name}" thành công!`)
+      
+      // Refresh the garage list
+      fetchGarages()
+    } catch (err: any) {
+      console.error("Error activating garage:", err)
+      toast.error("Có lỗi xảy ra khi kích hoạt garage. Vui lòng thử lại.")
+    } finally {
+      setActivatingGarage(null)
     }
   }
 
@@ -319,7 +385,16 @@ export default function AdminGaragesPage() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{getStatusBadge(garage.status)}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {getStatusBadge(garage.status)}
+                        {garage.status === "INACTIVE" && garage.rejectionReason && (
+                          <div className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border">
+                            <strong>Lý do:</strong> {garage.rejectionReason}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <span className="text-sm text-slate-600">
                         {new Date(garage.createdAt).toLocaleDateString("vi-VN")}
@@ -337,6 +412,29 @@ export default function AdminGaragesPage() {
                             <Eye className="h-4 w-4 mr-2" />
                             Phê duyệt
                           </DropdownMenuItem>
+                          {garage.status === "ACTIVE" && (
+                            <DropdownMenuItem 
+                              onClick={() => handleInactiveGarage(garage)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Pause className="h-4 w-4 mr-2" />
+                              Tạm ngưng hoạt động
+                            </DropdownMenuItem>
+                          )}
+                          {garage.status === "INACTIVE" && (
+                            <DropdownMenuItem 
+                              onClick={() => handleActivateGarage(garage)}
+                              className="text-green-600 focus:text-green-600"
+                              disabled={activatingGarage === garage.id}
+                            >
+                              {activatingGarage === garage.id ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Play className="h-4 w-4 mr-2" />
+                              )}
+                              Kích hoạt lại
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -383,6 +481,64 @@ export default function AdminGaragesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Inactive Garage Modal */}
+      <Dialog open={showInactiveModal} onOpenChange={setShowInactiveModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pause className="h-5 w-5 text-red-600" />
+              Tạm ngưng hoạt động garage
+            </DialogTitle>
+            <DialogDescription>
+              Bạn sắp tạm ngưng hoạt động garage <strong>"{selectedGarage?.name}"</strong>. 
+              Vui lòng nhập lý do để thông báo cho chủ garage.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="inactive-reason" className="text-sm font-medium">
+                Lý do tạm ngưng <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                id="inactive-reason"
+                placeholder="Nhập lý do tạm ngưng hoạt động garage..."
+                value={inactiveReason}
+                onChange={(e) => setInactiveReason(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowInactiveModal(false)}
+              disabled={inactivatingGarage !== null}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmInactiveGarage}
+              disabled={inactivatingGarage !== null || !inactiveReason.trim()}
+            >
+              {inactivatingGarage !== null ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <Pause className="h-4 w-4 mr-2" />
+                  Tạm ngưng
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

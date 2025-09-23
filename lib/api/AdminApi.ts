@@ -37,6 +37,7 @@ export interface GarageInfo {
   ownerId: number
   ownerName: string
   ownerEmail: string
+  rejectionReason?: string
   approvalDetails?: ApprovalDetails
   services?: Array<{
     id: number

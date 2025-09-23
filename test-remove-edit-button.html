@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Remove Edit Button</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .test-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .test-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .before, .after {
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+        }
+        .before {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+        .after {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+        .before h4, .after h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .before h4 {
+            color: #dc2626;
+        }
+        .after h4 {
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🗑️ Test Remove Edit Button</h1>
+        
+        <div class="test-section">
+            <h3>📋 Thay đổi đã thực hiện</h3>
+            
+            <div class="before-after">
+                <div class="before">
+                    <h4>❌ Trước khi sửa:</h4>
+                    <p>Trang garage details có nút "Chỉnh sửa" với icon Settings:</p>
+                    <code>
+{isOwner && (
+  &lt;Button
+    variant="outline"
+    onClick={() => router.push(`/garage/${garageId}/edit`)}
+    className="flex items-center space-x-2"
+  &gt;
+    &lt;Settings className="h-4 w-4" /&gt;
+    &lt;span&gt;Chỉnh sửa&lt;/span&gt;
+  &lt;/Button&gt;
+)}
+                    </code>
+                </div>
+                
+                <div class="after">
+                    <h4>✅ Sau khi sửa:</h4>
+                    <p>Nút "Chỉnh sửa" ở header đã được xóa, nhưng vẫn giữ nút trong Quick Actions:</p>
+                    <code>
+&lt;div className="flex items-center space-x-2"&gt;
+  &lt;StatusBadge status={garage.status} /&gt;
+&lt;/div&gt;
+
+// Nút "Chỉnh sửa thông tin" vẫn còn trong Quick Actions:
+&lt;Button onClick={() => router.push(`/garage/${garageId}/edit`)}&gt;
+  &lt;Settings className="h-4 w-4 mr-2" /&gt;
+  Chỉnh sửa thông tin
+&lt;/Button&gt;
+                    </code>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Garage Details Page</h3>
+            <p>Kiểm tra trang garage details sau khi xóa nút "Chỉnh sửa":</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="http://localhost:3000/garage/11" class="test-button">Test Garage Details</a>
+            </div>
+            
+            <div class="test-result test-info">
+                <strong>Kiểm tra cần thực hiện:</strong>
+
+                1. <strong>Trang Garage Details:</strong>
+                   - Truy cập: http://localhost:3000/garage/11
+                   - Kiểm tra không còn nút "Chỉnh sửa" ở header bên cạnh status badge
+                   - Chỉ còn lại status badge (Hoạt động/Chờ duyệt/etc.)
+                   - Nút "Chỉnh sửa thông tin" vẫn còn trong Quick Actions sidebar
+
+                2. <strong>UI Layout:</strong>
+                   - Header vẫn có nút "Quay lại My Garages"
+                   - Status badge vẫn hiển thị bình thường
+                   - Không có khoảng trống thừa do xóa nút
+
+                3. <strong>Functionality:</strong>
+                   - Trang vẫn load bình thường
+                   - Không có lỗi JavaScript
+                   - Navigation vẫn hoạt động
+
+                4. <strong>Code Cleanup:</strong>
+                   - Import Settings icon đã được xóa
+                   - Không có unused imports
+                   - Code sạch sẽ, không có lỗi linting
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Expected Results</h3>
+            <div class="test-result test-success">
+                <strong>Kết quả mong đợi sau khi sửa:</strong>
+
+                1. <strong>UI Changes:</strong>
+                   - Nút "Chỉnh sửa" ở header đã biến mất
+                   - Chỉ còn lại status badge bên phải header
+                   - Nút "Chỉnh sửa thông tin" vẫn còn trong Quick Actions sidebar
+                   - Layout vẫn cân đối và đẹp mắt
+
+                2. <strong>Code Changes:</strong>
+                   - Xóa conditional rendering của nút "Chỉnh sửa" ở header
+                   - Giữ lại import Settings icon (vẫn dùng trong Quick Actions)
+                   - Không có lỗi linting
+
+                3. <strong>User Experience:</strong>
+                   - Trang load nhanh hơn (ít element hơn)
+                   - Giao diện đơn giản hơn
+                   - Không có confusion về chức năng edit
+
+                4. <strong>Files Modified:</strong>
+                   - app/garage/[garageId]/page.tsx
+                     * Xóa nút "Chỉnh sửa" ở header (dòng 133-142)
+                     * Giữ lại import Settings icon (vẫn dùng trong Quick Actions)
+
+                <strong>Note:</strong>
+                - Nếu user muốn chỉnh sửa garage, họ có thể:
+                  * Click nút "Chỉnh sửa thông tin" trong Quick Actions sidebar
+                  * Truy cập trực tiếp /garage/edit
+                  * Hoặc từ garage dashboard
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Manual Test Steps</h3>
+            <div class="test-result test-info">
+                <strong>Hướng dẫn test thủ công:</strong>
+
+                1. <strong>Test Garage Details Page:</strong>
+                   - Truy cập: http://localhost:3000/garage/11
+                   - Kiểm tra header: chỉ có "Quay lại My Garages" và status badge
+                   - Xác nhận không có nút "Chỉnh sửa" ở header
+                   - Kiểm tra Quick Actions sidebar: vẫn có nút "Chỉnh sửa thông tin"
+
+                2. <strong>Test Different Garage Status:</strong>
+                   - Test với garage ACTIVE: chỉ có status "Hoạt động"
+                   - Test với garage PENDING: chỉ có status "Chờ duyệt"
+                   - Test với garage INACTIVE: chỉ có status "Bị khóa"
+
+                3. <strong>Test Responsive Design:</strong>
+                   - Test trên desktop: layout cân đối
+                   - Test trên mobile: không bị overflow
+                   - Test trên tablet: hiển thị tốt
+
+                4. <strong>Test Navigation:</strong>
+                   - Click "Quay lại My Garages": chuyển về dashboard
+                   - Test các link khác trong trang: hoạt động bình thường
+
+                5. <strong>Check Console:</strong>
+                   - Mở Developer Tools (F12)
+                   - Kiểm tra không có lỗi JavaScript
+                   - Kiểm tra không có unused imports warning
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto test
+        function testEditButtonRemoval() {
+            console.log('🗑️ Testing edit button removal...');
+            
+            // Test current URL
+            const currentUrl = window.location.href;
+            console.log('Current URL:', currentUrl);
+            
+            // Check if we're on garage details page
+            if (currentUrl.includes('/garage/') && !currentUrl.includes('/edit')) {
+                console.log('✅ On Garage Details page - checking for edit button...');
+                
+                // Look for edit button (should not exist)
+                const editButton = document.querySelector('button[class*="outline"]:has(span:contains("Chỉnh sửa"))');
+                if (editButton) {
+                    console.warn('⚠️ Edit button still exists!');
+                } else {
+                    console.log('✅ Edit button successfully removed');
+                }
+                
+                // Check for status badge
+                const statusBadge = document.querySelector('[class*="badge"]');
+                if (statusBadge) {
+                    console.log('✅ Status badge still present');
+                } else {
+                    console.warn('⚠️ Status badge missing');
+                }
+            }
+        }
+        
+        // Run test on load
+        setTimeout(testEditButtonRemoval, 1000);
+    </script>
+</body>
+</html>
