@@ -25,14 +25,25 @@ export function ResetPasswordForm() {
     setLoading(true)
     setMessage(null)
     try {
-      const res = await axios.post("/apis/v1/auth/reset-password", {
+      // Thử endpoint reset-password trước
+      let res = await axios.post("/apis/v1/auth/reset-password", {
         token,
         newPassword: password,
       })
       setMessage("Đặt lại mật khẩu thành công. Vui lòng đăng nhập.")
       setTimeout(() => router.push("/auth"), 2000)
     } catch (err: any) {
-      setMessage(err.response?.data || "Có lỗi xảy ra")
+      // Nếu reset-password thất bại, thử set-password cho OAuth users
+      try {
+        await axios.post("/apis/v1/auth/set-password", {
+          token,
+          newPassword: password,
+        })
+        setMessage("Thiết lập mật khẩu thành công. Vui lòng đăng nhập.")
+        setTimeout(() => router.push("/auth"), 2000)
+      } catch (setPasswordErr: any) {
+        setMessage(setPasswordErr.response?.data || err.response?.data || "Có lỗi xảy ra")
+      }
     } finally {
       setLoading(false)
     }

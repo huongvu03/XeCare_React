@@ -96,6 +96,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleSocialRegister = (provider: string) => {
+    // Redirect to OAuth2 authorization endpoint
+    window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`
+  }
+
   return (
     <>
     {/* Social Register Buttons */}

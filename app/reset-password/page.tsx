@@ -32,13 +32,24 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      const res = await fetch("http://localhost:8080/apis/v1/auth/reset-password", {
+      // Thử endpoint reset-password trước
+      let res = await fetch("http://localhost:8080/apis/v1/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),
       })
+      
+      // Nếu reset-password thất bại, thử set-password cho OAuth users
+      if (!res.ok) {
+        res = await fetch("http://localhost:8080/apis/v1/auth/set-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, newPassword: password }),
+        })
+      }
+      
       if (res.ok) {
-        setMessage("Đặt lại mật khẩu thành công! Đang chuyển hướng...")
+        setMessage("Đặt mật khẩu thành công! Đang chuyển hướng...")
         // chuyển về trang auth sau 1s
         setTimeout(() => router.push("/auth"), 1000)
       } else {
