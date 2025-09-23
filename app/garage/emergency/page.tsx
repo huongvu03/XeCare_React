@@ -258,7 +258,7 @@ export default function GarageEmergencyPage() {
       console.log(`📡 [FRONTEND] Calling EmergencyApi.updateRequestStatus(${requestId}, '${newStatus}')`)
       
       try {
-      const response = await EmergencyApi.updateRequestStatus(requestId, newStatus)
+        const response = await EmergencyApi.updateRequestStatus(requestId, newStatus)
         console.log('✅ [FRONTEND] Status update response:', response)
         console.log('📊 [FRONTEND] Response data:', response.data)
         
@@ -266,16 +266,21 @@ export default function GarageEmergencyPage() {
         if (response.data && response.data.success) {
           console.log('🎉 [FRONTEND] Backend API call successful - database updated!')
           console.log('📊 [FRONTEND] New status:', response.data.status)
-          console.log('📅 [FRONTEND] Accepted at:', response.data.acceptedAt)
+          console.log('📅 [FRONTEND] Updated at:', response.data.updatedAt || response.data.acceptedAt)
+        } else {
+          console.log('⚠️ [FRONTEND] API response indicates failure:', response.data)
+          throw new Error(response.data?.message || 'API call failed')
         }
         
       } catch (apiError: any) {
-        console.log('⚠️ [FRONTEND] API call failed, using frontend-only update:', apiError.message)
+        console.log('❌ [FRONTEND] API call failed:', apiError.message)
+        console.log('❌ [FRONTEND] Error details:', {
+          status: apiError.response?.status,
+          data: apiError.response?.data
+        })
         
-        // Frontend-only update for demo purposes
-        if (newStatus === 'ACCEPTED') {
-          console.log('🎯 [FRONTEND] Using frontend-only accept (demo mode)')
-        }
+        // Re-throw the error to be handled by outer catch block
+        throw apiError
       }
       
       // Update local state (this always works)
@@ -347,19 +352,32 @@ export default function GarageEmergencyPage() {
       const response = await EmergencyApi.completeRequest(requestId)
       console.log('✅ Complete request response:', response)
       
-      // Update local state
-      setRequests(prev => prev.map(req => 
-        req.id === requestId 
-          ? { ...req, status: 'COMPLETED' }
-          : req
-      ))
-      
-      toast({
-        title: "Thành công",
-        description: "Yêu cầu cứu hộ đã hoàn thành",
-      })
+      // Check if API call was successful
+      if (response.data && response.data.success) {
+        console.log('🎉 Complete request successful - database updated!')
+        
+        // Update local state
+        setRequests(prev => prev.map(req => 
+          req.id === requestId 
+            ? { ...req, status: 'COMPLETED' }
+            : req
+        ))
+        
+        toast({
+          title: "Thành công",
+          description: "Yêu cầu cứu hộ đã hoàn thành thành công",
+        })
+      } else {
+        throw new Error(response.data?.message || 'API call failed')
+      }
     } catch (error: any) {
       console.error('❌ Error completing request:', error)
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      })
+      
       toast({
         title: "Lỗi",
         description: error.response?.data?.message || error.message || 'Không thể hoàn thành yêu cầu',
@@ -409,26 +427,33 @@ export default function GarageEmergencyPage() {
       const response = await EmergencyApi.deleteRequest(requestId)
       console.log('✅ Request deleted successfully:', response.data)
       
-      // Update local state - remove from list instead of marking as cancelled
-      setRequests(prev => prev.filter(req => req.id !== requestId))
-      
-      // Show success message
-      await Swal.fire({
-        title: 'Đã hủy thành công!',
-        text: `Yêu cầu cứu hộ #${requestId} đã được hủy thành công`,
-        icon: 'success',
-        confirmButtonColor: '#059669',
-        confirmButtonText: 'OK'
-      })
-      
-      // Show additional info for successful cancellation
-      setTimeout(() => {
-        toast({
-          title: "Hủy thành công",
-          description: "Yêu cầu đã được hủy và xóa khỏi hệ thống!",
-          variant: "default",
+      // Check if deletion was successful
+      if (response.data && (response.data.message || response.data.id)) {
+        console.log('🎉 Request deletion successful - database updated!')
+        
+        // Update local state - remove from list instead of marking as cancelled
+        setRequests(prev => prev.filter(req => req.id !== requestId))
+        
+        // Show success message
+        await Swal.fire({
+          title: 'Đã hủy thành công!',
+          text: `Yêu cầu cứu hộ #${requestId} đã được hủy thành công`,
+          icon: 'success',
+          confirmButtonColor: '#059669',
+          confirmButtonText: 'OK'
         })
-      }, 2000)
+        
+        // Show additional info for successful cancellation
+        setTimeout(() => {
+          toast({
+            title: "Hủy thành công",
+            description: "Yêu cầu đã được hủy và xóa khỏi hệ thống!",
+            variant: "default",
+          })
+        }, 2000)
+      } else {
+        throw new Error('Delete response indicates failure')
+      }
       
     } catch (error: any) {
       console.error('❌ Error cancelling request:', error)
