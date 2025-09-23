@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notification Button</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .notification-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .notification-card.unread {
+            border-left: 4px solid #3b82f6;
+            background: #f8fafc;
+        }
+        .notification-card.read {
+            opacity: 0.7;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .badge {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .message {
+            color: #666;
+            margin: 10px 0;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .timestamp {
+            color: #999;
+            font-size: 12px;
+        }
+        .mark-read-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .mark-read-btn:hover {
+            background: #2563eb;
+        }
+        .mark-read-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .stats {
+            background: #e5e7eb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Test Notification Button</h1>
+        
+        <div class="stats">
+            <h3>📊 Statistics</h3>
+            <p>Total notifications: <span id="totalCount">0</span></p>
+            <p>Unread notifications: <span id="unreadCount">0</span></p>
+            <p>Current user ID: <span id="userId">-</span></p>
+        </div>
+
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        <div id="successMessage" class="success" style="display: none;"></div>
+
+        <button onclick="loadNotifications()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px 0;">
+            🔄 Refresh Notifications
+        </button>
+
+        <div id="notifications"></div>
+    </div>
+
+    <script>
+        let token = '';
+        let currentUserId = '';
+
+        // Load token from localStorage
+        function loadToken() {
+            token = localStorage.getItem('token');
+            if (!token) {
+                showError('No token found. Please login first.');
+                return false;
+            }
+            return true;
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Load notifications
+        async function loadNotifications() {
+            if (!loadToken()) return;
+
+            try {
+                console.log('🔄 Loading notifications...');
+                
+                // Load user info
+                const userResponse = await fetch('http://localhost:8080/apis/emergency/current-user', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    currentUserId = userData.id;
+                    document.getElementById('userId').textContent = currentUserId;
+                }
+
+                // Load notifications
+                const notificationsResponse = await fetch('http://localhost:8080/apis/notifications/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!notificationsResponse.ok) {
+                    throw new Error(`HTTP ${notificationsResponse.status}: ${notificationsResponse.statusText}`);
+                }
+
+                const notifications = await notificationsResponse.json();
+                console.log('📊 Notifications loaded:', notifications);
+
+                // Update stats
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                document.getElementById('totalCount').textContent = notifications.length;
+                document.getElementById('unreadCount').textContent = unreadCount;
+
+                // Render notifications
+                renderNotifications(notifications);
+
+            } catch (error) {
+                console.error('❌ Error loading notifications:', error);
+                showError(`Error loading notifications: ${error.message}`);
+            }
+        }
+
+        // Render notifications
+        function renderNotifications(notifications) {
+            const container = document.getElementById('notifications');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<p>No notifications found.</p>';
+                return;
+            }
+
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification-card ${notification.isRead ? 'read' : 'unread'}">
+                    <div class="header">
+                        <div class="title">${notification.title}</div>
+                        ${!notification.isRead ? '<div class="badge">Mới</div>' : ''}
+                    </div>
+                    <div class="message">${notification.message}</div>
+                    <div class="footer">
+                        <div class="timestamp">${new Date(notification.createdAt).toLocaleString()}</div>
+                        ${!notification.isRead ? 
+                            `<button class="mark-read-btn" onclick="markAsRead(${notification.id})">
+                                ✓ Đã đọc
+                            </button>` : 
+                            '<span style="color: #10b981; font-size: 12px;">✓ Đã đọc</span>'
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Mark notification as read
+        async function markAsRead(notificationId) {
+            if (!loadToken()) return;
+
+            try {
+                console.log('🔔 Marking notification as read:', notificationId);
+                
+                const response = await fetch(`http://localhost:8080/apis/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                console.log('✅ Notification marked as read successfully');
+                showSuccess('Notification marked as read successfully!');
+                
+                // Reload notifications to update UI
+                setTimeout(() => {
+                    loadNotifications();
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Error marking notification as read:', error);
+                showError(`Error marking notification as read: ${error.message}`);
+            }
+        }
+
+        // Auto-load notifications on page load
+        window.addEventListener('load', () => {
+            if (loadToken()) {
+                loadNotifications();
+            }
+        });
+    </script>
+</body>
+</html>

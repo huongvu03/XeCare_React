@@ -91,7 +91,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   // Listen for refresh events from other components
   useEffect(() => {
     const handleRefresh = () => {
+      console.log('🔄 [useNotifications] Refreshing notifications...');
       loadUnreadCount();
+      loadNotifications();
     };
 
     window.addEventListener('refreshNotifications', handleRefresh);
@@ -99,7 +101,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     return () => {
       window.removeEventListener('refreshNotifications', handleRefresh);
     };
-  }, [loadUnreadCount]);
+  }, [loadUnreadCount, loadNotifications]);
 
   const value: NotificationContextType = {
     notifications,

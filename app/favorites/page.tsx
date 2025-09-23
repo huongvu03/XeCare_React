@@ -163,6 +163,24 @@ export default function FavoritesPage() {
     router.push(`/garage-detail/${garageId}`);
   };
 
+  // Function to get proper image URL
+  const getImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return '';
+    
+    // If it's already a full URL, return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative URL, add base URL
+    if (imageUrl.startsWith('/')) {
+      return `http://localhost:8080${imageUrl}`;
+    }
+    
+    // If it doesn't start with /, add it
+    return `http://localhost:8080/${imageUrl}`;
+  };
+
   // Show loading skeleton
   if (isLoading) {
     return (
@@ -307,12 +325,33 @@ export default function FavoritesPage() {
             {/* Enhanced Garage Image */}
             <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
               {favorite.garageImageUrl ? (
-                <Image
-                  src={favorite.garageImageUrl}
-                  alt={favorite.garageName}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                />
+                <>
+                  <Image
+                    src={getImageUrl(favorite.garageImageUrl)}
+                    alt={favorite.garageName}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    onError={(e) => {
+                      console.error('❌ [FavoritesPage] Image load error:', favorite.garageImageUrl);
+                      e.currentTarget.style.display = 'none';
+                      // Show fallback
+                      const fallback = e.currentTarget.parentElement?.querySelector('.image-fallback') as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                    onLoad={() => {
+                      console.log('✅ [FavoritesPage] Image loaded successfully:', favorite.garageImageUrl);
+                    }}
+                  />
+                  {/* Fallback image when main image fails to load */}
+                  <div className="image-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200" style={{ display: 'none' }}>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-gradient-to-r from-pink-100 to-red-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                        <Heart className="h-8 w-8 text-pink-500" />
+                      </div>
+                      <span className="text-gray-500 text-sm font-medium">Image Error</span>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">

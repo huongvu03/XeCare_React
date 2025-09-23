@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Bell, CheckCircle, Clock, Trash2, CheckCheck, Search, RefreshCw, AlertTriangle } from "lucide-react";
+import { Bell, CheckCircle, Clock, Trash2, CheckCheck, Search, RefreshCw, AlertTriangle, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,9 @@ export default function NotificationsPage() {
 
   const handleMarkAsRead = async (notificationId: number) => {
     try {
-      // Update local state immediately for better UX (giống handleMarkAllAsRead)
+      console.log('🔔 [NotificationsPage] Marking notification as read:', notificationId);
+      
+      // Update local state immediately for better UX
       setNotifications(prev => 
         prev.map(n => 
           n.id === notificationId ? { ...n, isRead: true } : n
@@ -103,24 +105,35 @@ export default function NotificationsPage() {
       );
       
       // Update unread count
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      const newUnreadCount = Math.max(0, unreadCount - 1);
+      setUnreadCount(newUnreadCount);
+      
+      console.log('📊 [NotificationsPage] Updated unread count:', newUnreadCount);
       
       // Trigger animation cho chuông thông báo ngay lập tức
       window.dispatchEvent(new CustomEvent('newNotification', {
-        detail: { count: Math.max(0, unreadCount - 1) }
+        detail: { count: newUnreadCount }
       }));
+      
+      // Trigger refresh cho NotificationBell component
+      window.dispatchEvent(new Event('refreshNotifications'));
       
       toast({
         title: "Thành công",
         description: "Đã đánh dấu thông báo là đã đọc",
       });
       
-      // Gọi API ở background (không cần await)
-      markNotificationAsRead(notificationId).catch(() => {
+      // Gọi API ở background
+      try {
+        await markNotificationAsRead(notificationId);
+        console.log('✅ [NotificationsPage] API call successful');
+      } catch (apiError) {
+        console.error('❌ [NotificationsPage] API call failed:', apiError);
         // Không revert UI vì user đã thấy thay đổi
-      });
+      }
       
     } catch (error: any) {
+      console.error('❌ [NotificationsPage] Error in handleMarkAsRead:', error);
       toast({
         title: "Lỗi",
         description: "Không thể đánh dấu thông báo. Vui lòng thử lại.",

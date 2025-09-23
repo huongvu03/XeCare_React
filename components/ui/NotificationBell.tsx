@@ -45,11 +45,21 @@ export function NotificationBell({ className }: NotificationBellProps) {
       triggerBellAnimation();
     };
 
-    // Listen for custom event
+    const handleRefreshNotifications = () => {
+      // Refresh unread count when notifications are updated
+      console.log('🔄 [NotificationBell] Refreshing unread count...');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('refreshNotifications'));
+      }
+    };
+
+    // Listen for custom events
     window.addEventListener('newNotification', handleNewNotification as EventListener);
+    window.addEventListener('refreshNotifications', handleRefreshNotifications);
     
     return () => {
       window.removeEventListener('newNotification', handleNewNotification as EventListener);
+      window.removeEventListener('refreshNotifications', handleRefreshNotifications);
     };
   }, []);
 
