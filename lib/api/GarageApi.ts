@@ -187,7 +187,15 @@ export const getEmergencyRescueGarages = async (latitude: number, longitude: num
       const nearbyResponse = await publicAxios.get<Garage[]>("/apis/garage/nearby", { 
         params: { latitude, longitude, radius } 
       })
-      nearbyGarages = nearbyResponse.data
+      
+      // Đảm bảo response.data là một array
+      const responseData = nearbyResponse.data
+      if (Array.isArray(responseData)) {
+        nearbyGarages = responseData
+      } else {
+        console.warn('⚠️ Nearby endpoint returned non-array data:', typeof responseData, responseData)
+        nearbyGarages = []
+      }
       console.log('✅ Nearby endpoint success:', nearbyGarages.length, 'garages')
     } catch (nearbyError: any) {
       console.log('⚠️ Nearby endpoint failed:', nearbyError.response?.status, nearbyError.response?.statusText)
@@ -196,7 +204,15 @@ export const getEmergencyRescueGarages = async (latitude: number, longitude: num
         // Fallback: sử dụng endpoint active garages
         console.log('🔍 Trying /apis/garage/active endpoint as fallback...')
         const activeResponse = await publicAxios.get<Garage[]>("/apis/garage/active")
-        nearbyGarages = activeResponse.data
+        
+        // Đảm bảo response.data là một array
+        const responseData = activeResponse.data
+        if (Array.isArray(responseData)) {
+          nearbyGarages = responseData
+        } else {
+          console.warn('⚠️ Active endpoint returned non-array data:', typeof responseData, responseData)
+          nearbyGarages = []
+        }
         console.log('✅ Active endpoint success:', nearbyGarages.length, 'garages')
         
         // Tính toán khoảng cách cho active garages (giả lập)
@@ -209,6 +225,12 @@ export const getEmergencyRescueGarages = async (latitude: number, longitude: num
         console.log('❌ Both endpoints failed:', activeError.response?.status)
         throw new Error('Không thể lấy danh sách garage từ server')
       }
+    }
+
+    // Đảm bảo nearbyGarages là một array trước khi filter
+    if (!Array.isArray(nearbyGarages)) {
+      console.error('❌ nearbyGarages is not an array:', typeof nearbyGarages, nearbyGarages)
+      nearbyGarages = []
     }
 
     // Lọc garage có dịch vụ cứu hộ
