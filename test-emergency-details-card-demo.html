@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Card Chi Tiết Yêu Cầu Cứu Hộ</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .feature-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-section h3 {
+            color: #16a34a;
+            margin-bottom: 15px;
+        }
+        
+        .demo-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .role-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .role-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-user {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        
+        .btn-user:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-garage {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-garage:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-active {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .cards-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card.emergency-card {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+        
+        .card.garage-card {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .card-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .emergency-info {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #f59e0b;
+        }
+        
+        .emergency-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .request-id {
+            font-weight: 600;
+            color: #92400e;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-accepted {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .emergency-description {
+            color: #92400e;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .emergency-date {
+            color: #a16207;
+            font-size: 12px;
+        }
+        
+        .btn-action {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #f59e0b;
+            background: transparent;
+            color: #92400e;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-action:hover {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #6b7280;
+            background: transparent;
+            color: #374151;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .empty-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: #9ca3af;
+            font-size: 24px;
+        }
+        
+        .empty-text {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .current-role {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            border: 2px solid #8b5cf6;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .current-role h3 {
+            color: #7c3aed;
+            margin-bottom: 10px;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 18px;
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .role-badge.user {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        
+        .role-badge.garage {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .comparison-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .feature-yes {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        
+        .feature-no {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #f59e0b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 Card Chi Tiết Yêu Cầu Cứu Hộ</h1>
+            <p>Card mới cho USER role để xem emergency request gần nhất</p>
+        </div>
+        
+        <div class="current-role">
+            <h3>Vai trò hiện tại:</h3>
+            <div class="role-badge" id="currentRoleBadge">USER</div>
+        </div>
+        
+        <div class="role-selector">
+            <h3>🎭 Chọn vai trò để test:</h3>
+            <div class="role-buttons">
+                <button class="btn btn-user btn-active" onclick="setRole('USER')">
+                    👤 USER
+                </button>
+                <button class="btn btn-garage" onclick="setRole('GARAGE')">
+                    🏢 GARAGE
+                </button>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>📋 Cards hiển thị trong Dashboard:</h3>
+            
+            <div class="cards-demo">
+                <!-- Emergency Details Card - Only for USER -->
+                <div class="card emergency-card" id="emergencyDetailsCard">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #f59e0b;">🚨</div>
+                        <div class="card-title">Chi Tiết Yêu Cầu Cứu Hộ</div>
+                    </div>
+                    <div class="card-description">
+                        Xem thông tin yêu cầu cứu hộ gần nhất
+                    </div>
+                    
+                    <div id="emergencyCardContent">
+                        <!-- Content will be updated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Garage Emergency Management Card - Only for GARAGE -->
+                <div class="card garage-card" id="garageEmergencyCard" style="display: none;">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: #ef4444;">🔧</div>
+                        <div class="card-title">Quản lý Cứu hộ</div>
+                    </div>
+                    <div class="card-description">
+                        Quản lý yêu cầu cứu hộ khẩn cấp
+                    </div>
+                    <button class="btn-secondary">
+                        🔧 Quản lý cứu hộ
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feature-section">
+            <h3>✨ Tính năng mới:</h3>
+            <ul>
+                <li><strong>Card riêng cho USER:</strong> Chỉ hiển thị khi user.role === 'USER'</li>
+                <li><strong>Tự động lấy request gần nhất:</strong> Sắp xếp theo thời gian tạo</li>
+                <li><strong>Hiển thị thông tin chi tiết:</strong> ID, trạng thái, mô tả, ngày tạo</li>
+                <li><strong>Navigation đến details:</strong> Click để xem trang chi tiết</li>
+                <li><strong>Fallback khi không có data:</strong> Hiển thị nút "Tạo yêu cầu mới"</li>
+                <li><strong>Loading state:</strong> Spinner khi đang tải dữ liệu</li>
+            </ul>
+        </div>
+        
+        <div class="feature-section">
+            <h3>📋 So sánh Cards theo Role:</h3>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Card</th>
+                        <th>USER Role</th>
+                        <th>GARAGE Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Chi Tiết Yêu Cầu Cứu Hộ</strong><br><small>Xem emergency request gần nhất</small></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                        <td><span class="feature-no">❌ Ẩn</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quản lý Cứu hộ</strong><br><small>Quản lý tất cả emergency requests</small></td>
+                        <td><span class="feature-no">❌ Ẩn</span></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tìm garage</strong><br><small>Tìm kiếm garage sửa xe</small></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Đặt lịch</strong><br><small>Đặt lịch sửa xe</small></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cứu hộ</strong><br><small>Gọi cứu hộ khẩn cấp</small></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                        <td><span class="feature-yes">✅ Hiển thị</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="feature-section">
+            <h3>🔧 Chi tiết kỹ thuật:</h3>
+            
+            <h4>1. API Integration:</h4>
+            <pre style="background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+// Load latest emergency request
+const emergencyResponse = await EmergencyApi.getMyRequests()
+
+// Get the latest (most recent) emergency request
+if (emergencyResponse.data && emergencyResponse.data.length > 0) {
+  const latest = emergencyResponse.data.sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )[0]
+  setLatestEmergencyRequest(latest)
+}
+            </pre>
+            
+            <h4>2. Conditional Rendering:</h4>
+            <pre style="background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+{/* Latest Emergency Request Card - Only for USER role */}
+{user && user.role === 'USER' && (
+  &lt;Card className="border-orange-100"&gt;
+    &lt;CardTitle&gt;Chi Tiết Yêu Cầu Cứu Hộ&lt;/CardTitle&gt;
+    {/* Card content */}
+  &lt;/Card&gt;
+)}
+            </pre>
+            
+            <h4>3. Navigation:</h4>
+            <pre style="background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 8px; overflow-x: auto;">
+&lt;Button 
+  onClick={() =&gt; router.push(`/emergency/${latestEmergencyRequest.id}`)}
+&gt;
+  &lt;Eye className="h-4 w-4 mr-2" /&gt;
+  Xem chi tiết
+&lt;/Button&gt;
+            </pre>
+        </div>
+    </div>
+    
+    <script>
+        let currentRole = 'USER';
+        
+        // Mock emergency request data
+        const mockEmergencyRequests = [
+            {
+                id: 123,
+                description: "Xe bị hỏng máy, không khởi động được",
+                status: "ACCEPTED",
+                createdAt: "2024-01-15T10:30:00Z",
+                garage: {
+                    name: "Garage ABC",
+                    phone: "0123456789"
+                }
+            },
+            {
+                id: 122,
+                description: "Lốp xe bị xì, cần thay thế",
+                status: "COMPLETED",
+                createdAt: "2024-01-14T15:20:00Z",
+                garage: {
+                    name: "Garage XYZ",
+                    phone: "0987654321"
+                }
+            },
+            {
+                id: 121,
+                description: "Phanh xe có vấn đề, cần kiểm tra",
+                status: "PENDING",
+                createdAt: "2024-01-13T09:15:00Z"
+            }
+        ];
+        
+        function setRole(role) {
+            currentRole = role;
+            updateUI();
+        }
+        
+        function updateUI() {
+            // Update current role badge
+            const roleBadge = document.getElementById('currentRoleBadge');
+            roleBadge.textContent = currentRole;
+            roleBadge.className = `role-badge ${currentRole.toLowerCase()}`;
+            
+            // Update button states
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('btn-active');
+            });
+            document.querySelector(`.btn-${currentRole.toLowerCase()}`).classList.add('btn-active');
+            
+            // Show/hide cards based on role
+            const emergencyCard = document.getElementById('emergencyDetailsCard');
+            const garageCard = document.getElementById('garageEmergencyCard');
+            
+            if (currentRole === 'USER') {
+                emergencyCard.style.display = 'block';
+                garageCard.style.display = 'none';
+                updateEmergencyCardContent();
+            } else {
+                emergencyCard.style.display = 'none';
+                garageCard.style.display = 'block';
+            }
+        }
+        
+        function updateEmergencyCardContent() {
+            const content = document.getElementById('emergencyCardContent');
+            
+            // Simulate loading
+            content.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div class="loading-spinner"></div>
+                    <span style="margin-left: 10px; color: #6b7280;">Đang tải...</span>
+                </div>
+            `;
+            
+            // Simulate API delay
+            setTimeout(() => {
+                const latestRequest = mockEmergencyRequests[0]; // Most recent
+                
+                if (latestRequest) {
+                    const statusText = {
+                        'PENDING': 'Chờ xử lý',
+                        'ACCEPTED': 'Đã chấp nhận',
+                        'COMPLETED': 'Hoàn thành'
+                    };
+                    
+                    const statusClass = {
+                        'PENDING': 'status-pending',
+                        'ACCEPTED': 'status-accepted',
+                        'COMPLETED': 'status-completed'
+                    };
+                    
+                    content.innerHTML = `
+                        <div class="emergency-info">
+                            <div class="emergency-header">
+                                <span class="request-id">Yêu cầu #${latestRequest.id}</span>
+                                <span class="status-badge ${statusClass[latestRequest.status]}">
+                                    ${statusText[latestRequest.status]}
+                                </span>
+                            </div>
+                            <p class="emergency-description">
+                                ${latestRequest.description}
+                            </p>
+                            <p class="emergency-date">
+                                ${new Date(latestRequest.createdAt).toLocaleDateString('vi-VN')}
+                            </p>
+                        </div>
+                        <button class="btn-action" onclick="viewDetails(${latestRequest.id})">
+                            👁️ Xem chi tiết
+                        </button>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🚨</div>
+                            <p class="empty-text">Chưa có yêu cầu cứu hộ nào</p>
+                            <button class="btn-secondary" onclick="createNewRequest()">
+                                ➕ Tạo yêu cầu mới
+                            </button>
+                        </div>
+                    `;
+                }
+            }, 1500);
+        }
+        
+        function viewDetails(requestId) {
+            alert(`Navigating to emergency request details: /emergency/${requestId}`);
+        }
+        
+        function createNewRequest() {
+            alert('Navigating to create new emergency request: /emergency');
+        }
+        
+        // Initialize
+        updateUI();
+    </script>
+</body>
+</html>

@@ -34,6 +34,7 @@ import { getUserProfile } from "@/lib/api/UserApi"
 import { getGaragesByOwner } from "@/lib/api/GarageApi"
 import { getUserAppointments, getPendingAppointmentsCount, type Appointment } from "@/lib/api/AppointmentApi"
 import { getMyFavorites } from "@/lib/api/FavoriteApi"
+import EmergencyApi from "@/lib/api/EmergencyApi"
 
 interface FavoriteGarage {
   id: number
@@ -71,6 +72,9 @@ export default function UnifiedDashboard() {
   // Favorite Garages
   const [favoriteGarages, setFavoriteGarages] = useState<FavoriteGarage[]>([])
   const [favoritesLoading, setFavoritesLoading] = useState(true)
+  
+  // Latest Emergency Request
+  const [latestEmergencyRequest, setLatestEmergencyRequest] = useState<any>(null)
   
   // Dashboard Statistics
   const [todayAppointmentsCount, setTodayAppointmentsCount] = useState(0)
@@ -226,6 +230,39 @@ export default function UnifiedDashboard() {
     }
 
     loadFavoriteGarages()
+  }, [user]) // Run when user changes
+
+  // Load latest emergency request when user is available
+  useEffect(() => {
+    const loadLatestEmergencyRequest = async () => {
+      if (!user) {
+        console.log("🔄 Dashboard: User not available, skipping emergency request load")
+        return
+      }
+      
+      console.log("🔄 Dashboard: Loading latest emergency request for user:", user.email)
+      
+      try {
+        const emergencyResponse = await EmergencyApi.getMyRequests()
+        console.log("✅ Dashboard: Emergency requests loaded:", emergencyResponse.data?.length || 0)
+        
+        // Get the latest (most recent) emergency request
+        if (emergencyResponse.data && emergencyResponse.data.length > 0) {
+          const latest = emergencyResponse.data.sort((a, b) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )[0]
+          setLatestEmergencyRequest(latest)
+          console.log("✅ Dashboard: Latest emergency request:", latest.id)
+        } else {
+          setLatestEmergencyRequest(null)
+        }
+      } catch (emergencyErr) {
+        console.error("❌ Dashboard: Error loading emergency requests:", emergencyErr)
+        setLatestEmergencyRequest(null)
+      }
+    }
+
+    loadLatestEmergencyRequest()
   }, [user]) // Run when user changes
 
   // Load pending appointments count for each garage
@@ -466,6 +503,35 @@ export default function UnifiedDashboard() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Latest Emergency Request Card - Only for USER role */}
+            {user && user.role === 'USER' && (
+              <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center space-x-2 text-lg">
+                    <AlertCircle className="h-5 w-5 text-orange-600" />
+                    <span>Chi Tiết Yêu Cầu Cứu Hộ</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-600 text-sm mb-4">Xem thông tin yêu cầu cứu hộ gần nhất</p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-orange-200 text-orange-600 hover:bg-orange-50"
+                    onClick={() => {
+                      if (latestEmergencyRequest) {
+                        router.push(`/emergency/${latestEmergencyRequest.id}`)
+                      } else {
+                        router.push("/emergency")
+                      }
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Xem Chi Tiết Yêu Cầu Cứu Hộ
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Garage Emergency Management - Only for GARAGE role */}
             {user && user.role === 'GARAGE' && (
