@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo SweetAlert - Phê Duyệt Garage Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        .demo-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .demo-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .demo-button.success:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        .demo-button.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .demo-button.warning:hover {
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+        .demo-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .approval-status {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .status-item {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            min-width: 120px;
+            text-align: center;
+        }
+        .status-item.approved {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        .status-item.pending {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+        .status-item.rejected {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .status-approved { color: #059669; }
+        .status-pending { color: #d97706; }
+        .status-rejected { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🎉 Demo SweetAlert - Phê Duyệt Garage</h1>
+        <p class="demo-description">
+            Demo các thông báo SweetAlert sẽ hiển thị khi admin phê duyệt garage thành công hoàn tất.
+        </p>
+        
+        <!-- Trạng thái phê duyệt giả lập -->
+        <div class="approval-status">
+            <div class="status-item approved">
+                <div class="status-title status-approved">✅ Thông tin cơ bản</div>
+                <div class="status-approved">Đã phê duyệt</div>
+            </div>
+            <div class="status-item approved">
+                <div class="status-title status-approved">✅ Dịch vụ</div>
+                <div class="status-approved">Đã phê duyệt</div>
+            </div>
+            <div class="status-item approved">
+                <div class="status-title status-approved">✅ Loại xe</div>
+                <div class="status-approved">Đã phê duyệt</div>
+            </div>
+        </div>
+        
+        <button class="demo-button success" onclick="showCompleteApprovalAlert()">
+            🎉 Test Phê Duyệt Hoàn Tất
+        </button>
+        
+        <button class="demo-button warning" onclick="showRejectionAlert()">
+            ⚠️ Test Từ Chối Danh Mục
+        </button>
+        
+        <button class="demo-button" onclick="showPartialApprovalAlert()">
+            📋 Test Phê Duyệt Một Phần
+        </button>
+    </div>
+
+    <script>
+        function showCompleteApprovalAlert() {
+            Swal.fire({
+                title: '🎉 Phê duyệt hoàn tất!',
+                html: `
+                    <div class="text-center">
+                        <p class="text-lg mb-4">Tất cả danh mục của garage <strong>"Garage ABC"</strong> đã được phê duyệt thành công!</p>
+                        <p class="text-sm text-gray-600 mb-4">Garage sẽ chuyển về trạng thái <strong>"Hoạt động"</strong> và có thể nhận lịch hẹn từ khách hàng.</p>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                            <p class="text-sm text-green-700">
+                                <strong>Thông báo:</strong> Bạn sẽ được chuyển về trang quản lý garage trong giây lát...
+                            </p>
+                        </div>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonText: 'Tuyệt vời!',
+                confirmButtonColor: '#10b981',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: true,
+                timer: 4000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    console.log('SweetAlert phê duyệt hoàn tất đã mở - sẽ tự động đóng sau 4 giây');
+                }
+            }).then(() => {
+                console.log('User đã click button hoặc timer hết - sẽ redirect về /admin/garages');
+                alert('🔄 Trong ứng dụng thực tế, sẽ redirect về /admin/garages');
+            });
+        }
+
+        function showRejectionAlert() {
+            Swal.fire({
+                title: '⚠️ Đã từ chối danh mục',
+                html: `
+                    <div class="text-center">
+                        <p class="text-lg mb-4">Danh mục <strong>"Dịch vụ"</strong> đã bị từ chối.</p>
+                        <p class="text-sm text-gray-600 mb-4">Garage sẽ chuyển về trạng thái <strong>"Bị từ chối"</strong>.</p>
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+                            <p class="text-sm text-amber-700">
+                                <strong>Lưu ý:</strong> Bạn có thể tiếp tục phê duyệt các danh mục khác hoặc quay lại danh sách garage.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                icon: 'warning',
+                confirmButtonText: 'Hiểu rồi',
+                confirmButtonColor: '#f59e0b',
+                allowOutsideClick: true,
+                allowEscapeKey: true,
+                showConfirmButton: true
+            });
+        }
+
+        function showPartialApprovalAlert() {
+            Swal.fire({
+                title: '📋 Phê duyệt một phần',
+                html: `
+                    <div class="text-center">
+                        <p class="text-lg mb-4">Đã phê duyệt thành công danh mục <strong>"Thông tin cơ bản"</strong>!</p>
+                        <p class="text-sm text-gray-600 mb-4">Tiếp tục phê duyệt các danh mục còn lại để hoàn tất quá trình.</p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+                            <p class="text-sm text-blue-700">
+                                <strong>Tiến độ:</strong> 1/3 danh mục đã được phê duyệt
+                            </p>
+                        </div>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'Tiếp tục',
+                confirmButtonColor: '#3b82f6',
+                allowOutsideClick: true,
+                allowEscapeKey: true,
+                showConfirmButton: true
+            });
+        }
+
+        // Auto demo sau 2 giây
+        setTimeout(() => {
+            console.log('🚀 Tự động demo SweetAlert phê duyệt hoàn tất...');
+            showCompleteApprovalAlert();
+        }, 2000);
+    </script>
+</body>
+</html>

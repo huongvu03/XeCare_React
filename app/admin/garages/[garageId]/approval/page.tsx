@@ -36,6 +36,7 @@ import {
 } from "@/lib/api/AdminApi"
 import { toast } from "sonner"
 import { ImageModal } from "@/components/ImageModal"
+import Swal from 'sweetalert2'
 
 export default function GarageApprovalPage() {
   const router = useRouter()
@@ -138,11 +139,54 @@ export default function GarageApprovalPage() {
         }
       }
       
-      // Hiển thị thông báo trạng thái tổng thể
+      // Kiểm tra nếu tất cả danh mục đã được phê duyệt
       setTimeout(() => {
-        const newOverallStatus = approvalDetails?.approvalDetails[itemKey]?.status === "APPROVED" ? "APPROVED" : "PENDING"
-        if (newOverallStatus === "APPROVED") {
-          toast.info("Tất cả nội dung đã được phê duyệt! Garage sẽ chuyển về trạng thái 'Hoạt động'.")
+        const updatedDetails = approvalDetails ? { ...approvalDetails } : null
+        if (updatedDetails) {
+          updatedDetails.approvalDetails[itemKey] = {
+            ...updatedDetails.approvalDetails[itemKey],
+            status: "APPROVED"
+          }
+          
+          // Kiểm tra tất cả danh mục đã được phê duyệt
+          const allApproved = Object.values(updatedDetails.approvalDetails).every(item => item.status === "APPROVED")
+          
+          if (allApproved) {
+            // Hiển thị SweetAlert khi phê duyệt hoàn tất
+            Swal.fire({
+              title: '🎉 Phê duyệt hoàn tất!',
+              html: `
+                <div class="text-center">
+                  <p class="text-lg mb-4">Tất cả danh mục của garage <strong>"${garageInfo?.name || 'N/A'}"</strong> đã được phê duyệt thành công!</p>
+                  <p class="text-sm text-gray-600 mb-4">Garage sẽ chuyển về trạng thái <strong>"Hoạt động"</strong> và có thể nhận lịch hẹn từ khách hàng.</p>
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                    <p class="text-sm text-green-700">
+                      <strong>Thông báo:</strong> Bạn sẽ được chuyển về trang quản lý garage trong giây lát...
+                    </p>
+                  </div>
+                </div>
+              `,
+              icon: 'success',
+              confirmButtonText: 'Tuyệt vời!',
+              confirmButtonColor: '#10b981',
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              showConfirmButton: true,
+              timer: 4000,
+              timerProgressBar: true,
+              didOpen: () => {
+                // Auto redirect sau 4 giây
+                setTimeout(() => {
+                  router.push('/admin/garages')
+                }, 4000)
+              }
+            }).then(() => {
+              // Redirect ngay lập tức nếu user click button
+              router.push('/admin/garages')
+            })
+          } else {
+            toast.info("Đã phê duyệt thành công! Tiếp tục phê duyệt các danh mục còn lại.")
+          }
         }
       }, 1000)
     } catch (err: any) {
@@ -220,9 +264,39 @@ export default function GarageApprovalPage() {
       
       // Hiển thị thông báo trạng thái tổng thể
       setTimeout(() => {
-        const newOverallStatus = approvalDetails?.approvalDetails[itemKey]?.status === "REJECTED" ? "REJECTED" : "PENDING"
-        if (newOverallStatus === "REJECTED") {
-          toast.info("Garage sẽ chuyển về trạng thái 'Bị từ chối'. Bạn có thể tiếp tục phê duyệt các nội dung khác hoặc quay lại danh sách.")
+        const updatedDetails = approvalDetails ? { ...approvalDetails } : null
+        if (updatedDetails) {
+          updatedDetails.approvalDetails[itemKey] = {
+            ...updatedDetails.approvalDetails[itemKey],
+            status: "REJECTED"
+          }
+          
+          // Kiểm tra nếu có danh mục bị từ chối
+          const hasRejected = Object.values(updatedDetails.approvalDetails).some(item => item.status === "REJECTED")
+          
+          if (hasRejected) {
+            // Hiển thị SweetAlert thông báo từ chối
+            Swal.fire({
+              title: '⚠️ Đã từ chối danh mục',
+              html: `
+                <div class="text-center">
+                  <p class="text-lg mb-4">Danh mục <strong>"${getItemTitle(itemKey)}"</strong> đã bị từ chối.</p>
+                  <p class="text-sm text-gray-600 mb-4">Garage sẽ chuyển về trạng thái <strong>"Bị từ chối"</strong>.</p>
+                  <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+                    <p class="text-sm text-amber-700">
+                      <strong>Lưu ý:</strong> Bạn có thể tiếp tục phê duyệt các danh mục khác hoặc quay lại danh sách garage.
+                    </p>
+                  </div>
+                </div>
+              `,
+              icon: 'warning',
+              confirmButtonText: 'Hiểu rồi',
+              confirmButtonColor: '#f59e0b',
+              allowOutsideClick: true,
+              allowEscapeKey: true,
+              showConfirmButton: true
+            })
+          }
         }
       }, 1000)
     } catch (err: any) {
@@ -328,6 +402,25 @@ export default function GarageApprovalPage() {
       description="Xem xét và phê duyệt từng nội dung đăng ký"
     >
       <div className="space-y-6">
+        {/* Back Button */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/admin/garages')}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Quay lại</span>
+          </Button>
+          
+          {/* Garage Info Header */}
+          {garageInfo && (
+            <div className="text-right">
+              <h2 className="text-lg font-semibold text-slate-900">{garageInfo.name}</h2>
+              <p className="text-sm text-slate-600">ID: {garageInfo.id}</p>
+            </div>
+          )}
+        </div>
 
         {/* Overall Status Summary */}
         <Card>
@@ -529,7 +622,7 @@ export default function GarageApprovalPage() {
                         {garageInfo.services && garageInfo.services.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.services.map((service, index) => (
-                              <li key={index}>- {service.serviceName || service.name || `Dịch vụ ${index + 1}`}</li>
+                              <li key={index}>- {service.serviceName || `Dịch vụ ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (
@@ -543,7 +636,7 @@ export default function GarageApprovalPage() {
                         {garageInfo.vehicleTypes && garageInfo.vehicleTypes.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.vehicleTypes.map((vehicleType, index) => (
-                              <li key={index}>- {vehicleType.vehicleTypeName || vehicleType.name || `Loại xe ${index + 1}`}</li>
+                              <li key={index}>- {vehicleType.vehicleTypeName || `Loại xe ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (
@@ -678,7 +771,7 @@ export default function GarageApprovalPage() {
                         {garageInfo.services && garageInfo.services.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.services.map((service, index) => (
-                              <li key={index}>- {service.serviceName || service.name || `Dịch vụ ${index + 1}`}</li>
+                              <li key={index}>- {service.serviceName || `Dịch vụ ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (
@@ -708,7 +801,7 @@ export default function GarageApprovalPage() {
                         {garageInfo.vehicleTypes && garageInfo.vehicleTypes.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.vehicleTypes.map((vehicleType, index) => (
-                              <li key={index}>- {vehicleType.vehicleTypeName || vehicleType.name || `Loại xe ${index + 1}`}</li>
+                              <li key={index}>- {vehicleType.vehicleTypeName || `Loại xe ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (

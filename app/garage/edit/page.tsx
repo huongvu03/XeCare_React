@@ -172,6 +172,7 @@ export default function GarageEditPage() {
 
     setSubmitting(true)
     setError("")
+    setSuccess("")
 
     try {
       // Update garage info
@@ -185,16 +186,25 @@ export default function GarageEditPage() {
         closeTime,
         latitude: latitude || undefined,
         longitude: longitude || undefined,
+        serviceIds: selectedServices,
+        vehicleTypeIds: selectedVehicleTypes,
       }
 
       const response = await updateGarage(garage.id, updateData)
       
-      setSuccess("Cập nhật thông tin garage thành công!")
+      // Xử lý response dựa trên loại cập nhật
+      if (response.updateType === "IMMEDIATE_UPDATE") {
+        setSuccess("✅ Cập nhật thành công! Thay đổi đã được áp dụng ngay lập tức.")
+      } else if (response.updateType === "REQUIRES_APPROVAL") {
+        setSuccess("⏳ Đã gửi yêu cầu cập nhật. Vui lòng chờ admin phê duyệt.")
+      } else {
+        setSuccess("Cập nhật thông tin garage thành công!")
+      }
       
-      // Redirect to garage dashboard after 2 seconds
+      // Redirect to garage dashboard after 3 seconds
       setTimeout(() => {
         router.push("/garage/dashboard")
-      }, 2000)
+      }, 3000)
 
     } catch (err: any) {
       setError(err.response?.data?.message || "Có lỗi xảy ra khi cập nhật garage. Vui lòng thử lại.")
@@ -525,7 +535,11 @@ export default function GarageEditPage() {
               {/* Info */}
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertDescription className="text-blue-700">
-                  <strong>Lưu ý:</strong> Một số thay đổi có thể cần được admin phê duyệt trước khi có hiệu lực.
+                  <strong>Lưu ý:</strong> 
+                  <ul className="mt-2 space-y-1 text-sm">
+                    <li>• <strong>Dịch vụ, loại xe, giờ làm việc:</strong> Cập nhật ngay lập tức</li>
+                    <li>• <strong>Thông tin garage, hình ảnh:</strong> Cần admin phê duyệt</li>
+                  </ul>
                 </AlertDescription>
               </Alert>
             </form>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useGeocoding } from "@/hooks/use-geocoding"
 import { OperatingHoursForm } from "@/components/operating-hours-form"
 import { createDefaultOperatingHours } from "@/lib/utils/operatingHours"
+import Swal from 'sweetalert2'
 
 export default function GarageRegistrationPage() {
   const router = useRouter()
@@ -27,7 +28,6 @@ export default function GarageRegistrationPage() {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
 
   // Geocoding hook
   const { geocodeAddress, isLoading: geocodingLoading, error: geocodingError, result: geocodingResult, clearError: clearGeocodingError } = useGeocoding(1500)
@@ -119,11 +119,76 @@ export default function GarageRegistrationPage() {
     }
   }
 
-  // Auto-fill coordinates when geocoding result is available
+  // Ref để tránh infinite loop khi auto-fill address
+  const lastGeocodingResult = useRef<string | null>(null)
+  const lastAddressInput = useRef<string>("")
+
+  // Reset geocoding result ref khi địa chỉ input thay đổi
+  useEffect(() => {
+    if (address !== lastAddressInput.current) {
+      lastGeocodingResult.current = null
+      lastAddressInput.current = address
+      console.log('Address input changed, reset geocoding ref. New address:', address)
+      console.log('lastAddressInput updated to:', lastAddressInput.current)
+    }
+  }, [address])
+
+  // Hàm helper để merge số nhà với địa chỉ đầy đủ
+  const mergeAddressWithHouseNumber = (userInput: string, geocodingResult: string) => {
+    console.log('Merging addresses:', { userInput, geocodingResult })
+    
+    // Tìm số nhà trong input của user (số ở đầu chuỗi)
+    const houseNumberMatch = userInput.match(/^(\d+[a-zA-Z]?)\s*(.+)/)
+    
+    if (houseNumberMatch) {
+      const houseNumber = houseNumberMatch[1] // Số nhà
+      const streetName = houseNumberMatch[2].trim() // Tên đường
+      
+      console.log('Found house number:', houseNumber, 'Street name:', streetName)
+      
+      // Kiểm tra xem geocoding result có chứa tên đường không
+      if (geocodingResult.toLowerCase().includes(streetName.toLowerCase())) {
+        // Nếu có, thay thế số nhà trong geocoding result
+        const mergedAddress = geocodingResult.replace(/^\d+[a-zA-Z]?\s*/, `${houseNumber} `)
+        console.log('Merged address:', mergedAddress)
+        return mergedAddress
+      } else {
+        // Nếu không match tên đường, thêm số nhà vào đầu geocoding result
+        const mergedAddress = `${houseNumber} ${geocodingResult}`
+        console.log('Added house number to geocoding result:', mergedAddress)
+        return mergedAddress
+      }
+    }
+    
+    // Nếu không tìm thấy số nhà, trả về geocoding result
+    console.log('No house number found, using geocoding result')
+    return geocodingResult
+  }
+
+  // Auto-fill coordinates and address when geocoding result is available
   useEffect(() => {
     if (geocodingResult) {
       setLatitude(geocodingResult.lat)
       setLongitude(geocodingResult.lon)
+      
+      // Tự động fill địa chỉ đầy đủ khi tìm thấy (chỉ khi khác với kết quả trước đó)
+      if (geocodingResult.display_name && 
+          geocodingResult.display_name !== lastGeocodingResult.current) {
+        
+        // Sử dụng địa chỉ gốc từ lastAddressInput để merge số nhà
+        const originalUserInput = lastAddressInput.current.trim()
+        const geocodingAddress = geocodingResult.display_name.trim()
+        
+        console.log('Original user input:', originalUserInput)
+        console.log('Geocoding result:', geocodingAddress)
+        
+        // Merge số nhà của user với địa chỉ đầy đủ từ geocoding
+        const mergedAddress = mergeAddressWithHouseNumber(originalUserInput, geocodingAddress)
+        
+        setAddress(mergedAddress)
+        lastGeocodingResult.current = mergedAddress
+        console.log('Final auto-filled address:', mergedAddress)
+      }
     }
   }, [geocodingResult])
 
@@ -265,8 +330,6 @@ export default function GarageRegistrationPage() {
       
       console.log("Debug - Response:", response)
       
-      setSuccess("Đăng ký garage thành công! Vui lòng chờ admin phê duyệt.")
-      
       // Update user role to GARAGE immediately in frontend
       if (user) {
         const updatedUser = { ...user, role: "GARAGE" as const }
@@ -298,15 +361,65 @@ export default function GarageRegistrationPage() {
         }
       }
       
-      // Redirect to dashboard with garage tab after 3 seconds
-      setTimeout(() => {
-        router.push("/dashboard?tab=garage")
-      }, 3000)
+      // Show SweetAlert success notification
+      await Swal.fire({
+        title: '🎉 Đăng ký thành công!',
+        html: `
+          <div class="text-center">
+            <p class="text-lg mb-4">Garage <strong>"${garageName}"</strong> đã được đăng ký thành công!</p>
+            <p class="text-sm text-gray-600 mb-4">Vui lòng chờ admin phê duyệt để bắt đầu nhận lịch hẹn từ khách hàng.</p>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+              <p class="text-sm text-blue-700">
+                <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến dashboard garage trong giây lát...
+              </p>
+            </div>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'Tuyệt vời!',
+        confirmButtonColor: '#3b82f6',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: true,
+        timer: 5000,
+        timerProgressBar: true,
+        didOpen: () => {
+          // Auto redirect after 5 seconds
+          setTimeout(() => {
+            router.push("/dashboard?tab=garage")
+          }, 5000)
+        }
+      })
+      
+      // Redirect to dashboard with garage tab
+      router.push("/dashboard?tab=garage")
 
     } catch (err: any) {
       console.error("Debug - Error details:", err)
       console.error("Debug - Error response:", err.response)
-      setError(err.response?.data?.message || "Có lỗi xảy ra khi đăng ký garage. Vui lòng thử lại.")
+      const errorMessage = err.response?.data?.message || "Có lỗi xảy ra khi đăng ký garage. Vui lòng thử lại."
+      setError(errorMessage)
+      
+      // Show SweetAlert error notification
+      await Swal.fire({
+        title: '❌ Đăng ký thất bại!',
+        html: `
+          <div class="text-center">
+            <p class="text-lg mb-4">Không thể đăng ký garage</p>
+            <p class="text-sm text-gray-600 mb-4">${errorMessage}</p>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
+              <p class="text-sm text-red-700">
+                <strong>Gợi ý:</strong> Vui lòng kiểm tra lại thông tin và thử lại.
+              </p>
+            </div>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonText: 'Thử lại',
+        confirmButtonColor: '#ef4444',
+        allowOutsideClick: true,
+        allowEscapeKey: true
+      })
     } finally {
       setSubmitting(false)
     }
@@ -328,16 +441,10 @@ export default function GarageRegistrationPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Error/Success Messages */}
+              {/* Error Messages */}
               {error && (
                 <Alert className="border-red-200 bg-red-50">
                   <AlertDescription className="text-red-700">{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {success && (
-                <Alert className="border-green-200 bg-green-50">
-                  <AlertDescription className="text-green-700">{success}</AlertDescription>
                 </Alert>
               )}
 
@@ -413,7 +520,7 @@ export default function GarageRegistrationPage() {
                 {geocodingResult && (
                   <div className="flex items-center space-x-2 text-sm text-green-600 mt-1">
                     <CheckCircle className="h-4 w-4" />
-                    <span>Đã tìm thấy: {geocodingResult.display_name}</span>
+                    <span>Đã tìm thấy và tự động cập nhật: {geocodingResult.display_name}</span>
                   </div>
                 )}
                 

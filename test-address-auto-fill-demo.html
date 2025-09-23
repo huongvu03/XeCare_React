@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Tự Động Fill Địa Chỉ - Garage Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .demo-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .demo-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .demo-button.success:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .demo-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .demo-description {
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .address-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        .address-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .status-message {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .status-loading {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #93c5fd;
+        }
+        .status-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .coordinates {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        .coordinates h4 {
+            color: #0369a1;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .coordinate-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #0c4a6e;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">📍 Demo Tự Động Fill Địa Chỉ</h1>
+        
+        <div class="demo-description">
+            Demo tính năng tự động fill địa chỉ đầy đủ khi hệ thống tìm thấy địa chỉ từ geocoding.
+            Khi người dùng nhập địa chỉ, hệ thống sẽ tự động tìm kiếm và cập nhật địa chỉ đầy đủ.
+        </div>
+
+        <!-- Demo Form -->
+        <div class="demo-section">
+            <h3>🏢 Form Đăng Ký Garage</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    Địa chỉ *
+                </label>
+                <input 
+                    type="text" 
+                    id="addressInput"
+                    class="address-input" 
+                    placeholder="Nhập địa chỉ (ví dụ: 1093 Ta quang buu)"
+                    value=""
+                />
+                
+                <!-- Status Messages -->
+                <div id="statusMessage" style="display: none;"></div>
+                
+                <!-- Coordinates Display -->
+                <div id="coordinates" class="coordinates" style="display: none;">
+                    <h4>📍 Tọa độ đã tìm thấy:</h4>
+                    <div class="coordinate-item">
+                        <span>Vĩ độ:</span>
+                        <span id="latitude">-</span>
+                    </div>
+                    <div class="coordinate-item">
+                        <span>Kinh độ:</span>
+                        <span id="longitude">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="demo-button" onclick="simulateGeocoding()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    Test Geocoding
+                </button>
+                
+                <button class="demo-button success" onclick="simulateAutoFill()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22,4 12,14.01 9,11.01"/>
+                    </svg>
+                    Test Auto Fill
+                </button>
+                
+                <button class="demo-button" onclick="resetDemo()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M3 21v-5h5"/>
+                    </svg>
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Examples -->
+        <div class="demo-section">
+            <h3>💡 Ví dụ địa chỉ để test</h3>
+            <div class="demo-description">
+                Click vào các địa chỉ dưới đây để test tính năng tự động fill. 
+                <strong>Thử xóa địa chỉ và nhập lại để test tính năng reset ref!</strong>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="demo-button" onclick="testAddress('1093 Ta quang buu')" style="justify-content: flex-start;">
+                    📍 1093 Ta quang buu
+                </button>
+                <button class="demo-button" onclick="testAddress('123 Nguyen Hue')" style="justify-content: flex-start;">
+                    📍 123 Nguyen Hue
+                </button>
+                <button class="demo-button" onclick="testAddress('1 Le Loi')" style="justify-content: flex-start;">
+                    📍 1 Le Loi
+                </button>
+                <button class="demo-button" onclick="testAddress('45 Tran Hung Dao')" style="justify-content: flex-start;">
+                    📍 45 Tran Hung Dao
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px;">
+                <h4 style="color: #92400e; margin-bottom: 8px; font-size: 14px;">🧪 Test Scenario:</h4>
+                <ol style="color: #92400e; font-size: 13px; margin-left: 20px;">
+                    <li>Nhập địa chỉ đầu tiên → Xem auto-fill</li>
+                    <li>Xóa địa chỉ đã fill</li>
+                    <li>Nhập địa chỉ mới → Xem auto-fill lại</li>
+                    <li>Lặp lại nhiều lần để test</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="demo-section">
+            <h3>🚀 Tính năng đã thêm</h3>
+            <div class="demo-description">
+                <ul style="list-style: disc; margin-left: 20px; color: #6b7280;">
+                    <li>✅ Tự động fill địa chỉ đầy đủ khi geocoding tìm thấy</li>
+                    <li>✅ Hiển thị thông báo "Đã tìm thấy và tự động cập nhật"</li>
+                    <li>✅ Tự động cập nhật tọa độ (latitude, longitude)</li>
+                    <li>✅ Tránh infinite loop với useRef</li>
+                    <li>✅ Console log để debug</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Code Example -->
+        <div class="demo-section">
+            <h3>💻 Code Example</h3>
+            <div style="background: #1f2937; color: #f9fafb; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; overflow-x: auto;">
+<pre>// Auto-fill coordinates and address when geocoding result is available
+useEffect(() => {
+  if (geocodingResult) {
+    setLatitude(geocodingResult.lat)
+    setLongitude(geocodingResult.lon)
+    
+    // Tự động fill địa chỉ đầy đủ khi tìm thấy
+    if (geocodingResult.display_name && 
+        geocodingResult.display_name !== lastGeocodingResult.current) {
+      setAddress(geocodingResult.display_name)
+      lastGeocodingResult.current = geocodingResult.display_name
+      console.log('Auto-filled address:', geocodingResult.display_name)
+    }
+  }
+}, [geocodingResult])</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isGeocoding = false;
+        let lastGeocodingResult = null;
+        let lastAddressInput = "";
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+
+        function showCoordinates(lat, lon) {
+            document.getElementById('latitude').textContent = lat;
+            document.getElementById('longitude').textContent = lon;
+            document.getElementById('coordinates').style.display = 'block';
+        }
+
+        function hideCoordinates() {
+            document.getElementById('coordinates').style.display = 'none';
+        }
+
+        // Reset geocoding result khi địa chỉ input thay đổi
+        function checkAddressChange() {
+            const input = document.getElementById('addressInput');
+            const currentAddress = input.value;
+            
+            if (currentAddress !== lastAddressInput) {
+                lastGeocodingResult = null;
+                lastAddressInput = currentAddress;
+                console.log('Address input changed, reset geocoding ref');
+                hideStatus();
+                hideCoordinates();
+            }
+        }
+
+        function simulateGeocoding() {
+            const input = document.getElementById('addressInput');
+            const address = input.value.trim();
+            
+            if (!address) {
+                showStatus('⚠️ Vui lòng nhập địa chỉ để test', 'error');
+                return;
+            }
+
+            // Check if address changed and reset ref
+            checkAddressChange();
+
+            isGeocoding = true;
+            showStatus('🔍 Đang tìm kiếm địa chỉ...', 'loading');
+            hideCoordinates();
+
+            // Simulate API call delay
+            setTimeout(() => {
+                // Generate different results based on input
+                let mockResult;
+                if (address.toLowerCase().includes('ta quang buu')) {
+                    mockResult = {
+                        display_name: `Tạ Quang Bửu, Chánh Hưng, Chánh Hưng Ward, Ho Chi Minh City, 72400, Vietnam`,
+                        lat: 10.8231,
+                        lon: 106.6297
+                    };
+                } else if (address.toLowerCase().includes('nguyen hue')) {
+                    mockResult = {
+                        display_name: `Nguyễn Huệ, Bến Nghé, Quận 1, Ho Chi Minh City, 700000, Vietnam`,
+                        lat: 10.7769,
+                        lon: 106.7009
+                    };
+                } else if (address.toLowerCase().includes('le loi')) {
+                    mockResult = {
+                        display_name: `Lê Lợi, Bến Nghé, Quận 1, Ho Chi Minh City, 700000, Vietnam`,
+                        lat: 10.7769,
+                        lon: 106.7009
+                    };
+                } else if (address.toLowerCase().includes('tran hung dao')) {
+                    mockResult = {
+                        display_name: `Trần Hưng Đạo, Cầu Kho, Quận 1, Ho Chi Minh City, 700000, Vietnam`,
+                        lat: 10.7600,
+                        lon: 106.6900
+                    };
+                } else {
+                    mockResult = {
+                        display_name: `${address}, Ho Chi Minh City, Vietnam`,
+                        lat: 10.8231,
+                        lon: 106.6297
+                    };
+                }
+
+                // Chỉ auto-fill nếu kết quả khác với kết quả trước đó
+                if (mockResult.display_name !== lastGeocodingResult) {
+                    // Auto-fill address
+                    input.value = mockResult.display_name;
+                    
+                    // Show success message
+                    showStatus(`✅ Đã tìm thấy và tự động cập nhật: ${mockResult.display_name}`, 'success');
+                    
+                    // Show coordinates
+                    showCoordinates(mockResult.lat, mockResult.lon);
+                    
+                    // Update ref
+                    lastGeocodingResult = mockResult.display_name;
+                    lastAddressInput = mockResult.display_name;
+                    
+                    console.log('Auto-filled address:', mockResult.display_name);
+                } else {
+                    showStatus(`ℹ️ Địa chỉ đã được tìm thấy trước đó: ${mockResult.display_name}`, 'success');
+                    showCoordinates(mockResult.lat, mockResult.lon);
+                }
+                
+                isGeocoding = false;
+            }, 2000);
+        }
+
+        function simulateAutoFill() {
+            const input = document.getElementById('addressInput');
+            const mockResult = {
+                display_name: `Tạ Quang Bửu, Chánh Hưng, Chánh Hưng Ward, Ho Chi Minh City, 72400, Vietnam`,
+                lat: 10.8231,
+                lon: 106.6297
+            };
+
+            // Auto-fill address
+            input.value = mockResult.display_name;
+            
+            // Show success message
+            showStatus(`✅ Đã tìm thấy và tự động cập nhật: ${mockResult.display_name}`, 'success');
+            
+            // Show coordinates
+            showCoordinates(mockResult.lat, mockResult.lon);
+            
+            console.log('Auto-filled address:', mockResult.display_name);
+        }
+
+        function testAddress(address) {
+            const input = document.getElementById('addressInput');
+            input.value = address;
+            simulateGeocoding();
+        }
+
+        function resetDemo() {
+            document.getElementById('addressInput').value = '';
+            hideStatus();
+            hideCoordinates();
+        }
+
+        // Add event listener để theo dõi thay đổi input
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('addressInput');
+            input.addEventListener('input', checkAddressChange);
+        });
+
+        // Auto demo sau 2 giây
+        setTimeout(() => {
+            console.log('🚀 Tự động demo tính năng auto-fill địa chỉ...');
+            testAddress('1093 Ta quang buu');
+        }, 2000);
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

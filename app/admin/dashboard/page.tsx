@@ -1,5 +1,6 @@
-"use client"
+"use client";
 
+<<<<<<< Updated upstream
 import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,12 +37,32 @@ interface EmergencyRequest {
     imageUrl: string
   }>
 }
+=======
+import { useState, useEffect } from "react";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Users,
+  Building,
+  Calendar,
+  Star,
+  TrendingUp,
+  Shield,
+  Settings,
+  BarChart3,
+  AlertTriangle,
+} from "lucide-react";
+import Link from "next/link";
+import { getGarageStats } from "@/lib/api/AdminApi";
+>>>>>>> Stashed changes
 
 export default function AdminDashboard() {
   const [garageStats, setGarageStats] = useState({
     totalGarages: 0,
     activeGarages: 0,
     pendingGarages: 0,
+<<<<<<< Updated upstream
     inactiveGarages: 0
   })
   const [loading, setLoading] = useState(true)
@@ -88,25 +109,35 @@ export default function AdminDashboard() {
       setEmergencyLoading(false)
     }
   }
+=======
+    inactiveGarages: 0,
+  });
+  const [loading, setLoading] = useState(true);
+>>>>>>> Stashed changes
 
   useEffect(() => {
     const fetchGarageStats = async () => {
       try {
-        const response = await getGarageStats()
-        setGarageStats(response.data)
+        const response = await getGarageStats();
+        setGarageStats(response.data);
       } catch (error) {
-        console.error("Error fetching garage stats:", error)
+        console.error("Error fetching garage stats:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
+<<<<<<< Updated upstream
     fetchGarageStats()
     loadEmergencyRequests()
   }, [])
+=======
+    fetchGarageStats();
+  }, []);
+>>>>>>> Stashed changes
 
   // Số đơn chờ duyệt (PENDING)
-  const totalPendingRequests = garageStats.pendingGarages
+  const totalPendingRequests = garageStats.pendingGarages;
 
   // Get status badge variant
   const getStatusBadge = (status: string) => {
@@ -189,7 +220,11 @@ export default function AdminDashboard() {
   }
 
   return (
-    <DashboardLayout allowedRoles={["ADMIN"]} title="Admin Dashboard" description="Quản lý toàn bộ hệ thống XeCare">
+    <DashboardLayout
+      allowedRoles={["ADMIN"]}
+      title="Admin Dashboard"
+      description="Quản lý toàn bộ hệ thống XeCare"
+    >
       {/* System Stats */}
       <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card className="border-blue-100">
@@ -269,8 +304,13 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Xem, tìm kiếm và quản lý tài khoản người dùng</p>
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600" asChild>
+            <p className="text-slate-600 text-sm mb-4">
+              Xem, tìm kiếm và quản lý tài khoản user
+            </p>
+            <Button
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600"
+              asChild
+            >
               <Link href="/admin/users">Quản lý Users</Link>
             </Button>
           </CardContent>
@@ -294,22 +334,23 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-                         <p className="text-slate-600 text-sm mb-4">
-               Duyệt đăng ký và quản lý garage
-               {totalPendingRequests > 0 && (
-                 <span className="text-orange-600 font-medium">
-                   {" "}- {totalPendingRequests} đơn chờ duyệt
-                 </span>
-               )}
-             </p>
-            <Button 
-              variant={totalPendingRequests > 0 ? "default" : "outline"} 
-              className={`w-full ${totalPendingRequests > 0 ? "bg-orange-600 hover:bg-orange-700" : "border-blue-200 text-blue-600"}`} 
+            <p className="text-slate-600 text-sm mb-4">
+              Duyệt đăng ký và quản lý garage
+            </p>
+            <Button
+              variant={totalPendingRequests > 0 ? "default" : "outline"}
+              className={`w-full ${
+                totalPendingRequests > 0
+                  ? "bg-orange-600 hover:bg-orange-700"
+                  : "border-blue-200 text-blue-600"
+              }`}
               asChild
             >
-                             <Link href="/admin/garages">
-                 {totalPendingRequests > 0 ? `Xử lý ${totalPendingRequests} đơn` : "Quản lý Garages"}
-               </Link>
+              <Link href="/admin/garages">
+                {totalPendingRequests > 0
+                  ? `Xử lý ${totalPendingRequests} đơn`
+                  : "Quản lý Garages"}
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -322,8 +363,14 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Kiểm duyệt đánh giá và báo cáo</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600" asChild>
+            <p className="text-slate-600 text-sm mb-4">
+              Kiểm duyệt đánh giá và báo cáo
+            </p>
+            <Button
+              variant="outline"
+              className="w-full border-blue-200 text-blue-600"
+              asChild
+            >
               <Link href="/admin/reviews">Kiểm duyệt</Link>
             </Button>
           </CardContent>
@@ -337,8 +384,14 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Xem báo cáo chi tiết và phân tích</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600" asChild>
+            <p className="text-slate-600 text-sm mb-4">
+              Xem báo cáo chi tiết và phân tích
+            </p>
+            <Button
+              variant="outline"
+              className="w-full border-blue-200 text-blue-600"
+              asChild
+            >
               <Link href="/admin/analytics">Xem báo cáo</Link>
             </Button>
           </CardContent>
@@ -352,8 +405,13 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Cấu hình và cài đặt hệ thống</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600">
+            <p className="text-slate-600 text-sm mb-4">
+              Cấu hình và cài đặt hệ thống
+            </p>
+            <Button
+              variant="outline"
+              className="w-full border-blue-200 text-blue-600"
+            >
               Cài đặt
             </Button>
           </CardContent>
@@ -367,8 +425,14 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600 text-sm mb-4">Phân tích xu hướng và hiệu suất</p>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600" asChild>
+            <p className="text-slate-600 text-sm mb-4">
+              Phân tích xu hướng và hiệu suất
+            </p>
+            <Button
+              variant="outline"
+              className="w-full border-blue-200 text-blue-600"
+              asChild
+            >
               <Link href="/admin/data-analysis">Phân tích</Link>
             </Button>
           </CardContent>
@@ -424,19 +488,27 @@ export default function AdminDashboard() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                 <div>
-                  <p className="font-medium text-slate-900">Garage mới đăng ký</p>
+                  <p className="font-medium text-slate-900">
+                    Garage mới đăng ký
+                  </p>
                   <p className="text-sm text-slate-600">Garage ABC - TP.HCM</p>
                   <p className="text-sm text-blue-600">5 phút trước</p>
                 </div>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">Chờ duyệt</span>
+                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+                  Chờ duyệt
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                 <div>
                   <p className="font-medium text-slate-900">Đánh giá mới</p>
-                  <p className="text-sm text-slate-600">User đánh giá Garage XYZ</p>
+                  <p className="text-sm text-slate-600">
+                    User đánh giá Garage XYZ
+                  </p>
                   <p className="text-sm text-blue-600">10 phút trước</p>
                 </div>
-                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Đã duyệt</span>
+                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                  Đã duyệt
+                </span>
               </div>
             </div>
           </CardContent>
@@ -561,16 +633,20 @@ export default function AdminDashboard() {
             <div className="space-y-4">
               <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                 <p className="font-medium text-yellow-800">Cần kiểm tra</p>
-                <p className="text-sm text-yellow-700">5 garage chưa cập nhật thông tin trong 30 ngày</p>
+                <p className="text-sm text-yellow-700">
+                  5 garage chưa cập nhật thông tin trong 30 ngày
+                </p>
               </div>
               <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                 <p className="font-medium text-red-800">Báo cáo spam</p>
-                <p className="text-sm text-red-700">2 báo cáo về đánh giá spam cần xử lý</p>
+                <p className="text-sm text-red-700">
+                  2 báo cáo về đánh giá spam cần xử lý
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

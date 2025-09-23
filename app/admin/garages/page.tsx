@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Search, MoreHorizontal, Eye, Check, X, Star, MapPin, Building, AlertCircle, Loader2 } from "lucide-react"
+import { Search, MoreHorizontal, Eye, Check, X, Star, MapPin, Building, AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 import { getAllGarages, approveGarage, type GarageInfo, type GarageApprovalData } from "@/lib/api/AdminApi"
 import { toast } from "sonner"
 
@@ -156,6 +156,18 @@ export default function AdminGaragesPage() {
       title="Quản lý garage"
       description="Duyệt và quản lý các garage trong hệ thống"
     >
+      {/* Back Button */}
+      <div className="mb-6">
+        <Button
+          variant="outline"
+          onClick={() => router.push('/admin')}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Quay lại</span>
+        </Button>
+      </div>
+
       {error && (
         <Alert className="mb-6 border-red-200 bg-red-50">
           <AlertCircle className="h-4 w-4 text-red-600" />

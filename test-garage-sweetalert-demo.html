@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo SweetAlert - Đăng ký Garage</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .demo-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .demo-button.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .demo-button.error:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+        .demo-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🎉 Demo SweetAlert</h1>
+        <p class="demo-description">
+            Demo các thông báo SweetAlert sẽ hiển thị khi đăng ký garage thành công hoặc thất bại.
+        </p>
+        
+        <button class="demo-button" onclick="showSuccessAlert()">
+            ✅ Test Thành công
+        </button>
+        
+        <button class="demo-button error" onclick="showErrorAlert()">
+            ❌ Test Lỗi
+        </button>
+    </div>
+
+    <script>
+        function showSuccessAlert() {
+            Swal.fire({
+                title: '🎉 Đăng ký thành công!',
+                html: `
+                    <div class="text-center">
+                        <p class="text-lg mb-4">Garage <strong>"Demo Garage"</strong> đã được đăng ký thành công!</p>
+                        <p class="text-sm text-gray-600 mb-4">Vui lòng chờ admin phê duyệt để bắt đầu nhận lịch hẹn từ khách hàng.</p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+                            <p class="text-sm text-blue-700">
+                                <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến dashboard garage trong giây lát...
+                            </p>
+                        </div>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonText: 'Tuyệt vời!',
+                confirmButtonColor: '#3b82f6',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: true,
+                timer: 5000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    console.log('SweetAlert đã mở - sẽ tự động đóng sau 5 giây');
+                }
+            });
+        }
+
+        function showErrorAlert() {
+            Swal.fire({
+                title: '❌ Đăng ký thất bại!',
+                html: `
+                    <div class="text-center">
+                        <p class="text-lg mb-4">Không thể đăng ký garage</p>
+                        <p class="text-sm text-gray-600 mb-4">Địa chỉ này đã được sử dụng bởi một garage khác. Vui lòng chọn địa chỉ khác.</p>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
+                            <p class="text-sm text-red-700">
+                                <strong>Gợi ý:</strong> Vui lòng kiểm tra lại thông tin và thử lại.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Thử lại',
+                confirmButtonColor: '#ef4444',
+                allowOutsideClick: true,
+                allowEscapeKey: true
+            });
+        }
+
+        // Auto demo sau 2 giây
+        setTimeout(() => {
+            console.log('🚀 Tự động demo SweetAlert thành công...');
+            showSuccessAlert();
+        }, 2000);
+    </script>
+</body>
+</html>

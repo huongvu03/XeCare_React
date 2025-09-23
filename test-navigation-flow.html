@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .test-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .test-button.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .test-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .test-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+        .navigation-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .flow-arrow {
+            color: #6b7280;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🧭 Test Navigation Flow</h1>
+        
+        <div class="test-section">
+            <h3>📋 Navigation Flow Test</h3>
+            <p>Kiểm tra luồng điều hướng giữa các trang admin:</p>
+            
+            <div class="navigation-flow">
+                <a href="http://localhost:3000/admin" class="test-button">Admin Dashboard</a>
+                <span class="flow-arrow">→</span>
+                <a href="http://localhost:3000/admin/garages" class="test-button">Admin Garages</a>
+                <span class="flow-arrow">→</span>
+                <a href="http://localhost:3000/admin/garages/11/approval" class="test-button">Garage Approval</a>
+            </div>
+            
+            <div class="test-result test-info">
+                <strong>Luồng điều hướng mong đợi:</strong>
+                1. Admin Dashboard → Admin Garages (nút "Quản lý garage")
+                2. Admin Garages → Garage Approval (click "Xem chi tiết")
+                3. Garage Approval → Admin Garages (nút "Quay lại")
+                4. Admin Garages → Admin Dashboard (nút "Quay lại")
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Test Back Button Functionality</h3>
+            <p>Kiểm tra nút "Quay lại" trên từng trang:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div style="padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                    <h4 style="color: #374151; margin-bottom: 10px;">Admin Garages Page</h4>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Nút "Quay lại" nên chuyển hướng về:</p>
+                    <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 11px;">/admin</code>
+                    <br><br>
+                    <a href="http://localhost:3000/admin/garages" class="test-button" style="font-size: 12px; padding: 8px 16px;">Test Admin Garages</a>
+                </div>
+                
+                <div style="padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                    <h4 style="color: #374151; margin-bottom: 10px;">Garage Approval Page</h4>
+                    <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Nút "Quay lại" nên chuyển hướng về:</p>
+                    <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 11px;">/admin/garages</code>
+                    <br><br>
+                    <a href="http://localhost:3000/admin/garages/11/approval" class="test-button" style="font-size: 12px; padding: 8px 16px;">Test Garage Approval</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Expected Results</h3>
+            <div class="test-result test-success">
+                <strong>Kết quả mong đợi sau khi sửa:</strong>
+
+                1. <strong>Admin Garages Page:</strong>
+                   - Nút "Quay lại" → Chuyển hướng về /admin
+                   - URL: http://localhost:3000/admin
+
+                2. <strong>Garage Approval Page:</strong>
+                   - Nút "Quay lại" → Chuyển hướng về /admin/garages
+                   - URL: http://localhost:3000/admin/garages
+
+                3. <strong>SweetAlert Auto Redirect:</strong>
+                   - Khi phê duyệt hoàn tất → Tự động chuyển về /admin/garages
+                   - Timer: 4 giây
+                   - URL: http://localhost:3000/admin/garages
+
+                <strong>Thay đổi đã thực hiện:</strong>
+                - Thay router.back() → router.push('/admin/garages')
+                - Thay router.back() → router.push('/admin')
+                - Đảm bảo navigation flow nhất quán
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Manual Test Steps</h3>
+            <div class="test-result test-info">
+                <strong>Hướng dẫn test thủ công:</strong>
+
+                1. <strong>Test Admin Garages Back Button:</strong>
+                   - Truy cập: http://localhost:3000/admin/garages
+                   - Click nút "Quay lại"
+                   - Kiểm tra URL có chuyển về /admin không
+
+                2. <strong>Test Garage Approval Back Button:</strong>
+                   - Truy cập: http://localhost:3000/admin/garages/11/approval
+                   - Click nút "Quay lại"
+                   - Kiểm tra URL có chuyển về /admin/garages không
+
+                3. <strong>Test SweetAlert Auto Redirect:</strong>
+                   - Phê duyệt tất cả danh mục garage
+                   - Kiểm tra SweetAlert hiển thị
+                   - Đợi 4 giây hoặc click "Tuyệt vời!"
+                   - Kiểm tra URL có chuyển về /admin/garages không
+
+                4. <strong>Test Complete Flow:</strong>
+                   - Admin Dashboard → Admin Garages → Garage Approval
+                   - Test nút "Quay lại" ở mỗi bước
+                   - Đảm bảo navigation flow mượt mà
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto test navigation
+        function testNavigation() {
+            console.log('🧭 Testing navigation flow...');
+            
+            // Test current URL
+            const currentUrl = window.location.href;
+            console.log('Current URL:', currentUrl);
+            
+            // Test if we're on the right pages
+            if (currentUrl.includes('/admin/garages') && !currentUrl.includes('/approval')) {
+                console.log('✅ On Admin Garages page - Back button should go to /admin');
+            } else if (currentUrl.includes('/admin/garages') && currentUrl.includes('/approval')) {
+                console.log('✅ On Garage Approval page - Back button should go to /admin/garages');
+            } else if (currentUrl.includes('/admin') && !currentUrl.includes('/garages')) {
+                console.log('✅ On Admin Dashboard page');
+            }
+        }
+        
+        // Run test on load
+        setTimeout(testNavigation, 1000);
+    </script>
+</body>
+</html>

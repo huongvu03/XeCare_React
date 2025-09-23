@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Sửa Lỗi Số Nhà - Garage Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .demo-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .demo-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .demo-button.success:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .demo-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .demo-description {
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .address-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        .address-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .status-message {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .status-loading {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #93c5fd;
+        }
+        .test-case {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-case h4 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .before, .after {
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .before {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+        }
+        .after {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+        .before h5, .after h5 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .before h5 {
+            color: #dc2626;
+        }
+        .after h5 {
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🏠 Demo Sửa Lỗi Số Nhà</h1>
+        
+        <div class="demo-description">
+            Demo tính năng đã sửa để giữ lại số nhà của người dùng khi auto-fill địa chỉ.
+            <strong>Vấn đề trước đây:</strong> Số nhà bị xóa khi geocoding tìm thấy địa chỉ đầy đủ.
+            <strong>Giải pháp:</strong> Merge số nhà của user với địa chỉ đầy đủ từ geocoding.
+        </div>
+
+        <!-- Test Cases -->
+        <div class="demo-section">
+            <h3>🧪 Test Cases</h3>
+            
+            <div class="test-case">
+                <h4>Test Case 1: "48 Bùi Thị Xuân"</h4>
+                <div class="before-after">
+                    <div class="before">
+                        <h5>❌ Trước (Lỗi):</h5>
+                        <p><strong>Input:</strong> 48 Bùi Thị Xuân</p>
+                        <p><strong>Output:</strong> Bùi Thị Xuân, Khu phố 3, Phường Bến Thành, Thủ Đức, Ho Chi Minh City, 70200, Vietnam</p>
+                        <p><em>Số nhà "48" bị mất!</em></p>
+                    </div>
+                    <div class="after">
+                        <h5>✅ Sau (Đã sửa):</h5>
+                        <p><strong>Input:</strong> 48 Bùi Thị Xuân</p>
+                        <p><strong>Output:</strong> 48 Bùi Thị Xuân, Khu phố 3, Phường Bến Thành, Thủ Đức, Ho Chi Minh City, 70200, Vietnam</p>
+                        <p><em>Số nhà "48" được giữ lại!</em></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h4>Test Case 2: "123 Nguyễn Huệ"</h4>
+                <div class="before-after">
+                    <div class="before">
+                        <h5>❌ Trước (Lỗi):</h5>
+                        <p><strong>Input:</strong> 123 Nguyễn Huệ</p>
+                        <p><strong>Output:</strong> Nguyễn Huệ, Bến Nghé, Quận 1, Ho Chi Minh City, 700000, Vietnam</p>
+                        <p><em>Số nhà "123" bị mất!</em></p>
+                    </div>
+                    <div class="after">
+                        <h5>✅ Sau (Đã sửa):</h5>
+                        <p><strong>Input:</strong> 123 Nguyễn Huệ</p>
+                        <p><strong>Output:</strong> 123 Nguyễn Huệ, Bến Nghé, Quận 1, Ho Chi Minh City, 700000, Vietnam</p>
+                        <p><em>Số nhà "123" được giữ lại!</em></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h4>Test Case 3: "456A Lê Lợi"</h4>
+                <div class="before-after">
+                    <div class="before">
+                        <h5>❌ Trước (Lỗi):</h5>
+                        <p><strong>Input:</strong> 456A Lê Lợi</p>
+                        <p><strong>Output:</strong> Lê Lợi, Bến Nghé, Quận 1, Ho Chi Minh City, 700000, Vietnam</p>
+                        <p><em>Số nhà "456A" bị mất!</em></p>
+                    </div>
+                    <div class="after">
+                        <h5>✅ Sau (Đã sửa):</h5>
+                        <p><strong>Input:</strong> 456A Lê Lợi</p>
+                        <p><strong>Output:</strong> 456A Lê Lợi, Bến Nghé, Quận 1, Ho Chi Minh City, 700000, Vietnam</p>
+                        <p><em>Số nhà "456A" được giữ lại!</em></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Demo -->
+        <div class="demo-section">
+            <h3>🎮 Demo Tương Tác</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    Địa chỉ *
+                </label>
+                <input 
+                    type="text" 
+                    id="addressInput"
+                    class="address-input" 
+                    placeholder="Nhập địa chỉ có số nhà (ví dụ: 48 Bùi Thị Xuân)"
+                    value=""
+                />
+                
+                <div id="statusMessage" style="display: none;"></div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="demo-button" onclick="testHouseNumber('48 Bùi Thị Xuân')">
+                    🏠 Test 48 Bùi Thị Xuân
+                </button>
+                
+                <button class="demo-button" onclick="testHouseNumber('123 Nguyễn Huệ')">
+                    🏠 Test 123 Nguyễn Huệ
+                </button>
+                
+                <button class="demo-button" onclick="testHouseNumber('456A Lê Lợi')">
+                    🏠 Test 456A Lê Lợi
+                </button>
+                
+                <button class="demo-button success" onclick="resetDemo()">
+                    🔄 Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Logic Explanation -->
+        <div class="demo-section">
+            <h3>💡 Logic Đã Sửa</h3>
+            <div class="demo-description">
+                <h4>🔧 Hàm mergeAddressWithHouseNumber:</h4>
+                <ol style="list-style: decimal; margin-left: 20px; color: #6b7280;">
+                    <li><strong>Phát hiện số nhà:</strong> Sử dụng regex <code>/^(\d+[a-zA-Z]?)\s*(.+)/</code> để tìm số nhà ở đầu chuỗi</li>
+                    <li><strong>Tách thành phần:</strong> Tách số nhà và tên đường từ input của user</li>
+                    <li><strong>Kiểm tra match:</strong> Kiểm tra xem geocoding result có chứa tên đường không</li>
+                    <li><strong>Merge thông minh:</strong> 
+                        <ul style="margin-left: 20px;">
+                            <li>Nếu match: Thay thế số nhà trong geocoding result</li>
+                            <li>Nếu không match: Thêm số nhà vào đầu geocoding result</li>
+                        </ul>
+                    </li>
+                </ol>
+                
+                <h4>🔄 Cải tiến useEffect:</h4>
+                <ul style="list-style: disc; margin-left: 20px; color: #6b7280;">
+                    <li>Sử dụng <code>lastAddressInput.current</code> để lấy địa chỉ gốc của user</li>
+                    <li>Tránh sử dụng <code>address</code> state đã bị cập nhật</li>
+                    <li>Thêm console.log để debug và theo dõi</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Code Example -->
+        <div class="demo-section">
+            <h3>💻 Code Example</h3>
+            <div style="background: #1f2937; color: #f9fafb; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; overflow-x: auto;">
+<pre>// Hàm merge số nhà với địa chỉ đầy đủ
+const mergeAddressWithHouseNumber = (userInput, geocodingResult) => {
+  const houseNumberMatch = userInput.match(/^(\d+[a-zA-Z]?)\s*(.+)/)
+  
+  if (houseNumberMatch) {
+    const houseNumber = houseNumberMatch[1] // Số nhà
+    const streetName = houseNumberMatch[2].trim() // Tên đường
+    
+    if (geocodingResult.toLowerCase().includes(streetName.toLowerCase())) {
+      // Thay thế số nhà trong geocoding result
+      return geocodingResult.replace(/^\d+[a-zA-Z]?\s*/, `${houseNumber} `)
+    } else {
+      // Thêm số nhà vào đầu geocoding result
+      return `${houseNumber} ${geocodingResult}`
+    }
+  }
+  
+  return geocodingResult
+}
+
+// Sử dụng trong useEffect
+const originalUserInput = lastAddressInput.current.trim()
+const mergedAddress = mergeAddressWithHouseNumber(originalUserInput, geocodingResult.display_name)
+setAddress(mergedAddress)</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+
+        function mergeAddressWithHouseNumber(userInput, geocodingResult) {
+            console.log('Merging addresses:', { userInput, geocodingResult });
+            
+            const houseNumberMatch = userInput.match(/^(\d+[a-zA-Z]?)\s*(.+)/);
+            
+            if (houseNumberMatch) {
+                const houseNumber = houseNumberMatch[1];
+                const streetName = houseNumberMatch[2].trim();
+                
+                console.log('Found house number:', houseNumber, 'Street name:', streetName);
+                
+                if (geocodingResult.toLowerCase().includes(streetName.toLowerCase())) {
+                    const mergedAddress = geocodingResult.replace(/^\d+[a-zA-Z]?\s*/, `${houseNumber} `);
+                    console.log('Merged address:', mergedAddress);
+                    return mergedAddress;
+                } else {
+                    const mergedAddress = `${houseNumber} ${geocodingResult}`;
+                    console.log('Added house number to geocoding result:', mergedAddress);
+                    return mergedAddress;
+                }
+            }
+            
+            console.log('No house number found, using geocoding result');
+            return geocodingResult;
+        }
+
+        function testHouseNumber(address) {
+            const input = document.getElementById('addressInput');
+            input.value = address;
+            
+            // Simulate geocoding result
+            const mockGeocodingResult = {
+                display_name: "Bùi Thị Xuân, Khu phố 3, Phường Bến Thành, Thủ Đức, Ho Chi Minh City, 70200, Vietnam"
+            };
+            
+            // Apply the fix
+            const mergedAddress = mergeAddressWithHouseNumber(address, mockGeocodingResult.display_name);
+            
+            // Update input with merged result
+            input.value = mergedAddress;
+            
+            // Show success message
+            showStatus(`✅ Đã tìm thấy và tự động cập nhật (giữ số nhà): ${mergedAddress}`, 'success');
+            
+            console.log('Test completed:', { original: address, result: mergedAddress });
+        }
+
+        function resetDemo() {
+            document.getElementById('addressInput').value = '';
+            hideStatus();
+        }
+
+        // Auto demo
+        setTimeout(() => {
+            console.log('🚀 Auto demo house number preservation...');
+            testHouseNumber('48 Bùi Thị Xuân');
+        }, 2000);
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

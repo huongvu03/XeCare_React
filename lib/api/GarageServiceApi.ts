@@ -71,7 +71,7 @@ export const toggleGarageServiceStatus = (serviceId: number) =>
 
 // Lấy thống kê dịch vụ của garage
 export const getGarageServiceStats = (garageId: number) =>
-  axiosClient.get<GarageServiceStats>(`/apis/garage-services/garage/${garageId}/stats`)
+  axiosClient.get<GarageServiceStats>(`/apis/garage/management/services/stats`)
 
 // Lấy danh sách dịch vụ hệ thống (cho dropdown)
 export const getSystemServices = () =>

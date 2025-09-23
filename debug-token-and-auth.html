@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Token và Authentication</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .debug-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .debug-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .debug-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .debug-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .debug-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .debug-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .debug-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .debug-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .debug-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .debug-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+        .debug-warning {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fed7aa;
+        }
+        .token-display {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1 class="debug-title">🔍 Debug Token và Authentication</h1>
+        
+        <div class="debug-section">
+            <h3>🔑 Token Information</h3>
+            <button class="debug-button" onclick="checkToken()">Kiểm tra Token</button>
+            <button class="debug-button" onclick="decodeToken()">Decode Token</button>
+            <button class="debug-button" onclick="checkUserInfo()">Kiểm tra User Info</button>
+            <div id="tokenResults"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🧪 Test Authentication</h3>
+            <button class="debug-button" onclick="testSimpleAuth()">Test Simple Auth</button>
+            <button class="debug-button" onclick="testGarageServices()">Test Garage Services</button>
+            <button class="debug-button" onclick="testGarageStats()">Test Garage Stats</button>
+            <button class="debug-button" onclick="testSystemServices()">Test System Services</button>
+            <div id="authResults"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🔧 Debug Endpoints</h3>
+            <button class="debug-button" onclick="debugUser()">Debug User</button>
+            <button class="debug-button" onclick="debugGarage()">Debug Garage</button>
+            <button class="debug-button" onclick="testJson()">Test JSON</button>
+            <div id="debugResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        
+        function showResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `debug-result debug-${type}`;
+            resultDiv.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            container.appendChild(resultDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function checkToken() {
+            try {
+                const token = localStorage.getItem('token');
+                const user = localStorage.getItem('user');
+                
+                if (token) {
+                    showResult('tokenResults', `✅ Token found: ${token.substring(0, 50)}...`, 'success');
+                    showResult('tokenResults', `Token length: ${token.length} characters`, 'info');
+                } else {
+                    showResult('tokenResults', '❌ No token found in localStorage', 'error');
+                }
+                
+                if (user) {
+                    const userObj = JSON.parse(user);
+                    showResult('tokenResults', `✅ User found: ${userObj.name} (${userObj.email})`, 'success');
+                    showResult('tokenResults', `User roles: ${userObj.roles?.join(', ') || 'No roles'}`, 'info');
+                } else {
+                    showResult('tokenResults', '❌ No user found in localStorage', 'error');
+                }
+            } catch (error) {
+                showResult('tokenResults', `❌ Error checking token: ${error.message}`, 'error');
+            }
+        }
+        
+        function decodeToken() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showResult('tokenResults', '❌ No token to decode', 'error');
+                    return;
+                }
+                
+                // JWT token has 3 parts separated by dots
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    showResult('tokenResults', '❌ Invalid JWT token format', 'error');
+                    return;
+                }
+                
+                // Decode payload (second part)
+                const payload = JSON.parse(atob(parts[1]));
+                showResult('tokenResults', `✅ Token decoded successfully:`, 'success');
+                showResult('tokenResults', `Subject: ${payload.sub}`, 'info');
+                showResult('tokenResults', `Issued at: ${new Date(payload.iat * 1000).toLocaleString()}`, 'info');
+                showResult('tokenResults', `Expires at: ${new Date(payload.exp * 1000).toLocaleString()}`, 'info');
+                
+                // Check if token is expired
+                const now = Math.floor(Date.now() / 1000);
+                if (payload.exp < now) {
+                    showResult('tokenResults', '⚠️ Token is EXPIRED!', 'warning');
+                } else {
+                    showResult('tokenResults', '✅ Token is still valid', 'success');
+                }
+            } catch (error) {
+                showResult('tokenResults', `❌ Error decoding token: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkUserInfo() {
+            try {
+                const user = localStorage.getItem('user');
+                if (user) {
+                    const userObj = JSON.parse(user);
+                    showResult('tokenResults', `✅ User Info:`, 'success');
+                    showResult('tokenResults', `Name: ${userObj.name}`, 'info');
+                    showResult('tokenResults', `Email: ${userObj.email}`, 'info');
+                    showResult('tokenResults', `Roles: ${userObj.roles?.join(', ') || 'No roles'}`, 'info');
+                    showResult('tokenResults', `ID: ${userObj.id}`, 'info');
+                } else {
+                    showResult('tokenResults', '❌ No user info found', 'error');
+                }
+            } catch (error) {
+                showResult('tokenResults', `❌ Error checking user info: ${error.message}`, 'error');
+            }
+        }
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(API_BASE + url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : '',
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testSimpleAuth() {
+            showResult('authResults', 'Testing simple auth endpoint...', 'info');
+            const result = await makeRequest('/apis/garage-services/simple-test');
+            
+            if (result.success) {
+                showResult('authResults', `✅ Simple auth success: ${result.data}`, 'success');
+            } else {
+                showResult('authResults', `❌ Simple auth failed: ${result.error || result.data?.message || 'Unknown error'} (Status: ${result.status})`, 'error');
+            }
+        }
+        
+        async function testGarageServices() {
+            showResult('authResults', 'Testing garage services endpoint...', 'info');
+            const result = await makeRequest('/apis/garage/management/services');
+            
+            if (result.success) {
+                showResult('authResults', `✅ Garage services success: Found ${result.data.length} services`, 'success');
+            } else {
+                showResult('authResults', `❌ Garage services failed: ${result.error || result.data?.message || 'Unknown error'} (Status: ${result.status})`, 'error');
+            }
+        }
+        
+        async function testGarageStats() {
+            showResult('authResults', 'Testing garage stats endpoint...', 'info');
+            const result = await makeRequest('/apis/garage/management/services/stats');
+            
+            if (result.success) {
+                showResult('authResults', `✅ Garage stats success: ${JSON.stringify(result.data)}`, 'success');
+            } else {
+                showResult('authResults', `❌ Garage stats failed: ${result.error || result.data?.message || 'Unknown error'} (Status: ${result.status})`, 'error');
+            }
+        }
+        
+        async function testSystemServices() {
+            showResult('authResults', 'Testing system services endpoint...', 'info');
+            const result = await makeRequest('/apis/admin/services');
+            
+            if (result.success) {
+                showResult('authResults', `✅ System services success: Found ${result.data.length} services`, 'success');
+            } else {
+                showResult('authResults', `❌ System services failed: ${result.error || result.data?.message || 'Unknown error'} (Status: ${result.status})`, 'error');
+            }
+        }
+        
+        async function debugUser() {
+            showResult('debugResults', 'Testing debug user endpoint...', 'info');
+            const result = await makeRequest('/apis/garage-services/debug/user');
+            
+            if (result.success) {
+                showResult('debugResults', `✅ Debug user success: ${JSON.stringify(result.data, null, 2)}`, 'success');
+            } else {
+                showResult('debugResults', `❌ Debug user failed: ${result.error || result.data?.message || 'Unknown error'} (Status: ${result.status})`, 'error');
+            }
+        }
+        
+        async function debugGarage() {
+            showResult('debugResults', 'Testing debug garage endpoint...', 'info');
+            const result = await makeRequest('/apis/garage-services/debug/garage/11');
+            
+            if (result.success) {
+                showResult('debugResults', `✅ Debug garage success: ${JSON.stringify(result.data, null, 2)}`, 'success');
+            } else {
+                showResult('debugResults', `❌ Debug garage failed: ${result.error || result.data?.message || 'Unknown error'} (Status: ${result.status})`, 'error');
+            }
+        }
+        
+        async function testJson() {
+            showResult('debugResults', 'Testing JSON endpoint...', 'info');
+            const result = await makeRequest('/apis/garage-services/test-json');
+            
+            if (result.success) {
+                showResult('debugResults', `✅ JSON test success: ${JSON.stringify(result.data, null, 2)}`, 'success');
+            } else {
+                showResult('debugResults', `❌ JSON test failed: ${result.error || result.data?.message || 'Unknown error'} (Status: ${result.status})`, 'error');
+            }
+        }
+        
+        // Auto check on load
+        setTimeout(() => {
+            checkToken();
+            decodeToken();
+            checkUserInfo();
+        }, 1000);
+    </script>
+</body>
+</html>

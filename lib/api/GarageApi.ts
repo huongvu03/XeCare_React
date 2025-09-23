@@ -38,6 +38,9 @@ export interface Garage {
   vehicleTypes?: GarageVehicleType[]
   ownerId: number
   operatingHours?: OperatingHours
+  // Thông tin về loại cập nhật (cho frontend)
+  updateType?: "REQUIRES_APPROVAL" | "IMMEDIATE_UPDATE"
+  updateMessage?: string
 }
 
 export interface GarageService {
@@ -132,6 +135,8 @@ export const updateGarage = (id: number, data: {
   latitude?: number
   longitude?: number
   operatingHours?: OperatingHours
+  serviceIds?: number[]
+  vehicleTypeIds?: number[]
 }) =>
   axiosClient.put<Garage>(`/apis/garage/${id}`, data)
 

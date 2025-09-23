@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Logic Phê Duyệt Garage Mới</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .demo-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .demo-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .demo-button.success:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        .demo-button.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .demo-button.warning:hover {
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .demo-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .demo-description {
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .test-case {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-case h4 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .before, .after {
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .before {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+        }
+        .after {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+        .before h5, .after h5 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .before h5 {
+            color: #dc2626;
+        }
+        .after h5 {
+            color: #059669;
+        }
+        .step-flow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        .step-description {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-immediate {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .status-approval {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fed7aa;
+        }
+        .form-section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .form-section h4 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checkbox-item:hover {
+            background: #f9fafb;
+        }
+        .checkbox-item.selected {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+        .result-message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .result-immediate {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .result-approval {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fed7aa;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🔧 Demo Logic Phê Duyệt Garage Mới</h1>
+        
+        <div class="demo-description">
+            Demo logic mới để phân biệt các loại thay đổi garage:
+            <strong>Không cần phê duyệt:</strong> Dịch vụ, loại xe, giờ làm việc
+            <strong>Cần phê duyệt:</strong> Thông tin garage, hình ảnh
+        </div>
+
+        <!-- Logic Overview -->
+        <div class="demo-section">
+            <h3>🎯 Logic Mới</h3>
+            
+            <div class="step-flow">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">Phân tích thay đổi</div>
+                    <div class="step-description">Backend phân tích loại thay đổi từ user</div>
+                </div>
+            </div>
+            
+            <div class="step-flow">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">Quyết định phê duyệt</div>
+                    <div class="step-description">
+                        <span class="status-badge status-immediate">Cập nhật ngay</span> hoặc 
+                        <span class="status-badge status-approval">Cần phê duyệt</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step-flow">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">Trả về response</div>
+                    <div class="step-description">Frontend nhận thông tin về loại cập nhật</div>
+                </div>
+            </div>
+            
+            <div class="step-flow">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">Hiển thị thông báo</div>
+                    <div class="step-description">User nhận thông báo phù hợp với loại cập nhật</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Cases -->
+        <div class="demo-section">
+            <h3>🧪 Test Cases</h3>
+            
+            <div class="test-case">
+                <h4>Test Case 1: Chỉ cập nhật dịch vụ</h4>
+                <div class="before-after">
+                    <div class="before">
+                        <h5>❌ Trước (Lỗi):</h5>
+                        <p><strong>Thay đổi:</strong> Thêm "Sửa phanh"</p>
+                        <p><strong>Kết quả:</strong> Gửi đơn phê duyệt → Admin không thấy nút</p>
+                        <p><em>Không cần phê duyệt nhưng vẫn gửi đơn!</em></p>
+                    </div>
+                    <div class="after">
+                        <h5>✅ Sau (Đã sửa):</h5>
+                        <p><strong>Thay đổi:</strong> Thêm "Sửa phanh"</p>
+                        <p><strong>Kết quả:</strong> Cập nhật ngay lập tức</p>
+                        <p><em>Không gửi đơn phê duyệt!</em></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h4>Test Case 2: Cập nhật thông tin garage + dịch vụ</h4>
+                <div class="before-after">
+                    <div class="before">
+                        <h5>❌ Trước (Lỗi):</h5>
+                        <p><strong>Thay đổi:</strong> Tên garage + Thêm dịch vụ</p>
+                        <p><strong>Kết quả:</strong> Gửi đơn phê duyệt → Admin thấy nút</p>
+                        <p><em>Đúng logic, cần phê duyệt</em></p>
+                    </div>
+                    <div class="after">
+                        <h5>✅ Sau (Giữ nguyên):</h5>
+                        <p><strong>Thay đổi:</strong> Tên garage + Thêm dịch vụ</p>
+                        <p><strong>Kết quả:</strong> Gửi đơn phê duyệt → Admin thấy nút</p>
+                        <p><em>Vẫn đúng logic, cần phê duyệt</em></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-case">
+                <h4>Test Case 3: Chỉ cập nhật loại xe</h4>
+                <div class="before-after">
+                    <div class="before">
+                        <h5>❌ Trước (Lỗi):</h5>
+                        <p><strong>Thay đổi:</strong> Thêm "Xe tải"</p>
+                        <p><strong>Kết quả:</strong> Gửi đơn phê duyệt → Admin không thấy nút</p>
+                        <p><em>Không cần phê duyệt nhưng vẫn gửi đơn!</em></p>
+                    </div>
+                    <div class="after">
+                        <h5>✅ Sau (Đã sửa):</h5>
+                        <p><strong>Thay đổi:</strong> Thêm "Xe tải"</p>
+                        <p><strong>Kết quả:</strong> Cập nhật ngay lập tức</p>
+                        <p><em>Không gửi đơn phê duyệt!</em></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Demo -->
+        <div class="demo-section">
+            <h3>🎮 Demo Tương Tác</h3>
+            
+            <div class="form-section">
+                <h4>Thông tin Garage</h4>
+                <div class="form-group">
+                    <label>Tên garage:</label>
+                    <input type="text" id="garageName" value="Garage Thành Công" />
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ:</label>
+                    <input type="text" id="garageAddress" value="123 Lê Lợi, Q1, TP.HCM" />
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại:</label>
+                    <input type="text" id="garagePhone" value="0909123456" />
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4>Dịch vụ</h4>
+                <div class="checkbox-group">
+                    <div class="checkbox-item selected">
+                        <input type="checkbox" id="service1" checked />
+                        <label for="service1">Thay nhớt</label>
+                    </div>
+                    <div class="checkbox-item selected">
+                        <input type="checkbox" id="service2" checked />
+                        <label for="service2">Sửa phanh</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="service3" />
+                        <label for="service3">Bảo dưỡng</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="service4" />
+                        <label for="service4">Sửa động cơ</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4>Loại xe</h4>
+                <div class="checkbox-group">
+                    <div class="checkbox-item selected">
+                        <input type="checkbox" id="vehicle1" checked />
+                        <label for="vehicle1">Xe máy</label>
+                    </div>
+                    <div class="checkbox-item selected">
+                        <input type="checkbox" id="vehicle2" checked />
+                        <label for="vehicle2">Ô tô</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="vehicle3" />
+                        <label for="vehicle3">Xe tải</label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="demo-button" onclick="testUpdate()">
+                    🧪 Test Cập Nhật
+                </button>
+                <button class="demo-button warning" onclick="resetForm()">
+                    🔄 Reset
+                </button>
+            </div>
+
+            <div id="resultMessage" class="result-message" style="display: none;"></div>
+        </div>
+
+        <!-- Backend Logic -->
+        <div class="demo-section">
+            <h3>💻 Backend Logic</h3>
+            <div style="background: #1f2937; color: #f9fafb; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; overflow-x: auto;">
+<pre>// Phân tích loại thay đổi
+boolean basicInfoChanged = (nameChanged || phoneChanged || emailChanged || descriptionChanged);
+boolean businessInfoChanged = (addressChanged || imageChanged);
+boolean servicesChanged = (serviceIdsChanged);
+boolean vehicleTypesChanged = (vehicleTypeIdsChanged);
+boolean operatingHoursChanged = (operatingHoursChanged);
+
+// Quyết định có cần phê duyệt không
+if (basicInfoChanged || businessInfoChanged) {
+    needsApproval = true;
+}
+
+// Nếu chỉ thay đổi dịch vụ/loại xe/giờ làm việc
+if ((servicesChanged || vehicleTypesChanged || operatingHoursChanged) && 
+    !basicInfoChanged && !businessInfoChanged) {
+    needsApproval = false;
+}
+
+// Trả về response
+if (needsApproval) {
+    response.setUpdateType("REQUIRES_APPROVAL");
+    response.setUpdateMessage("Thay đổi đã được gửi chờ admin phê duyệt");
+} else {
+    response.setUpdateType("IMMEDIATE_UPDATE");
+    response.setUpdateMessage("Cập nhật thành công! Thay đổi đã được áp dụng ngay lập tức");
+}</pre>
+            </div>
+        </div>
+
+        <!-- Frontend Logic -->
+        <div class="demo-section">
+            <h3>🎨 Frontend Logic</h3>
+            <div style="background: #1f2937; color: #f9fafb; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; overflow-x: auto;">
+<pre>// Xử lý response từ backend
+const response = await updateGarage(garage.id, updateData);
+
+if (response.updateType === "IMMEDIATE_UPDATE") {
+    setSuccess("✅ Cập nhật thành công! Thay đổi đã được áp dụng ngay lập tức.");
+} else if (response.updateType === "REQUIRES_APPROVAL") {
+    setSuccess("⏳ Đã gửi yêu cầu cập nhật. Vui lòng chờ admin phê duyệt.");
+} else {
+    setSuccess("Cập nhật thông tin garage thành công!");
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testUpdate() {
+            const garageName = document.getElementById('garageName').value;
+            const garageAddress = document.getElementById('garageAddress').value;
+            const garagePhone = document.getElementById('garagePhone').value;
+            
+            const services = [];
+            if (document.getElementById('service1').checked) services.push('Thay nhớt');
+            if (document.getElementById('service2').checked) services.push('Sửa phanh');
+            if (document.getElementById('service3').checked) services.push('Bảo dưỡng');
+            if (document.getElementById('service4').checked) services.push('Sửa động cơ');
+            
+            const vehicles = [];
+            if (document.getElementById('vehicle1').checked) vehicles.push('Xe máy');
+            if (document.getElementById('vehicle2').checked) vehicles.push('Ô tô');
+            if (document.getElementById('vehicle3').checked) vehicles.push('Xe tải');
+            
+            // Simulate backend logic
+            const originalGarageName = "Garage Thành Công";
+            const originalAddress = "123 Lê Lợi, Q1, TP.HCM";
+            const originalPhone = "0909123456";
+            const originalServices = ["Thay nhớt", "Sửa phanh"];
+            const originalVehicles = ["Xe máy", "Ô tô"];
+            
+            // Check what changed
+            const basicInfoChanged = (garageName !== originalGarageName) || 
+                                   (garageAddress !== originalAddress) || 
+                                   (garagePhone !== originalPhone);
+            
+            const servicesChanged = JSON.stringify(services.sort()) !== JSON.stringify(originalServices.sort());
+            const vehiclesChanged = JSON.stringify(vehicles.sort()) !== JSON.stringify(originalVehicles.sort());
+            
+            // Determine approval needed
+            let needsApproval = false;
+            let updateType = "";
+            let message = "";
+            
+            if (basicInfoChanged) {
+                needsApproval = true;
+            }
+            
+            if ((servicesChanged || vehiclesChanged) && !basicInfoChanged) {
+                needsApproval = false;
+            }
+            
+            if (needsApproval) {
+                updateType = "REQUIRES_APPROVAL";
+                message = "⏳ Đã gửi yêu cầu cập nhật. Vui lòng chờ admin phê duyệt.";
+            } else {
+                updateType = "IMMEDIATE_UPDATE";
+                message = "✅ Cập nhật thành công! Thay đổi đã được áp dụng ngay lập tức.";
+            }
+            
+            // Show result
+            const resultDiv = document.getElementById('resultMessage');
+            resultDiv.className = `result-message ${needsApproval ? 'result-approval' : 'result-immediate'}`;
+            resultDiv.innerHTML = `
+                <strong>Kết quả:</strong> ${message}<br>
+                <strong>Loại cập nhật:</strong> ${updateType}<br>
+                <strong>Thay đổi:</strong> 
+                ${basicInfoChanged ? 'Thông tin garage, ' : ''}
+                ${servicesChanged ? 'Dịch vụ, ' : ''}
+                ${vehiclesChanged ? 'Loại xe, ' : ''}
+                ${!basicInfoChanged && !servicesChanged && !vehiclesChanged ? 'Không có thay đổi' : ''}
+            `;
+            resultDiv.style.display = 'block';
+            
+            console.log('Test Update Result:', {
+                basicInfoChanged,
+                servicesChanged,
+                vehiclesChanged,
+                needsApproval,
+                updateType,
+                message
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('garageName').value = "Garage Thành Công";
+            document.getElementById('garageAddress').value = "123 Lê Lợi, Q1, TP.HCM";
+            document.getElementById('garagePhone').value = "0909123456";
+            
+            document.getElementById('service1').checked = true;
+            document.getElementById('service2').checked = true;
+            document.getElementById('service3').checked = false;
+            document.getElementById('service4').checked = false;
+            
+            document.getElementById('vehicle1').checked = true;
+            document.getElementById('vehicle2').checked = true;
+            document.getElementById('vehicle3').checked = false;
+            
+            document.getElementById('resultMessage').style.display = 'none';
+        }
+
+        // Auto demo
+        setTimeout(() => {
+            console.log('🚀 Auto demo garage approval logic...');
+            testUpdate();
+        }, 2000);
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

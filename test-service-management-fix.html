@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Service Management Fix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .test-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .test-button.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .test-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .test-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .test-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+        .endpoint-list {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .endpoint-item {
+            margin: 8px 0;
+            padding: 8px;
+            background: #374151;
+            border-radius: 4px;
+        }
+        .endpoint-method {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .endpoint-path {
+            color: #fbbf24;
+        }
+        .endpoint-desc {
+            color: #d1d5db;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🔧 Test Service Management Fix</h1>
+        
+        <div class="test-section">
+            <h3>🎯 Vấn đề đã sửa</h3>
+            <div class="test-info">
+                <strong>Lỗi 500:</strong> Trang quản lý dịch vụ không thể tải được<br>
+                <strong>Nguyên nhân:</strong> GarageManagementServiceImpl.getGarageByOwner() sử dụng findByOwner() thay vì findAllByOwner()<br>
+                <strong>Giải pháp:</strong> Sửa logic để xử lý trường hợp user có nhiều garage
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Backend Changes</h3>
+            <div class="endpoint-list">
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span> <span class="endpoint-path">/apis/garage/management/services</span>
+                    <div class="endpoint-desc">Lấy danh sách dịch vụ của garage</div>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span> <span class="endpoint-path">/apis/garage/management/services/stats</span>
+                    <div class="endpoint-desc">Lấy thống kê dịch vụ của garage</div>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">POST</span> <span class="endpoint-path">/apis/garage/management/services</span>
+                    <div class="endpoint-desc">Thêm dịch vụ mới cho garage</div>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">PUT</span> <span class="endpoint-path">/apis/garage/management/services/{id}</span>
+                    <div class="endpoint-desc">Cập nhật dịch vụ của garage</div>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span> <span class="endpoint-path">/apis/admin/services</span>
+                    <div class="endpoint-desc">Lấy danh sách dịch vụ hệ thống</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Cases</h3>
+            <div style="text-align: center;">
+                <button class="test-button" onclick="testGetServices()">Test Get Services</button>
+                <button class="test-button" onclick="testGetStats()">Test Get Stats</button>
+                <button class="test-button" onclick="testGetSystemServices()">Test System Services</button>
+                <button class="test-button" onclick="testDebugUser()">Debug User</button>
+                <button class="test-button" onclick="testDebugGarage()">Debug Garage</button>
+            </div>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Logic Fix Details</h3>
+            <div class="endpoint-list">
+<pre>// Trước (Lỗi):
+private Garage getGarageByOwner(User garageOwner) {
+    return garageRepository.findByOwner(garageOwner)
+            .orElseThrow(() -> new EntityNotFoundException("Bạn chưa có garage"));
+}
+
+// Sau (Đã sửa):
+private Garage getGarageByOwner(User garageOwner) {
+    List&lt;Garage&gt; garages = garageRepository.findAllByOwner(garageOwner);
+    
+    if (garages.isEmpty()) {
+        throw new EntityNotFoundException("Bạn chưa có garage");
+    }
+    
+    // Ưu tiên garage ACTIVE, sau đó là garage đầu tiên
+    Garage selectedGarage = garages.stream()
+            .filter(g -&gt; g.getStatus() == GarageStatus.ACTIVE)
+            .findFirst()
+            .orElse(garages.get(0));
+    
+    return selectedGarage;
+}</pre>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎨 Frontend Changes</h3>
+            <div class="test-info">
+                <strong>GarageServiceApi.ts:</strong> Cập nhật endpoint stats từ `/apis/garage-services/garage/{garageId}/stats` thành `/apis/garage/management/services/stats`<br>
+                <strong>Service Management Page:</strong> Sử dụng đúng API endpoints và xử lý response mới
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(API_BASE + url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : '',
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        function showResult(message, isSuccess = true) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${isSuccess ? 'test-success' : 'test-error'}`;
+            resultDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        async function testGetServices() {
+            showResult('Testing GET /apis/garage/management/services...', true);
+            const result = await makeRequest('/apis/garage/management/services');
+            
+            if (result.success) {
+                showResult(`✅ Get Services Success: ${JSON.stringify(result.data).substring(0, 200)}...`, true);
+            } else {
+                showResult(`❌ Get Services Failed: ${result.error || result.data?.message || 'Unknown error'}`, false);
+            }
+        }
+        
+        async function testGetStats() {
+            showResult('Testing GET /apis/garage/management/services/stats...', true);
+            const result = await makeRequest('/apis/garage/management/services/stats');
+            
+            if (result.success) {
+                showResult(`✅ Get Stats Success: ${JSON.stringify(result.data)}`, true);
+            } else {
+                showResult(`❌ Get Stats Failed: ${result.error || result.data?.message || 'Unknown error'}`, false);
+            }
+        }
+        
+        async function testGetSystemServices() {
+            showResult('Testing GET /apis/admin/services...', true);
+            const result = await makeRequest('/apis/admin/services');
+            
+            if (result.success) {
+                showResult(`✅ Get System Services Success: Found ${result.data.length} services`, true);
+            } else {
+                showResult(`❌ Get System Services Failed: ${result.error || result.data?.message || 'Unknown error'}`, false);
+            }
+        }
+        
+        async function testDebugUser() {
+            showResult('Testing GET /apis/garage-services/debug/user...', true);
+            const result = await makeRequest('/apis/garage-services/debug/user');
+            
+            if (result.success) {
+                showResult(`✅ Debug User Success: ${JSON.stringify(result.data)}`, true);
+            } else {
+                showResult(`❌ Debug User Failed: ${result.error || result.data?.message || 'Unknown error'}`, false);
+            }
+        }
+        
+        async function testDebugGarage() {
+            showResult('Testing GET /apis/garage-services/debug/garage/11...', true);
+            const result = await makeRequest('/apis/garage-services/debug/garage/11');
+            
+            if (result.success) {
+                showResult(`✅ Debug Garage Success: ${JSON.stringify(result.data)}`, true);
+            } else {
+                showResult(`❌ Debug Garage Failed: ${result.error || result.data?.message || 'Unknown error'}`, false);
+            }
+        }
+        
+        // Auto test on load
+        setTimeout(() => {
+            showResult('🚀 Starting automatic tests...', true);
+            testGetServices();
+            setTimeout(() => testGetStats(), 1000);
+            setTimeout(() => testGetSystemServices(), 2000);
+            setTimeout(() => testDebugUser(), 3000);
+            setTimeout(() => testDebugGarage(), 4000);
+        }, 1000);
+    </script>
+</body>
+</html>
