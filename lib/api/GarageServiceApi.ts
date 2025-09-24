@@ -47,7 +47,7 @@ export interface GarageServiceStats {
 
 // Lấy danh sách dịch vụ của garage
 export const getGarageServices = (garageId: number) =>
-  axiosClient.get<GarageService[]>(`/apis/garage/management/services`)
+  axiosClient.get<GarageService[]>(`/apis/garage/management/services/${garageId}`)
 
 // Lấy chi tiết dịch vụ
 export const getGarageServiceById = (serviceId: number) =>
@@ -71,7 +71,7 @@ export const toggleGarageServiceStatus = (serviceId: number) =>
 
 // Lấy thống kê dịch vụ của garage
 export const getGarageServiceStats = (garageId: number) =>
-  axiosClient.get<GarageServiceStats>(`/apis/garage/management/services/stats`)
+  axiosClient.get<GarageServiceStats>(`/apis/garage/management/services/${garageId}/stats`)
 
 // Lấy danh sách dịch vụ hệ thống (cho dropdown)
 export const getSystemServices = () =>
