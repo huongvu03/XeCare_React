@@ -80,23 +80,52 @@ export default function GarageEmergencyPage() {
     try {
       setLoading(true)
       setError(null)
-      console.log('🚀 Loading ALL emergency requests from database...')
+      console.log('🚀 Loading garage-specific emergency requests from database...')
       
-      // Try to get real data from backend first
-      const response = await EmergencyApi.getAllRequests()
+      // Check if user has token
+      const token = localStorage.getItem('token')
+      console.log('🔑 Token in localStorage:', token ? 'EXISTS' : 'NOT FOUND')
+      console.log('🔑 Token value:', token ? token.substring(0, 20) + '...' : 'null')
+      
+      // Try to get garage-specific data from backend first
+      const response = await EmergencyApi.getGarageRequests()
       console.log('✅ API Response:', response)
+      console.log('🔍 Response data type:', typeof response.data)
+      console.log('🔍 Response data is array:', Array.isArray(response.data))
+      console.log('🔍 Response data value:', response.data)
       
       if (response.data) {
-        // Always use real data from API, even if empty
-        setRequests(response.data)
-        console.log(`📊 Loaded ${response.data.length} emergency requests from database`)
-        console.log('📋 Emergency requests data:', response.data)
+        // Handle both array and string responses (temporary fix until backend is restarted)
+        let dataArray = []
+        
+        if (Array.isArray(response.data)) {
+          // If it's already an array, use it directly
+          dataArray = response.data
+          console.log('✅ Response is already an array')
+        } else if (typeof response.data === 'string') {
+          // If it's a string, try to parse it as JSON
+          try {
+            const parsedData = JSON.parse(response.data)
+            dataArray = Array.isArray(parsedData) ? parsedData : []
+            console.log('✅ Successfully parsed JSON string to array')
+          } catch (parseError) {
+            console.error('❌ Failed to parse JSON string:', parseError)
+            dataArray = []
+          }
+        } else {
+          // For other types, default to empty array
+          dataArray = []
+        }
+        
+        setRequests(dataArray)
+        console.log(`📊 Loaded ${dataArray.length} garage-specific emergency requests from database`)
+        console.log('📋 Garage emergency requests data:', dataArray)
         
         toast({
           title: "Thành công", 
-          description: response.data.length > 0 
-            ? `Đã tải ${response.data.length} yêu cầu cứu hộ từ database`
-            : "Đã kết nối database - chưa có yêu cầu nào",
+          description: dataArray.length > 0 
+            ? `Đã tải ${dataArray.length} yêu cầu cứu hộ của garage từ database`
+            : "Đã kết nối database - chưa có yêu cầu cứu hộ nào cho garage này",
         })
         
         // Successfully connected to API, exit function (even if no data)
@@ -159,7 +188,7 @@ export default function GarageEmergencyPage() {
   }, [user, isGarageOwner, router])
 
   // Filter requests based on active tab and filters
-  const filteredRequests = requests.filter(request => {
+  const filteredRequests = Array.isArray(requests) ? requests.filter(request => {
     // Status filter
     if (statusFilter !== 'all' && request.status !== statusFilter) {
       return false
@@ -177,7 +206,7 @@ export default function GarageEmergencyPage() {
     }
     
     return true
-  })
+  }) : []
 
   // Get status badge variant
   const getStatusBadge = (status: string) => {
@@ -494,12 +523,12 @@ export default function GarageEmergencyPage() {
 
   // Calculate stats
   const stats = {
-    total: requests.length,
-    pending: requests.filter(r => r.status === 'PENDING').length,
-    quoted: requests.filter(r => r.status === 'QUOTED').length,
-    accepted: requests.filter(r => r.status === 'ACCEPTED').length,
-    completed: requests.filter(r => r.status === 'COMPLETED').length,
-    cancelled: requests.filter(r => r.status === 'CANCELLED').length,
+    total: Array.isArray(requests) ? requests.length : 0,
+    pending: Array.isArray(requests) ? requests.filter(r => r.status === 'PENDING').length : 0,
+    quoted: Array.isArray(requests) ? requests.filter(r => r.status === 'QUOTED').length : 0,
+    accepted: Array.isArray(requests) ? requests.filter(r => r.status === 'ACCEPTED').length : 0,
+    completed: Array.isArray(requests) ? requests.filter(r => r.status === 'COMPLETED').length : 0,
+    cancelled: Array.isArray(requests) ? requests.filter(r => r.status === 'CANCELLED').length : 0,
   }
 
   // Show loading while checking permissions
