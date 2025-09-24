@@ -63,6 +63,16 @@ class EmergencyApi {
     return axiosClient.get<string>('/apis/emergency/health');
   }
 
+  // Test authentication endpoint
+  testAuth() {
+    return axiosClient.get<any>('/apis/emergency/current-user');
+  }
+
+  // Test security endpoint
+  testSecurity() {
+    return axiosClient.get<any>('/apis/emergency/test-security');
+  }
+
   // Test endpoint
   test() {
     return axiosClient.get<any>('/apis/emergency/test');
@@ -210,27 +220,47 @@ class EmergencyApi {
   // Lấy chi tiết yêu cầu cứu hộ
   async getRequestById(requestId: number) {
     try {
-      // Strategy: Get all requests and find the specific one (no auth required)
-      console.log('📡 [EmergencyApi] Getting request details via all-requests for ID:', requestId);
-      const allRequestsResponse = await this.getAllRequests();
-      
-      if (allRequestsResponse.data && Array.isArray(allRequestsResponse.data)) {
-        const foundRequest = allRequestsResponse.data.find(req => req.id === requestId);
-        
-        if (foundRequest) {
-          console.log('✅ Found request in all-requests:', foundRequest.id);
-          return { data: foundRequest };
-        } else {
-          console.log('❌ Request not found in all-requests for ID:', requestId);
-          throw new Error('Request not found');
-        }
-      } else {
-        throw new Error('No data received from all-requests');
-      }
+      // Use the secure endpoint that requires authentication
+      console.log('📡 [EmergencyApi] Getting request details via secure endpoint for ID:', requestId);
+      return axiosClient.get<EmergencyRequest>(`/apis/emergency/request-detail/${requestId}`);
     } catch (error) {
-      // Fallback to original endpoint (requires auth) 
-      console.log('📡 [EmergencyApi] Fallback to auth endpoint for ID:', requestId);
-      return axiosClient.get<EmergencyRequest>(`/apis/emergency/requests/${requestId}`);
+      console.log('❌ [EmergencyApi] Error getting request by ID:', error);
+      console.log('❌ [EmergencyApi] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      
+      // If the secure endpoint fails, try the alternative secure endpoint
+      try {
+        console.log('📡 [EmergencyApi] Fallback to alternative secure endpoint for ID:', requestId);
+        return axiosClient.get<EmergencyRequest>(`/apis/emergency/requests/${requestId}`);
+      } catch (fallbackError) {
+        console.log('❌ [EmergencyApi] Both secure endpoints failed:', fallbackError);
+        
+        // Final fallback: try to get from all-requests (less secure but works)
+        try {
+          console.log('📡 [EmergencyApi] Final fallback: getting from all-requests for ID:', requestId);
+          const allRequestsResponse = await this.getAllRequests();
+          
+          if (allRequestsResponse.data && Array.isArray(allRequestsResponse.data)) {
+            const foundRequest = allRequestsResponse.data.find(req => req.id === requestId);
+            
+            if (foundRequest) {
+              console.log('✅ [EmergencyApi] Found request in all-requests fallback:', foundRequest.id);
+              return { data: foundRequest };
+            } else {
+              console.log('❌ [EmergencyApi] Request not found in all-requests for ID:', requestId);
+              throw new Error('Request not found');
+            }
+          } else {
+            throw new Error('No data received from all-requests');
+          }
+        } catch (finalError) {
+          console.log('❌ [EmergencyApi] All methods failed:', finalError);
+          throw finalError;
+        }
+      }
     }
   }
 }

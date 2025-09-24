@@ -161,8 +161,8 @@ export default function UnifiedDashboard() {
         // If user not in context, fetch from API
         if (!currentUserProfile) {
           const response = await getUserProfile()
-          currentUserProfile = response.data
-          updateUser(response.data)
+          currentUserProfile = response.data || null
+          updateUser(response.data || null)
         }
         
         setUserProfile(currentUserProfile)
@@ -194,7 +194,7 @@ export default function UnifiedDashboard() {
           size: 5
         })
         //console.log("✅ Dashboard: Appointments loaded:", appointmentsResponse.data.content.length)
-        setRecentAppointments(appointmentsResponse.data.content)
+        setRecentAppointments(Array.isArray(appointmentsResponse.data.content) ? appointmentsResponse.data.content : [])
       } catch (appointmentErr) {
         console.error("❌ Dashboard: Error loading appointments:", appointmentErr)
         setRecentAppointments([])
@@ -219,8 +219,8 @@ export default function UnifiedDashboard() {
       try {
         setFavoritesLoading(true)
         const favoritesResponse = await getMyFavorites()
-        console.log("✅ Dashboard: Favorite garages loaded:", favoritesResponse.data.length)
-        setFavoriteGarages(favoritesResponse.data)
+        console.log("✅ Dashboard: Favorite garages loaded:", Array.isArray(favoritesResponse.data) ? favoritesResponse.data.length : 0)
+        setFavoriteGarages(Array.isArray(favoritesResponse.data) ? favoritesResponse.data : [])
       } catch (favoriteErr) {
         console.error("❌ Dashboard: Error loading favorite garages:", favoriteErr)
         setFavoriteGarages([])
@@ -245,19 +245,61 @@ export default function UnifiedDashboard() {
       try {
         const emergencyResponse = await EmergencyApi.getMyRequests()
         console.log("✅ Dashboard: Emergency requests loaded:", emergencyResponse.data?.length || 0)
+        console.log("📊 Dashboard: Emergency response data:", emergencyResponse.data)
         
         // Get the latest (most recent) emergency request
-        if (emergencyResponse.data && emergencyResponse.data.length > 0) {
+        if (emergencyResponse.data && Array.isArray(emergencyResponse.data) && emergencyResponse.data.length > 0) {
           const latest = emergencyResponse.data.sort((a, b) => 
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )[0]
           setLatestEmergencyRequest(latest)
-          console.log("✅ Dashboard: Latest emergency request:", latest.id)
+          console.log("✅ Dashboard: Latest emergency request set:", {
+            id: latest.id,
+            description: latest.description,
+            status: latest.status,
+            createdAt: latest.createdAt
+          })
         } else {
-          setLatestEmergencyRequest(null)
+          console.log("⚠️ Dashboard: No emergency requests or data is not array:", emergencyResponse.data)
+          
+          // Try fallback: get from all requests and filter by user
+          try {
+            console.log("🔄 Dashboard: Trying fallback - getting all requests...")
+            const allRequestsResponse = await EmergencyApi.getAllRequests()
+            console.log("📊 Dashboard: All requests response:", allRequestsResponse.data?.length || 0)
+            
+            if (allRequestsResponse.data && Array.isArray(allRequestsResponse.data)) {
+              // Filter requests by current user
+              const userRequests = allRequestsResponse.data.filter(req => 
+                req.user && req.user.id === user.id
+              )
+              console.log("👤 Dashboard: User-specific requests found:", userRequests.length)
+              
+              if (userRequests.length > 0) {
+                const latest = userRequests.sort((a, b) => 
+                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                )[0]
+                setLatestEmergencyRequest(latest)
+                console.log("✅ Dashboard: Latest emergency request from fallback:", latest.id)
+              } else {
+                console.log("⚠️ Dashboard: No emergency requests found for user")
+                setLatestEmergencyRequest(null)
+              }
+            } else {
+              setLatestEmergencyRequest(null)
+            }
+          } catch (fallbackErr) {
+            console.error("❌ Dashboard: Fallback also failed:", fallbackErr)
+            setLatestEmergencyRequest(null)
+          }
         }
       } catch (emergencyErr) {
         console.error("❌ Dashboard: Error loading emergency requests:", emergencyErr)
+        console.error("❌ Dashboard: Error details:", {
+          message: emergencyErr.message,
+          status: emergencyErr.response?.status,
+          data: emergencyErr.response?.data
+        })
         setLatestEmergencyRequest(null)
       }
     }
@@ -273,7 +315,7 @@ export default function UnifiedDashboard() {
         garages.map(async (garage) => {
           try {
             const response = await getPendingAppointmentsCount(garage.id)
-            counts[garage.id] = response.data.pendingCount
+            counts[garage.id] = response.data?.pendingCount || 0
           } catch (err) {
             console.error(`Error loading pending count for garage ${garage.id}:`, err)
             counts[garage.id] = 0
@@ -296,16 +338,17 @@ export default function UnifiedDashboard() {
   // Load my garages if user has garages - only once when user changes
   useEffect(() => {
     const loadMyGarages = async () => {
-      if (user && user.garages && user.garages.length > 0) {
+      if (user && user.garages && Array.isArray(user.garages) && user.garages.length > 0) {
         try {
           setMyGaragesLoading(true)
           setMyGaragesError("")
           const response = await getGaragesByOwner()
-          setMyGarages(response.data)
+          const garagesData = Array.isArray(response.data) ? response.data : []
+          setMyGarages(garagesData)
           
           // Load pending counts for each garage
-          if (response.data.length > 0) {
-            loadGaragePendingCounts(response.data)
+          if (garagesData.length > 0) {
+            loadGaragePendingCounts(garagesData)
           }
         } catch (err: any) {
           console.error("Error loading my garages:", err)
@@ -395,7 +438,7 @@ export default function UnifiedDashboard() {
             <Car className="h-4 w-4" />
             <span>User</span>
           </TabsTrigger>
-          {/* {user && user.garages && user.garages.length > 0 && ( */}
+          {/* {user && user.garages && Array.isArray(user.garages) && user.garages.length > 0 && ( */}
 
           {user && user.role === 'GARAGE' && (
             <TabsTrigger value="garage" className="flex items-center space-x-2">
@@ -445,7 +488,7 @@ export default function UnifiedDashboard() {
             </Card>
 
             {/* Register Garage Button - Only show if user doesn't have garages */}
-            {(!user || !user.garages || user.garages.length === 0) && (
+            {(!user || !user.garages || !Array.isArray(user.garages) || user.garages.length === 0) && (
               <Card className="border-green-100 hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center space-x-2 text-lg">
@@ -501,9 +544,13 @@ export default function UnifiedDashboard() {
                     variant="outline" 
                     className="w-full border-orange-200 text-orange-600 hover:bg-orange-50"
                     onClick={() => {
-                      if (latestEmergencyRequest) {
+                      console.log("🔍 Dashboard: Button clicked - latestEmergencyRequest:", latestEmergencyRequest)
+                      
+                      if (latestEmergencyRequest && latestEmergencyRequest.id) {
+                        console.log("✅ Dashboard: Navigating to emergency details:", latestEmergencyRequest.id)
                         router.push(`/emergency/${latestEmergencyRequest.id}`)
                       } else {
+                        console.log("⚠️ Dashboard: No latest emergency request, navigating to emergency page")
                         router.push("/emergency")
                       }
                     }}
@@ -589,7 +636,7 @@ export default function UnifiedDashboard() {
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
                   </div>
-                ) : (recentAppointments?.length ?? 0) > 0 ? (
+                ) : (Array.isArray(recentAppointments) && recentAppointments.length > 0) ? (
                   <div className="space-y-3">
                     {recentAppointments.slice(0, 3).map((appointment) => {
                       const getStatusBadge = (status: string) => {
@@ -625,7 +672,7 @@ export default function UnifiedDashboard() {
                         </div>
                       )
                     })}
-                    {recentAppointments.length > 3 && (
+                    {Array.isArray(recentAppointments) && recentAppointments.length > 3 && (
                       <div className="text-center pt-2">
                         <Link href="/user/appointments">
                           <Button 
@@ -666,7 +713,7 @@ export default function UnifiedDashboard() {
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
                   </div>
-                ) : favoriteGarages.length > 0 ? (
+                ) : (Array.isArray(favoriteGarages) && favoriteGarages.length > 0) ? (
                   <div className="space-y-3">
                     {favoriteGarages.slice(0, 3).map((favorite) => (
                       <div key={favorite.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
@@ -718,7 +765,7 @@ export default function UnifiedDashboard() {
         </TabsContent>
 
         {/* My Garage Tab - Chỉ hiển thị nếu user có garage */}
-        {user && user.garages && user.garages.length > 0 && (
+        {user && user.garages && Array.isArray(user.garages) && user.garages.length > 0 && (
           <TabsContent value="garage" className="space-y-6">
             {/* My Garages */}
             <Card className="border-green-100">
@@ -749,7 +796,7 @@ export default function UnifiedDashboard() {
                     <AlertCircle className="h-4 w-4 text-red-600" />
                     <AlertDescription className="text-red-800">{myGaragesError}</AlertDescription>
                   </Alert>
-                ) : myGarages.length === 0 ? (
+                ) : (Array.isArray(myGarages) && myGarages.length === 0) ? (
                   <div className="text-center py-8">
                     <Building2 className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-slate-900 mb-2">No garages yet</h3>
@@ -768,7 +815,7 @@ export default function UnifiedDashboard() {
                   </div>
                 ) : (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {myGarages.map((garage) => (
+                    {Array.isArray(myGarages) && myGarages.map((garage) => (
                       <Card
                         key={garage.id}
                         className="border-slate-200 hover:border-green-300 hover:shadow-md transition-all cursor-pointer"

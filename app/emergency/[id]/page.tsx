@@ -262,12 +262,19 @@ export default function EmergencyDetailPage() {
     }, preparingTime + travelingTime + 1000)
   }
 
-  const loadRequestDetails = async (requestId: number) => {
+  const loadRequestDetails = async (requestId: number, showToast: boolean = false) => {
     try {
       setLoading(true)
       setError(null)
       
       console.log('🔍 Loading request details for ID:', requestId)
+      
+      if (showToast) {
+        toast({
+          title: "Reloading...",
+          description: "Fetching latest emergency request data",
+        })
+      }
       
       // Try to load real data from API
       const requestResponse = await EmergencyApi.getRequestById(requestId)
@@ -293,6 +300,13 @@ export default function EmergencyDetailPage() {
           console.log('⚠️ No quotes found for request:', requestId)
           setQuotes([])
         }
+        
+        if (showToast) {
+          toast({
+            title: "Success",
+            description: "Emergency request data refreshed successfully",
+          })
+        }
       } else {
         throw new Error('No data received from API')
       }
@@ -300,12 +314,25 @@ export default function EmergencyDetailPage() {
     } catch (error: any) {
       console.error("❌ Error loading request details:", error)
       
+      let errorMessage = "Cannot load emergency request details"
       if (error.response?.status === 404) {
-        setError("Emergency request not found")
+        errorMessage = "Emergency request not found"
+      } else if (error.response?.status === 403) {
+        errorMessage = "Access denied - You can only view your own emergency requests"
+      } else if (error.response?.status === 401) {
+        errorMessage = "Authentication required - Please login again"
       } else if (error.code === 'ERR_NETWORK') {
-        setError("Cannot connect to backend server")
-      } else {
-        setError("Cannot load emergency request details")
+        errorMessage = "Cannot connect to backend server"
+      }
+      
+      setError(errorMessage)
+      
+      if (showToast) {
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        })
       }
     } finally {
       setLoading(false)
@@ -557,11 +584,11 @@ export default function EmergencyDetailPage() {
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => loadRequestDetails(request.id)}
+                  onClick={() => loadRequestDetails(request.id, true)}
                   className="flex items-center gap-2 bg-white hover:bg-gray-50 border-gray-300 text-gray-700 rounded-xl px-4 py-2 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  <span className="hidden sm:inline">Refresh</span>
+                  <span className="hidden sm:inline">Reload Data</span>
                 </Button>
                 
                 <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
@@ -578,7 +605,7 @@ export default function EmergencyDetailPage() {
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
             <EmergencyStatusTracker 
               request={request}
-              onRefresh={() => loadRequestDetails(request.id)}
+              onRefresh={() => loadRequestDetails(request.id, true)}
             />
           </div>
 
@@ -1369,6 +1396,17 @@ export default function EmergencyDetailPage() {
             </Tabs>
           </div>
         </div>
+      </div>
+
+      {/* Floating Reload Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => loadRequestDetails(request.id, true)}
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+          size="lg"
+        >
+          <RefreshCw className="h-6 w-6" />
+        </Button>
       </div>
     </DashboardLayout>
   )
