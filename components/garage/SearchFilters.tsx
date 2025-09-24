@@ -138,8 +138,8 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
     address: '',
     service: [],
     vehicleType: [],
-    minRating: 0,
-    maxRating: 5,
+    ratingSort: 'none',
+    ratingType: 'general',
     isVerified: undefined,
     ...initialParams // Merge with initial params if provided
   });
@@ -177,14 +177,16 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
   const handleSearch = () => {
     try {
       console.log('SearchFilters: handleSearch called with params:', searchParams);
+      console.log('SearchFilters: ratingSort value:', searchParams.ratingSort);
+      console.log('SearchFilters: ratingType value:', searchParams.ratingType);
       
       const cleanParams = Object.fromEntries(
         Object.entries(searchParams).filter(([key, value]) => {
           if (Array.isArray(value)) {
             return value.length > 0;
           }
-          // Don't filter out minRating when it's 0 (means "all ratings")
-          if (key === 'minRating') {
+          // Always include ratingSort and ratingType
+          if (key === 'ratingSort' || key === 'ratingType') {
             return value !== undefined && value !== null;
           }
           return value !== '' && value !== undefined && value !== null && value !== 'all';
@@ -192,6 +194,8 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
       );
       
       console.log('SearchFilters: cleaned params:', cleanParams);
+      console.log('SearchFilters: ratingSort in cleaned params:', cleanParams.ratingSort);
+      console.log('SearchFilters: ratingType in cleaned params:', cleanParams.ratingType);
       onSearch(cleanParams);
     } catch (error) {
       console.error('Search error:', error);
@@ -206,8 +210,8 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
         address: '',
         service: [],
         vehicleType: [],
-        minRating: 0,
-        maxRating: 5,
+        ratingSort: 'none',
+        ratingType: 'general',
         isVerified: undefined
       };
       
@@ -312,29 +316,61 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
             />
           </div>
 
-          {/* Rating */}
+          {/* Rating Type */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <Star className="w-4 h-4 text-yellow-500" />
-              Minimum Rating
+              Rating Type
             </Label>
             <Select
-              key={`rating-${resetKey}`}
-              value={searchParams.minRating?.toString() || '0'}
-              onValueChange={(value) => handleInputChange('minRating', parseFloat(value))}
+              key={`ratingType-${resetKey}`}
+              value={searchParams.ratingType || 'general'}
+              onValueChange={(value) => handleInputChange('ratingType', value)}
             >
               <SelectTrigger className="h-10 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500">
-                <SelectValue placeholder="Select rating..." />
+                <SelectValue placeholder="Select rating type..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">All</SelectItem>
-                <SelectItem value="1">1 star and above</SelectItem>
-                <SelectItem value="2">2 stars and above</SelectItem>
-                <SelectItem value="3">3 stars and above</SelectItem>
-                <SelectItem value="4">4 stars and above</SelectItem>
-                <SelectItem value="5">5 stars</SelectItem>
+                <SelectItem value="general">General Rating</SelectItem>
+                <SelectItem value="appointment">Appointment Rating</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Rating Sort Button */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+              <Star className="w-4 h-4 text-yellow-500" />
+              Sort by Rating
+            </Label>
+            <Button
+              type="button"
+              variant={searchParams.ratingSort === 'none' ? 'outline' : 'default'}
+              onClick={() => {
+                const currentSort = searchParams.ratingSort || 'none';
+                let newSort: 'none' | 'asc' | 'desc';
+                
+                if (currentSort === 'none') {
+                  newSort = 'asc'; // First click: ascending
+                } else if (currentSort === 'asc') {
+                  newSort = 'desc'; // Second click: descending
+                } else {
+                  newSort = 'none'; // Third click: no sorting
+                }
+                
+                handleInputChange('ratingSort', newSort);
+              }}
+              className={`h-10 w-full justify-start transition-all duration-200 ${
+                searchParams.ratingSort === 'none' 
+                  ? 'border-gray-200 hover:border-yellow-500 hover:ring-yellow-500' 
+                  : 'bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500'
+              }`}
+            >
+              <Star className={`w-4 h-4 mr-2 ${searchParams.ratingSort !== 'none' ? 'fill-current' : ''}`} />
+              {searchParams.ratingSort === 'none' && 'Click to sort by rating'}
+              {searchParams.ratingSort === 'asc' && '↑ Lowest to Highest'}
+              {searchParams.ratingSort === 'desc' && '↓ Highest to Lowest'}
+            </Button>
           </div>
         </div>
 
@@ -371,13 +407,15 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-yellow-500" />
-                Sorted by highest rating
-              </span>
+              {searchParams.ratingSort !== 'none' && (
+                <span className="flex items-center gap-1">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  Sorted by {searchParams.ratingSort === 'desc' ? 'highest' : 'lowest'} {searchParams.ratingType === 'appointment' ? 'appointment' : 'general'} rating
+                </span>
+              )}
             </div>
             <div className="text-xs text-gray-500">
-              Press Enter for quick search
+              Click rating button to cycle through sorting options
             </div>
           </div>
         </div>

@@ -13,9 +13,10 @@ interface GarageCardProps {
   garage: PublicGarageResponseDto & { distanceFromUser?: number };
   onViewDetails?: (garage: PublicGarageResponseDto) => void;
   onContact?: (garage: PublicGarageResponseDto) => void;
+  ratingType?: 'general' | 'appointment';
 }
 
-export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps) {
+export function GarageCard({ garage, onViewDetails, onContact, ratingType = 'general' }: GarageCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
@@ -30,6 +31,16 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
   const handleImageLoad = () => {
     setImageLoading(false);
   };
+
+  // Get the appropriate rating based on ratingType
+  const getDisplayRating = () => {
+    if (ratingType === 'appointment') {
+      return garage.ratingAppointment || 0;
+    }
+    return garage.rating || garage.averageRating || 0;
+  };
+
+  const displayRating = getDisplayRating();
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -135,7 +146,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="text-sm font-semibold text-gray-900">
-                    {garage.averageRating.toFixed(1)}
+                    {displayRating.toFixed(1)}
                   </span>
                 </div>
               </div>
@@ -167,10 +178,16 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             </h3>
             <div className="flex items-center gap-2 mt-2">
               <div className="flex items-center gap-1">
-                {renderStars(garage.averageRating)}
+                {renderStars(displayRating)}
               </div>
               <span className="text-sm text-gray-500">
                 ({garage.totalReviews} reviews)
+                {ratingType === 'appointment' && (
+                  <span className="ml-1 text-xs text-blue-600">(Appointment)</span>
+                )}
+                {ratingType === 'general' && garage.rating && (
+                  <span className="ml-1 text-xs text-green-600">(General)</span>
+                )}
               </span>
             </div>
           </div>

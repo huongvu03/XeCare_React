@@ -12,6 +12,8 @@ export interface PublicGarageResponseDto {
   verified: boolean; // Backend returns 'verified', not 'isVerified'
   averageRating: number;
   totalReviews: number;
+  rating?: number; // Rating from Reviews table
+  ratingAppointment?: number; // Rating from review_appointment table
   serviceNames: string[];
   vehicleTypeNames: string[];
   phone: string;
@@ -25,8 +27,8 @@ export interface GarageSearchParams {
   address?: string;
   service?: string | string[];
   vehicleType?: string | string[];
-  minRating?: number;
-  maxRating?: number;
+  ratingSort?: 'none' | 'asc' | 'desc';
+  ratingType?: 'general' | 'appointment';
   status?: string;
   isVerified?: boolean;
   page?: number;
@@ -64,7 +66,12 @@ function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
   
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    // Always include ratingSort and ratingType even if they are 'none'
+    if (key === 'ratingSort' || key === 'ratingType') {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, value.toString());
+      }
+    } else if (value !== undefined && value !== null && value !== '') {
       if (Array.isArray(value)) {
         // Xử lý arrays - thêm từng giá trị riêng biệt
         value.forEach(item => {
@@ -283,6 +290,8 @@ class ApiClient {
 
   async searchGaragesWithPagination(params: GarageSearchParams): Promise<PaginatedResponse<PublicGarageResponseDto>> {
     const queryString = buildQueryString(params);
+    console.log('API: searchGaragesWithPagination params:', params);
+    console.log('API: queryString:', queryString);
     return this.fetchApi<PaginatedResponse<PublicGarageResponseDto>>(`/apis/garage/search/paginated?${queryString}`);
   }
 

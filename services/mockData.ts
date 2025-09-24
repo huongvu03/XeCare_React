@@ -12,6 +12,8 @@ export const mockGarages: PublicGarageResponseDto[] = [
     verified: true,
     averageRating: 4.5,
     totalReviews: 128,
+    rating: 4.3,
+    ratingAppointment: 4.7,
     serviceNames: ["Sửa chữa động cơ", "Bảo dưỡng định kỳ", "Thay dầu nhớt", "Sửa điện"],
     vehicleTypeNames: ["Ô tô", "Xe tải nhẹ"],
     phone: "024-1234-5678",
@@ -29,6 +31,8 @@ export const mockGarages: PublicGarageResponseDto[] = [
     verified: true,
     averageRating: 4.2,
     totalReviews: 95,
+    rating: 4.0,
+    ratingAppointment: 4.4,
     serviceNames: ["Bảo dưỡng xe máy", "Sửa chữa điện", "Thay phụ tùng", "Rửa xe"],
     vehicleTypeNames: ["Xe máy"],
     phone: "024-9876-5432",
@@ -46,6 +50,8 @@ export const mockGarages: PublicGarageResponseDto[] = [
     verified: false,
     averageRating: 3.8,
     totalReviews: 67,
+    rating: 3.6,
+    ratingAppointment: 4.0,
     serviceNames: ["Sửa chữa xe tải", "Bảo dưỡng động cơ", "Thay phụ tùng", "Kiểm tra an toàn"],
     vehicleTypeNames: ["Xe tải", "Xe khách"],
     phone: "024-5555-1234",
@@ -242,6 +248,27 @@ export const mockApiClient = {
       filteredGarages = filteredGarages.filter(garage => 
         garage.verified === params.isVerified
       );
+    }
+    
+    // Apply rating sorting if specified
+    if (params.ratingSort && params.ratingSort !== 'none') {
+      filteredGarages = filteredGarages.sort((a, b) => {
+        // Get the appropriate rating based on ratingType
+        let ratingA, ratingB;
+        
+        if (params.ratingType === 'appointment') {
+          ratingA = a.ratingAppointment || 0;
+          ratingB = b.ratingAppointment || 0;
+        } else {
+          ratingA = a.rating || a.averageRating || 0;
+          ratingB = b.rating || b.averageRating || 0;
+        }
+        
+        const result = ratingA - ratingB;
+        return params.ratingSort === 'desc' ? -result : result;
+      });
+      
+      console.log(`MockAPI: Sorted by ${params.ratingType} rating (${params.ratingSort})`);
     }
     
     console.log(`MockAPI: Returning ${filteredGarages.length} garages out of ${mockGarages.length} total`);

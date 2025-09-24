@@ -21,6 +21,7 @@ export default function GarageSearchPage() {
   const [sortByDistance, setSortByDistance] = useState(false);
   const [initialSearchDone, setInitialSearchDone] = useState(false);
   const [currentSearchParams, setCurrentSearchParams] = useState<GarageSearchParams>({});
+  const [currentRatingType, setCurrentRatingType] = useState<'general' | 'appointment'>('general');
 
   // Custom hooks
   const {
@@ -66,6 +67,7 @@ export default function GarageSearchPage() {
     console.log('=== HANDLE SEARCH DEBUG ===');
     console.log('Received params:', params);
     setCurrentSearchParams(params);
+    setCurrentRatingType(params.ratingType || 'general');
     search(params);
     console.log('========================');
   };
@@ -267,6 +269,10 @@ export default function GarageSearchPage() {
               {userLocation && averageDistance > 0 && (
                 <span className="ml-2">• Average distance: {averageDistance}km</span>
               )}
+              <span className="ml-2">• Showing {currentRatingType === 'appointment' ? 'appointment' : 'general'} ratings</span>
+              {currentSearchParams.ratingSort && currentSearchParams.ratingSort !== 'none' && (
+                <span className="ml-2">• Sorted by {currentSearchParams.ratingSort === 'desc' ? 'highest' : 'lowest'} rating</span>
+              )}
             </div>
           </div>
           
@@ -361,6 +367,7 @@ export default function GarageSearchPage() {
                 garage={garage}
                 onViewDetails={handleViewDetails}
                 onContact={handleContact}
+                ratingType={currentRatingType}
               />
             ))}
           </div>
