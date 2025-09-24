@@ -32,8 +32,8 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
       } catch (error: any) {
         console.error("❌ Error loading garages:", error);
         toast({
-          title: "Lỗi",
-          description: "Không thể tải danh sách garage. Vui lòng thử lại.",
+          title: "Error",
+          description: "Cannot load garage list. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -87,7 +87,7 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
           <div className="p-2 bg-blue-600 rounded-lg">
             <MapPin className="h-5 w-5 text-white" />
           </div>
-          <span className="font-bold">Bản đồ Garage & Chọn Cứu hộ</span>
+          <span className="font-bold">Garage Map & Select Rescue</span>
         </CardTitle>
       </CardHeader>
       
@@ -98,7 +98,7 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                <p className="text-sm text-gray-600">Đang tải bản đồ...</p>
+                <p className="text-sm text-gray-600">Loading map...</p>
               </div>
             </div>
           ) : (
@@ -110,7 +110,7 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
                   <div className="absolute top-4 left-4 z-10">
                     <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg">
                       <Navigation className="w-3 h-3 mr-1" />
-                      Vị trí của bạn
+                      Your Location
                     </Badge>
                   </div>
                   
@@ -133,7 +133,7 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
                       
                       {/* Location label */}
                       <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded shadow-md border text-xs whitespace-nowrap">
-                        Xe của bạn
+                        Your Vehicle
                       </div>
                     </div>
                   </div>
@@ -202,25 +202,25 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
                                   ))}
                                 </div>
                                 <span className="text-xs text-gray-600">
-                                  {(garage.averageRating || 0).toFixed(1)} ({garage.totalReviews || 0} đánh giá)
+                                  {(garage.averageRating || 0).toFixed(1)} ({garage.totalReviews || 0} reviews)
                                 </span>
                               </div>
                             </div>
                             {garage.isVerified && (
                               <Badge className="bg-green-100 text-green-700 text-xs">
                                 <CheckCircle className="w-3 h-3 mr-1" />
-                                Đã xác thực
+                                Verified
                               </Badge>
                             )}
                           </div>
                           <div className="flex gap-2">
                             <Button size="sm" className="flex-1 text-xs bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
                               <Phone className="w-3 h-3 mr-1" />
-                              Gọi ngay
+                              Call Now
                             </Button>
                             <Button size="sm" variant="outline" className="flex-1 text-xs border-blue-200 text-blue-700 hover:bg-blue-50">
                               <AlertTriangle className="w-3 h-3 mr-1" />
-                              Chọn cứu hộ
+                              Select Rescue
                             </Button>
                           </div>
                         </div>
@@ -240,12 +240,12 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
               <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm">🏪</span>
               </div>
-              Garage gần bạn ({sortedGarages.length})
+              Garages Near You ({sortedGarages.length})
             </h4>
             {selectedGarage && (
               <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
                 <CheckCircle className="w-3 h-3 mr-1" />
-                Đã chọn: {selectedGarage.name}
+                Selected: {selectedGarage.name}
               </Badge>
             )}
           </div>
@@ -281,7 +281,7 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
                           {garage.isVerified && (
                             <Badge className="bg-green-100 text-green-700 text-xs">
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              Xác thực
+                              Verified
                             </Badge>
                           )}
                         </div>
@@ -312,7 +312,7 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
                         {isSelected && (
                           <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs">
                             <CheckCircle className="w-3 h-3 mr-1" />
-                            Đã chọn
+                            Selected
                           </Badge>
                         )}
                       </div>
@@ -328,7 +328,7 @@ export function EmergencyMap({ userLocation, onGarageSelect, selectedGarage }: E
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <MapPin className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-gray-600 text-sm">Không có garage nào trong khu vực</p>
+              <p className="text-gray-600 text-sm">No garages found in the area</p>
             </div>
           )}
         </div>

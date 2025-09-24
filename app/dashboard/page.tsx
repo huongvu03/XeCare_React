@@ -168,7 +168,7 @@ export default function UnifiedDashboard() {
         setUserProfile(currentUserProfile)
         setLoading(false)
       } catch (err: any) {
-        setError("Không thể tải thông tin người dùng")
+        setError("Cannot load user information")
         setLoading(false)
         setAppointmentsLoading(false)
       }
@@ -309,7 +309,7 @@ export default function UnifiedDashboard() {
           }
         } catch (err: any) {
           console.error("Error loading my garages:", err)
-          setMyGaragesError("Không thể tải danh sách garage của bạn")
+          setMyGaragesError("Cannot load your garage list")
         } finally {
           setMyGaragesLoading(false)
         }
@@ -336,12 +336,12 @@ export default function UnifiedDashboard() {
       <DashboardLayout
         allowedRoles={["USER", "GARAGE"]}
         title="Dashboard"
-        description="Đang tải..."
+        description="Loading..."
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-slate-600">Đang tải thông tin...</p>
+            <p className="text-slate-600">Loading information...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -354,7 +354,7 @@ export default function UnifiedDashboard() {
       <DashboardLayout
         allowedRoles={["USER", "GARAGE"]}
         title="Dashboard"
-        description="Có lỗi xảy ra"
+        description="An error occurred"
       >
         <Alert className="border-red-200 bg-red-50">
           <AlertCircle className="h-4 w-4" />
@@ -367,15 +367,15 @@ export default function UnifiedDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return <Badge className="bg-green-100 text-green-700">Hoạt động</Badge>
+        return <Badge className="bg-green-100 text-green-700">Active</Badge>
       case "INACTIVE":
-        return <Badge className="bg-red-100 text-red-700">Bị khóa</Badge>
+        return <Badge className="bg-red-100 text-red-700">Blocked</Badge>
       case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-700">Chờ duyệt</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
       case "PENDING_UPDATE":
-        return <Badge className="bg-orange-100 text-orange-700">Chờ cập nhật</Badge>
+        return <Badge className="bg-orange-100 text-orange-700">Pending Update</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>
     }
   }
 
@@ -383,7 +383,7 @@ export default function UnifiedDashboard() {
     <DashboardLayout
       allowedRoles={["USER", "GARAGE"]}
       title="Dashboard"
-      description="Quản lý tài khoản và garage của bạn"
+      description="Manage your account and garages"
     >
       <Tabs value={activeTab} onValueChange={(value) => {
         setActiveTab(value)
@@ -393,7 +393,7 @@ export default function UnifiedDashboard() {
         <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
           <TabsTrigger value="user" className="flex items-center space-x-2">
             <Car className="h-4 w-4" />
-            <span>Người dùng</span>
+            <span>User</span>
           </TabsTrigger>
           {/* {user && user.garages && user.garages.length > 0 && ( */}
 
@@ -413,51 +413,33 @@ export default function UnifiedDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-lg">
                   <MapPin className="h-5 w-5 text-blue-600" />
-                  <span>Tìm garage</span>
+                  <span>Find Garage</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 text-sm mb-4">Tìm garage sửa xe gần bạn</p>
+                <p className="text-slate-600 text-sm mb-4">Find car repair garages near you</p>
                 <Button
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600"
                   onClick={() => router.push("/search")}
                 >
-                  Tìm kiếm ngay
+                  Search Now
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="border-blue-100 hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center space-x-2 text-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <span>Đặt lịch</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600 text-sm mb-4">Đặt lịch sửa xe trực tuyến</p>
-                <Button
-                  variant="outline"
-                  className="w-full border-blue-200 text-blue-600"
-                  onClick={() => router.push("/search/page1")}
-                >
-                  Đặt lịch mới
-                </Button>
-              </CardContent>
-            </Card>
 
             <Card className="border-blue-100 hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-lg">
                   <Car className="h-5 w-5 text-blue-600" />
-                  <span>Cứu hộ</span>
+                  <span>Emergency Rescue</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 text-sm mb-4">Gọi cứu hộ khẩn cấp 24/7</p>
+                <p className="text-slate-600 text-sm mb-4">Call emergency rescue 24/7</p>
                 <Button variant="destructive" className="w-full"
                  onClick={() => router.push("/emergency")}>
-                  Gọi cứu hộ
+                  Call Emergency
                 </Button>
               </CardContent>
             </Card>
@@ -468,17 +450,17 @@ export default function UnifiedDashboard() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center space-x-2 text-lg">
                     <Building2 className="h-5 w-5 text-green-600" />
-                    <span>Đăng ký Garage</span>
+                    <span>Register Garage</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-slate-600 text-sm mb-4">Đăng ký garage của bạn để nhận lịch hẹn</p>
+                  <p className="text-slate-600 text-sm mb-4">Register your garage to receive appointments</p>
                   <Button
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600"
                     onClick={() => router.push("/garage/register")}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Đăng ký ngay
+                    Register Now
                   </Button>
                 </CardContent>
               </Card>
@@ -489,17 +471,17 @@ export default function UnifiedDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-lg">
                   <Heart className="h-5 w-5 text-red-600" />
-                  <span>Garage Yêu Thích</span>
+                  <span>Favorite Garages</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 text-sm mb-4">Quản lý danh sách garage yêu thích</p>
+                <p className="text-slate-600 text-sm mb-4">Manage your favorite garage list</p>
                 <Button 
                   variant="outline" 
                   className="w-full border-red-200 text-red-600"
                   onClick={() => router.push("/favorites")}
                 >
-                  Xem yêu thích
+                  View Favorites
                 </Button>
               </CardContent>
             </Card>
@@ -510,11 +492,11 @@ export default function UnifiedDashboard() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center space-x-2 text-lg">
                     <AlertCircle className="h-5 w-5 text-orange-600" />
-                    <span>Chi Tiết Yêu Cầu Cứu Hộ</span>
+                    <span>Emergency Request Details</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-slate-600 text-sm mb-4">Xem thông tin yêu cầu cứu hộ gần nhất</p>
+                  <p className="text-slate-600 text-sm mb-4">View your latest emergency request information</p>
                   <Button 
                     variant="outline" 
                     className="w-full border-orange-200 text-orange-600 hover:bg-orange-50"
@@ -527,7 +509,7 @@ export default function UnifiedDashboard() {
                     }}
                   >
                     <Eye className="h-4 w-4 mr-2" />
-                    Xem Chi Tiết Yêu Cầu Cứu Hộ
+                    View Emergency Request Details
                   </Button>
                 </CardContent>
               </Card>
@@ -539,18 +521,18 @@ export default function UnifiedDashboard() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center space-x-2 text-lg">
                     <AlertCircle className="h-5 w-5 text-red-600" />
-                    <span>Quản lý Cứu hộ</span>
+                    <span>Emergency Management</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-slate-600 text-sm mb-4">Quản lý yêu cầu cứu hộ khẩn cấp</p>
+                  <p className="text-slate-600 text-sm mb-4">Manage emergency rescue requests</p>
                   <Button 
                     variant="outline" 
                     className="w-full border-red-200 text-red-600 hover:bg-red-50"
                     onClick={() => router.push("/garage/emergency")}
                   >
                     <AlertCircle className="h-4 w-4 mr-2" />
-                    Quản lý cứu hộ
+                    Emergency Management
                   </Button>
                 </CardContent>
               </Card>
@@ -561,17 +543,17 @@ export default function UnifiedDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center space-x-2 text-lg">
                   <Bell className="h-5 w-5 text-blue-600" />
-                  <span>Thông Báo</span>
+                  <span>Notifications</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 text-sm mb-4">Xem tất cả thông báo của bạn</p>
+                <p className="text-slate-600 text-sm mb-4">View all your notifications</p>
                 <Button 
                   variant="outline" 
                   className="w-full border-blue-200 text-blue-600"
                   onClick={() => router.push("/notifications")}
                 >
-                  Xem thông báo
+                  View Notifications
                 </Button>
               </CardContent>
             </Card>
@@ -584,7 +566,7 @@ export default function UnifiedDashboard() {
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Car className="h-5 w-5 text-blue-600" />
-                  <span>Quản lý xe của tôi</span>
+                  <span>My Vehicle Management</span>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -599,7 +581,7 @@ export default function UnifiedDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Clock className="h-5 w-5 text-blue-600" />
-                  <span>Lịch hẹn gần đây</span>
+                  <span>Recent Appointments</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -613,19 +595,19 @@ export default function UnifiedDashboard() {
                       const getStatusBadge = (status: string) => {
                         switch (status) {
                           case "PENDING":
-                            return <Badge className="bg-yellow-100 text-yellow-700">Chờ xác nhận</Badge>
+                            return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
                           case "CONFIRMED":
-                            return <Badge className="bg-blue-100 text-blue-700">Đã xác nhận</Badge>
+                            return <Badge className="bg-blue-100 text-blue-700">Confirmed</Badge>
                           case "IN_PROGRESS":
-                            return <Badge className="bg-orange-100 text-orange-700">Đang thực hiện</Badge>
+                            return <Badge className="bg-orange-100 text-orange-700">In Progress</Badge>
                           case "COMPLETED":
-                            return <Badge className="bg-green-100 text-green-700">Hoàn thành</Badge>
+                            return <Badge className="bg-green-100 text-green-700">Completed</Badge>
                           case "REJECTED":
-                            return <Badge className="bg-red-100 text-red-700">Đã từ chối</Badge>
+                            return <Badge className="bg-red-100 text-red-700">Rejected</Badge>
                           case "CANCELLED":
-                            return <Badge className="bg-gray-100 text-gray-700">Đã hủy</Badge>
+                            return <Badge className="bg-gray-100 text-gray-700">Cancelled</Badge>
                           default:
-                            return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
+                            return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>
                         }
                       }
 
@@ -650,7 +632,7 @@ export default function UnifiedDashboard() {
                             variant="outline" 
                             size="sm"
                           >
-                            Xem tất cả ({recentAppointments.length})
+                            View All ({recentAppointments.length})
                           </Button>
                         </Link>
                       </div>
@@ -659,13 +641,13 @@ export default function UnifiedDashboard() {
                 ) : (
                   <div className="text-center py-8">
                     <Calendar className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-500 text-sm mb-2">Chưa có lịch hẹn nào</p>
+                    <p className="text-slate-500 text-sm mb-2">No appointments yet</p>
                     <Button 
                       size="sm"
                       onClick={() => router.push("/search/page1")}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
-                      Đặt lịch ngay
+                      Book Now
                     </Button>
                   </div>
                 )}
@@ -676,7 +658,7 @@ export default function UnifiedDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Star className="h-5 w-5 text-blue-600" />
-                  <span>Garage yêu thích</span>
+                  <span>Favorite Garages</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -700,7 +682,7 @@ export default function UnifiedDashboard() {
                           variant="outline"
                           onClick={() => router.push(`/garage-detail/${favorite.garageId}`)}
                         >
-                          Xem
+                          View
                         </Button>
                       </div>
                     ))}
@@ -711,7 +693,7 @@ export default function UnifiedDashboard() {
                             variant="outline" 
                             size="sm"
                           >
-                            Xem tất cả ({favoriteGarages.length})
+                            View tất cả ({favoriteGarages.length})
                           </Button>
                         </Link>
                       </div>
@@ -720,13 +702,13 @@ export default function UnifiedDashboard() {
                 ) : (
                   <div className="text-center py-8">
                     <Star className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-500 text-sm mb-2">Chưa có garage yêu thích nào</p>
+                    <p className="text-slate-500 text-sm mb-2">No favorite garages yet</p>
                     <Button 
                       size="sm"
                       onClick={() => router.push("/search")}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
-                      Tìm garage yêu thích
+                      Find Favorite Garage
                     </Button>
                   </div>
                 )}
@@ -744,7 +726,7 @@ export default function UnifiedDashboard() {
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Building2 className="h-5 w-5 text-green-600" />
-                    <span>Garage của tôi</span>
+                    <span>My Garages</span>
                   </div>
                   <Button
                     size="sm"
@@ -752,7 +734,7 @@ export default function UnifiedDashboard() {
                     onClick={() => router.push("/garage/register")}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Thêm garage
+                    Add Garage
                   </Button>
                 </CardTitle>
               </CardHeader>
@@ -760,7 +742,7 @@ export default function UnifiedDashboard() {
                 {myGaragesLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-                    <span className="ml-2 text-slate-600">Đang tải garage...</span>
+                    <span className="ml-2 text-slate-600">Loading garages...</span>
                   </div>
                 ) : myGaragesError ? (
                   <Alert className="border-red-200 bg-red-50">
@@ -770,9 +752,9 @@ export default function UnifiedDashboard() {
                 ) : myGarages.length === 0 ? (
                   <div className="text-center py-8">
                     <Building2 className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">Chưa có garage nào</h3>
+                    <h3 className="text-lg font-medium text-slate-900 mb-2">No garages yet</h3>
                     <p className="text-slate-600 mb-4">
-                      Bạn chưa đăng ký garage nào. Hãy đăng ký garage đầu tiên của bạn!
+                      You haven't registered any garages yet. Register your first garage!
                     </p>
                     {(user?.role === "USER" || user?.role === "GARAGE") && (
                       <Button
@@ -780,7 +762,7 @@ export default function UnifiedDashboard() {
                         className="bg-green-600 hover:bg-green-700"
                       >
                         <Plus className="h-4 w-4 mr-2" />
-                        Đăng ký Garage
+                        Register Garage
                       </Button>
                     )}
                   </div>
@@ -806,7 +788,7 @@ export default function UnifiedDashboard() {
                                 >
                                   <AlertCircle className="h-4 w-4 text-orange-500" />
                                   <span className="text-sm text-orange-600 font-medium">
-                                    {garagePendingCounts[garage.id]} lịch hẹn cần duyệt
+                                    {garagePendingCounts[garage.id]} appointments need approval
                                   </span>
                                 </div>
                               )}
@@ -822,7 +804,7 @@ export default function UnifiedDashboard() {
                             <Alert className="border-yellow-200 bg-yellow-50 mb-3">
                               <ClockIcon className="h-4 w-4" />
                               <AlertDescription className="text-yellow-700">
-                                Đang chờ admin phê duyệt
+                                Waiting for admin approval
                               </AlertDescription>
                             </Alert>
                           )}
@@ -830,7 +812,7 @@ export default function UnifiedDashboard() {
                           {garage.status === "ACTIVE" && (
                             <div className="flex items-center space-x-2 text-green-600">
                               <CheckCircle className="h-4 w-4" />
-                              <span className="text-sm font-medium">Đã được phê duyệt</span>
+                              <span className="text-sm font-medium">Approved</span>
                             </div>
                           )}
 
@@ -838,7 +820,7 @@ export default function UnifiedDashboard() {
                             <Alert className="border-red-200 bg-red-50 mb-3">
                               <XCircle className="h-4 w-4" />
                               <AlertDescription className="text-red-700">
-                                Garage không hoạt động
+                                Garage is inactive
                               </AlertDescription>
                             </Alert>
                           )}
@@ -860,7 +842,7 @@ export default function UnifiedDashboard() {
                       <p className="text-3xl font-bold text-slate-900">
                         {todayAppointmentsCount}
                       </p>
-                      <p className="text-sm text-slate-600">Tổng lịch hẹn hôm nay</p>
+                      <p className="text-sm text-slate-600">Total appointments today</p>
                     </div>
                   </div>
                 </CardContent>
@@ -874,7 +856,7 @@ export default function UnifiedDashboard() {
                       <p className="text-3xl font-bold text-slate-900">
                         {totalPendingCount}
                       </p>
-                      <p className="text-sm text-slate-600">Tổng lịch hẹn chờ xử lý</p>
+                      <p className="text-sm text-slate-600">Total pending appointments</p>
                     </div>
                   </div>
                 </CardContent>

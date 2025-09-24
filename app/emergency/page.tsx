@@ -102,8 +102,8 @@ export default function EmergencyPage() {
               console.log("✅ Auto-detected location:", newLocation)
               
               toast({
-                title: "Đã lấy vị trí thành công",
-                description: `Vị trí hiện tại: ${newLocation.address}`,
+                title: "Location retrieved successfully",
+                description: `Current location: ${newLocation.address}`,
               })
             } catch (error) {
               console.log("Error getting address:", error)
@@ -120,8 +120,8 @@ export default function EmergencyPage() {
               console.log("📍 Using coordinates only:", newLocation)
               
               toast({
-                title: "Đã lấy vị trí thành công",
-                description: "Vị trí đã được xác định",
+                title: "Location retrieved successfully",
+                description: "Location has been determined",
               })
             } finally {
               setIsDetectingLocation(false)
@@ -131,21 +131,21 @@ export default function EmergencyPage() {
             console.log("❌ Error getting location:", error)
             setIsDetectingLocation(false)
             
-            let errorMessage = "Không thể lấy vị trí hiện tại"
+            let errorMessage = "Cannot get current location"
             switch (error.code) {
               case error.PERMISSION_DENIED:
-                errorMessage = "Cần cấp quyền truy cập vị trí"
+                errorMessage = "Location access permission required"
                 break
               case error.POSITION_UNAVAILABLE:
-                errorMessage = "Vị trí không khả dụng"
+                errorMessage = "Location not available"
                 break
               case error.TIMEOUT:
-                errorMessage = "Hết thời gian chờ lấy vị trí"
+                errorMessage = "Location request timeout"
                 break
             }
             
             toast({
-              title: "Không thể lấy vị trí",
+              title: "Cannot get location",
               description: errorMessage,
               variant: "destructive",
             })
@@ -159,8 +159,8 @@ export default function EmergencyPage() {
       } else {
         console.log("❌ Geolocation not supported")
         toast({
-          title: "Không hỗ trợ định vị",
-          description: "Trình duyệt không hỗ trợ lấy vị trí",
+          title: "Location not supported",
+          description: "Browser does not support location access",
           variant: "destructive",
         })
       }
@@ -186,8 +186,8 @@ export default function EmergencyPage() {
   const handleGarageSelect = (garage: PublicGarageInfo) => {
     setSelectedGarage(garage)
     toast({
-      title: "Đã chọn garage cứu hộ",
-      description: `Garage ${garage.name} đã được chọn để cứu hộ`,
+      title: "Rescue garage selected",
+      description: `Garage ${garage.name} has been selected for rescue`,
     })
   }
 
@@ -201,8 +201,8 @@ export default function EmergencyPage() {
     if (!userLocation || !vehicleType || !problemType || !description) {
       console.log("❌ Validation failed")
       toast({
-        title: "Lỗi",
-        description: "Vui lòng điền đầy đủ thông tin",
+        title: "Error",
+        description: "Please fill in all information",
         variant: "destructive",
       })
       return
@@ -211,8 +211,8 @@ export default function EmergencyPage() {
     if (!selectedGarage) {
       console.log("❌ No garage selected")
       toast({
-        title: "Lỗi",
-        description: "Vui lòng chọn garage để cứu hộ",
+        title: "Error",
+        description: "Please select a garage for rescue",
         variant: "destructive",
       })
       return
@@ -251,8 +251,8 @@ export default function EmergencyPage() {
       
       // Hiển thị SweetAlert thành công ở góc phải trên
       Swal.fire({
-        title: 'Thành công!',
-        text: 'Đã gửi yêu cầu cứu hộ thành công',
+        title: 'Success!',
+        text: 'Emergency rescue request sent successfully',
         icon: 'success',
         toast: true,
         position: 'top-end',
@@ -273,8 +273,8 @@ export default function EmergencyPage() {
       
       // Vẫn hiển thị thành công ngay cả khi có lỗi
       Swal.fire({
-        title: 'Thành công!',
-        text: 'Đã gửi yêu cầu cứu hộ thành công',
+        title: 'Success!',
+        text: 'Emergency rescue request sent successfully',
         icon: 'success',
         toast: true,
         position: 'top-end',
@@ -296,14 +296,14 @@ export default function EmergencyPage() {
 
 
   const problemTypes = [
-    { value: "breakdown", label: "Xe chết máy", icon: "⚡" },
-    { value: "flat-tire", label: "Thủng lốp", icon: "🛞" },
-    { value: "accident", label: "Tai nạn", icon: "💥" },
-    { value: "out-of-fuel", label: "Hết xăng", icon: "⛽" },
-    { value: "battery", label: "Hết pin", icon: "🔋" },
-    { value: "overheating", label: "Quá nhiệt", icon: "🌡️" },
-    { value: "locked-out", label: "Khóa trong xe", icon: "🔐" },
-    { value: "other", label: "Khác", icon: "❓" },
+    { value: "breakdown", label: "Engine Breakdown", icon: "⚡" },
+    { value: "flat-tire", label: "Flat Tire", icon: "🛞" },
+    { value: "accident", label: "Accident", icon: "💥" },
+    { value: "out-of-fuel", label: "Out of Fuel", icon: "⛽" },
+    { value: "battery", label: "Dead Battery", icon: "🔋" },
+    { value: "overheating", label: "Overheating", icon: "🌡️" },
+    { value: "locked-out", label: "Locked Out", icon: "🔐" },
+    { value: "other", label: "Other", icon: "❓" },
   ]
 
 
@@ -311,8 +311,8 @@ export default function EmergencyPage() {
   return (
     <DashboardLayout
       allowedRoles={["USER", "ADMIN", "GARAGE"]}
-      title="Cứu hộ khẩn cấp 24/7"
-      description="Hỗ trợ cứu hộ xe nhanh chóng khi gặp sự cố"
+      title="24/7 Emergency Rescue"
+      description="Quick emergency vehicle rescue support when you encounter issues"
     >
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="container mx-auto px-4 py-6 lg:py-8 space-y-6 lg:space-y-8">
@@ -330,8 +330,8 @@ export default function EmergencyPage() {
                     <AlertTriangle className="h-8 w-8 lg:h-10 lg:w-10 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Cứu hộ Khẩn cấp</h1>
-                    <p className="text-blue-100 text-base lg:text-lg mt-2">Hỗ trợ cứu hộ xe nhanh chóng khi gặp sự cố</p>
+                    <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Emergency Rescue</h1>
+                    <p className="text-blue-100 text-base lg:text-lg mt-2">Quick emergency vehicle rescue support when you encounter issues</p>
                   </div>
                 </div>
                 
@@ -339,15 +339,15 @@ export default function EmergencyPage() {
                 <div className="flex flex-wrap gap-4 lg:gap-6 mt-4 lg:mt-6">
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 lg:p-4 min-w-[120px] lg:min-w-[140px] border border-white/20">
                     <div className="text-xl lg:text-2xl font-bold">24/7</div>
-                    <div className="text-blue-100 text-xs lg:text-sm">Hỗ trợ khẩn cấp</div>
+                    <div className="text-blue-100 text-xs lg:text-sm">Emergency Support</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 lg:p-4 min-w-[120px] lg:min-w-[140px] border border-white/20">
                     <div className="text-xl lg:text-2xl font-bold">15</div>
-                    <div className="text-blue-100 text-xs lg:text-sm">Phút phản hồi</div>
+                    <div className="text-blue-100 text-xs lg:text-sm">Response Time</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 lg:p-4 min-w-[120px] lg:min-w-[140px] border border-white/20">
                     <div className="text-xl lg:text-2xl font-bold">100%</div>
-                    <div className="text-blue-100 text-xs lg:text-sm">Miễn phí</div>
+                    <div className="text-blue-100 text-xs lg:text-sm">Free Service</div>
                   </div>
                 </div>
               </div>
@@ -359,7 +359,7 @@ export default function EmergencyPage() {
                   className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl transition-all duration-300 hover:scale-105 text-base lg:text-lg font-semibold w-full lg:w-auto"
                 >
                   <Phone className="h-5 w-5 lg:h-6 lg:w-6 mr-2 lg:mr-3" />
-                  Gọi cứu hộ ngay
+                  Call Emergency Now
                 </Button>
                 <p className="text-blue-100 text-xs lg:text-sm text-right">Hotline: 1900 123 456</p>
               </div>
@@ -381,8 +381,8 @@ export default function EmergencyPage() {
                           <Phone className="h-6 w-6 lg:h-8 lg:w-8 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-xl lg:text-2xl font-bold text-white">Khẩn cấp? Gọi ngay!</h3>
-                          <p className="text-blue-100 text-base lg:text-lg mt-1">Hotline cứu hộ 24/7 toàn quốc</p>
+                          <h3 className="text-xl lg:text-2xl font-bold text-white">Emergency? Call Now!</h3>
+                          <p className="text-blue-100 text-base lg:text-lg mt-1">24/7 nationwide rescue hotline</p>
                     </div>
                     </div>
                       <Button 
@@ -404,8 +404,8 @@ export default function EmergencyPage() {
                     <div className="flex items-center justify-center space-x-4">
                       <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                       <div className="text-center">
-                        <h3 className="text-lg font-semibold text-blue-800">Đang lấy vị trí hiện tại...</h3>
-                        <p className="text-blue-600 text-sm">Vui lòng cho phép truy cập vị trí để tự động xác định địa điểm</p>
+                        <h3 className="text-lg font-semibold text-blue-800">Getting current location...</h3>
+                        <p className="text-blue-600 text-sm">Please allow location access to automatically determine your location</p>
                       </div>
                     </div>
                   </CardContent>
@@ -430,19 +430,19 @@ export default function EmergencyPage() {
                         <div className="p-2 bg-green-600 rounded-lg">
                           <CheckCircle className="h-6 w-6 text-white" />
                         </div>
-                        <span className="text-xl font-bold">Thông tin vị trí đã xác định</span>
+                        <span className="text-xl font-bold">Location Information Confirmed</span>
                     </CardTitle>
                   </CardHeader>
                     <CardContent className="p-6 space-y-6">
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-3">
-                          <Label className="text-green-700 font-semibold text-base">📍 Địa chỉ</Label>
+                          <Label className="text-green-700 font-semibold text-base">📍 Address</Label>
                           <div className="p-4 bg-white rounded-xl border border-green-200 shadow-sm">
                             <p className="font-medium text-green-800 text-lg">{location}</p>
                           </div>
                         </div>
                         <div className="space-y-3">
-                          <Label className="text-green-700 font-semibold text-base">🗺️ Tọa độ GPS</Label>
+                          <Label className="text-green-700 font-semibold text-base">🗺️ GPS Coordinates</Label>
                           <div className="p-4 bg-white rounded-xl border border-green-200 shadow-sm">
                             <p className="font-mono text-sm text-green-800 font-medium">
                             {userLocation.lat.toFixed(6)}, {userLocation.lng.toFixed(6)}
@@ -453,7 +453,7 @@ export default function EmergencyPage() {
                       <Alert className="border-green-300 bg-green-100 rounded-xl shadow-sm">
                         <MapPin className="h-5 w-5 text-green-600" />
                         <AlertDescription className="text-green-700 font-medium">
-                          ✅ Vị trí đã được xác định chính xác. Đội cứu hộ sẽ tìm đến bạn nhanh chóng.
+                          ✅ Location has been accurately determined. Rescue team will reach you quickly.
                       </AlertDescription>
                     </Alert>
                   </CardContent>
@@ -468,34 +468,34 @@ export default function EmergencyPage() {
                       <div className="p-2 bg-blue-600 rounded-lg">
                         <Car className="h-6 w-6 text-white" />
                       </div>
-                      <span className="font-bold">Thông tin sự cố</span>
+                      <span className="font-bold">Incident Information</span>
                     </CardTitle>
                 </CardHeader>
                   <CardContent className="p-6 space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-3">
-                        <Label className="text-gray-700 font-semibold text-base">🚗 Loại xe</Label>
+                        <Label className="text-gray-700 font-semibold text-base">🚗 Vehicle Type</Label>
                       <Select value={vehicleType} onValueChange={setVehicleType}>
                           <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl transition-all duration-300">
-                          <SelectValue placeholder="Chọn loại xe" />
+                          <SelectValue placeholder="Select vehicle type" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="xe-may">
                             <div className="flex items-center space-x-2">
                               <Bike className="h-4 w-4" />
-                              <span>Xe máy</span>
+                              <span>Motorcycle</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="o-to">
                             <div className="flex items-center space-x-2">
                               <Car className="h-4 w-4" />
-                              <span>Ô tô</span>
+                              <span>Car</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="xe-tai">
                             <div className="flex items-center space-x-2">
                               <Truck className="h-4 w-4" />
-                              <span>Xe tải</span>
+                              <span>Truck</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -503,10 +503,10 @@ export default function EmergencyPage() {
                     </div>
 
                       <div className="space-y-3">
-                        <Label className="text-gray-700 font-semibold text-base">⚠️ Loại sự cố</Label>
+                        <Label className="text-gray-700 font-semibold text-base">⚠️ Problem Type</Label>
                       <Select value={problemType} onValueChange={setProblemType}>
                           <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl transition-all duration-300">
-                          <SelectValue placeholder="Chọn vấn đề" />
+                          <SelectValue placeholder="Select problem" />
                         </SelectTrigger>
                           <SelectContent className="rounded-xl border-2 shadow-xl">
                           {problemTypes.map((problem) => (
@@ -523,9 +523,9 @@ export default function EmergencyPage() {
                   </div>
 
                     <div className="space-y-3">
-                      <Label className="text-gray-700 font-semibold text-base">📝 Mô tả chi tiết</Label>
+                      <Label className="text-gray-700 font-semibold text-base">📝 Detailed Description</Label>
                     <Textarea
-                      placeholder="Mô tả tình trạng xe, vị trí cụ thể, mức độ khẩn cấp..."
+                      placeholder="Describe vehicle condition, specific location, urgency level..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                         className="min-h-[100px] border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl transition-all duration-300 text-base"
@@ -573,7 +573,7 @@ export default function EmergencyPage() {
                       <div className="p-2 bg-blue-600 rounded-lg">
                         <Zap className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
                       </div>
-                      <span className="font-bold">Gửi yêu cầu cứu hộ</span>
+                      <span className="font-bold">Submit Emergency Request</span>
                   </CardTitle>
                 </CardHeader>
                   <CardContent className="p-4 lg:p-6 space-y-4 lg:space-y-6">
@@ -586,12 +586,12 @@ export default function EmergencyPage() {
                     {isRequestingHelp ? (
                         <div className="flex items-center space-x-2 lg:space-x-3">
                           <div className="w-5 h-5 lg:w-6 lg:h-6 border-2 lg:border-3 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Đang gửi yêu cầu...</span>
+                          <span>Sending request...</span>
                         </div>
                       ) : (
                         <div className="flex items-center space-x-2 lg:space-x-3">
                           <Zap className="h-5 w-5 lg:h-6 lg:w-6" />
-                          <span>Gửi yêu cầu cứu hộ</span>
+                          <span>Submit Emergency Request</span>
                         </div>
                     )}
                   </Button>
@@ -605,7 +605,7 @@ export default function EmergencyPage() {
                           </div>
                           <div className="flex-1">
                             <h4 className="font-bold text-green-800 text-sm lg:text-base">
-                              Garage cứu hộ đã chọn
+                              Selected Rescue Garage
                             </h4>
                             <p className="text-green-700 text-xs lg:text-sm">
                               {selectedGarage.name} - {selectedGarage.address}
@@ -620,7 +620,7 @@ export default function EmergencyPage() {
                             onClick={() => setSelectedGarage(null)}
                             className="border-green-200 text-green-700 hover:bg-green-100"
                           >
-                            Hủy chọn
+                            Cancel Selection
                           </Button>
                         </div>
                       </div>
@@ -629,52 +629,52 @@ export default function EmergencyPage() {
                     <Alert className="border-blue-200 bg-blue-50 rounded-xl">
                       <AlertTriangle className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                       <AlertDescription className="text-blue-700 font-medium text-sm lg:text-base">
-                        ⚠️ Vui lòng điền đầy đủ thông tin và chọn garage để được hỗ trợ nhanh nhất.
+                        ⚠️ Please fill in all information and select a garage for the fastest support.
                     </AlertDescription>
                   </Alert>
 
                     {/* Progress Indicator */}
                     <div className="space-y-3">
-                      <h4 className="font-semibold text-gray-700 text-sm lg:text-base">Tiến độ hoàn thành:</h4>
+                      <h4 className="font-semibold text-gray-700 text-sm lg:text-base">Completion Progress:</h4>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs lg:text-sm">
                           <span className={userLocation ? "text-green-600 font-medium" : "text-gray-400"}>
-                            {userLocation ? "✅" : "⭕"} Vị trí
+                            {userLocation ? "✅" : "⭕"} Location
                           </span>
                           <span className={userLocation ? "text-green-600" : "text-gray-400"}>
-                            {userLocation ? "Hoàn thành" : "Chưa hoàn thành"}
+                            {userLocation ? "Completed" : "Not completed"}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-xs lg:text-sm">
                           <span className={vehicleType ? "text-green-600 font-medium" : "text-gray-400"}>
-                            {vehicleType ? "✅" : "⭕"} Loại xe
+                            {vehicleType ? "✅" : "⭕"} Vehicle Type
                           </span>
                           <span className={vehicleType ? "text-green-600" : "text-gray-400"}>
-                            {vehicleType ? "Hoàn thành" : "Chưa hoàn thành"}
+                            {vehicleType ? "Completed" : "Not completed"}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-xs lg:text-sm">
                           <span className={problemType ? "text-green-600 font-medium" : "text-gray-400"}>
-                            {problemType ? "✅" : "⭕"} Loại sự cố
+                            {problemType ? "✅" : "⭕"} Problem Type
                           </span>
                           <span className={problemType ? "text-green-600" : "text-gray-400"}>
-                            {problemType ? "Hoàn thành" : "Chưa hoàn thành"}
+                            {problemType ? "Completed" : "Not completed"}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-xs lg:text-sm">
                           <span className={description ? "text-green-600 font-medium" : "text-gray-400"}>
-                            {description ? "✅" : "⭕"} Mô tả
+                            {description ? "✅" : "⭕"} Description
                           </span>
                           <span className={description ? "text-green-600" : "text-gray-400"}>
-                            {description ? "Hoàn thành" : "Chưa hoàn thành"}
+                            {description ? "Completed" : "Not completed"}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-xs lg:text-sm">
                           <span className={selectedGarage ? "text-green-600 font-medium" : "text-gray-400"}>
-                            {selectedGarage ? "✅" : "⭕"} Garage cứu hộ
+                            {selectedGarage ? "✅" : "⭕"} Rescue Garage
                           </span>
                           <span className={selectedGarage ? "text-green-600" : "text-gray-400"}>
-                            {selectedGarage ? "Đã chọn" : "Chưa chọn"}
+                            {selectedGarage ? "Selected" : "Not selected"}
                           </span>
                         </div>
                       </div>

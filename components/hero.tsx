@@ -20,13 +20,13 @@ export function Hero() {
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
             <div className="space-y-4 md:space-y-6">
               <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-tight">
-                Tìm kiếm{" "}
+                Find{" "}
                 <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Garage</span>{" "}
-                gần bạn
+                Near You
               </h1>
               <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0">
-                Kết nối với hàng nghìn garage uy tín, đặt lịch sửa chữa xe nhanh chóng và tiện lợi. Dịch vụ chất lượng,
-                giá cả hợp lý.
+                Connect with thousands of trusted garages, book car repair services quickly and conveniently. Quality service,
+                reasonable prices.
               </p>
             </div>
 
@@ -36,7 +36,7 @@ export function Hero() {
                 <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4 md:h-5 md:w-5" />
                 <input
                   type="text"
-                  placeholder="Tìm garage theo địa điểm..."
+                  placeholder="Find garage by location..."
                   className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm md:text-base"
                 />
               </div>
@@ -44,7 +44,7 @@ export function Hero() {
                 className="absolute right-1 md:right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 px-4 md:px-6 py-2 md:py-3 text-sm md:text-base"
                 asChild
               >
-                <Link href="/search">Tìm kiếm</Link>
+                <Link href="/search">Search</Link>
               </Button>
             </div>
 
@@ -57,7 +57,7 @@ export function Hero() {
               >
                 <Link href="/search">
                   <MapPin className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                  Đặt lịch ngay
+                  Book Now
                 </Link>
               </Button>
               <Button
@@ -68,7 +68,7 @@ export function Hero() {
               >
                 <Link href="/emergency">
                   <Phone className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                  Cứu hộ 24/7
+                  24/7 Emergency
                 </Link>
               </Button>
             </div>
@@ -81,11 +81,11 @@ export function Hero() {
               </div>
               <div className="text-center">
                 <div className="text-xl md:text-2xl lg:text-3xl font-bold text-cyan-600">10K+</div>
-                <div className="text-xs md:text-sm text-slate-600">Khách hàng</div>
+                <div className="text-xs md:text-sm text-slate-600">Customers</div>
               </div>
               <div className="text-center">
                 <div className="text-xl md:text-2xl lg:text-3xl font-bold text-green-600">4.8★</div>
-                <div className="text-xs md:text-sm text-slate-600">Đánh giá</div>
+                <div className="text-xs md:text-sm text-slate-600">Rating</div>
               </div>
             </div>
           </div>

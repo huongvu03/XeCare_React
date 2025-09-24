@@ -28,15 +28,15 @@ function AuthButtons() {
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-medium">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
                   </div>
-                  <span className="hidden sm:block">{user?.name || 'Người dùng'}</span>
+                  <span className="hidden sm:block">{user?.name || 'User'}</span>
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{user?.name || 'Người dùng'}</p>
-                    <p className="text-xs text-slate-500">{user?.email || 'Chưa có email'}</p>
+                    <p className="text-sm font-medium">{user?.name || 'User'}</p>
+                    <p className="text-xs text-slate-500">{user?.email || 'No email'}</p>
                     <div className="flex items-center space-x-1">
                       <div
                         className={`w-2 h-2 rounded-full ${
@@ -44,7 +44,7 @@ function AuthButtons() {
                         }`}
                       />
                       <span className="text-xs text-slate-500 capitalize">
-                        {user?.role === "ADMIN" ? "Quản trị viên" : user?.role === "GARAGE" ? "Chủ garage" : "Người dùng"}
+                        {user?.role === "ADMIN" ? "Administrator" : user?.role === "GARAGE" ? "Garage Owner" : "User"}
                       </span>
                     </div>
                   </div>
@@ -70,13 +70,13 @@ function AuthButtons() {
                     <DropdownMenuItem asChild>
                       <Link href="/user/appointments" className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4" />
-                        <span>Lịch hẹn của tôi</span>
+                        <span>My Appointments</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/search" className="flex items-center space-x-2">
                         <Building2 className="h-4 w-4" />
-                        <span>Tìm garage</span>
+                        <span>Find Garage</span>
                       </Link>
                     </DropdownMenuItem>
                   </>
@@ -94,13 +94,13 @@ function AuthButtons() {
                     <DropdownMenuItem asChild>
                       <Link href="/garage/appointments" className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4" />
-                        <span>Quản lý lịch hẹn</span>
+                        <span>Manage Appointments</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/garage/edit" className="flex items-center space-x-2">
                         <Settings className="h-4 w-4" />
-                        <span>Cập nhật thông tin</span>
+                        <span>Update Information</span>
                       </Link>
                     </DropdownMenuItem>
                   </>
@@ -109,13 +109,13 @@ function AuthButtons() {
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center space-x-2">
                     <User className="h-4 w-4" />
-                    <span>Thông tin cá nhân</span>
+                    <span>Personal Information</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings" className="flex items-center space-x-2">
                     <Settings className="h-4 w-4" />
-                    <span>Cài đặt</span>
+                    <span>Settings</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -124,7 +124,7 @@ function AuthButtons() {
                   className="flex items-center space-x-2 text-red-600 focus:text-red-600 focus:bg-red-50"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Đăng xuất</span>
+                  <span>Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -134,10 +134,10 @@ function AuthButtons() {
   return (
     <>
       <Button variant="ghost" className="text-blue-600 hover:text-blue-700" asChild>
-        <Link href="/auth">Đăng nhập</Link>
+        <Link href="/auth">Login</Link>
       </Button>
       <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" asChild>
-        <Link href="/auth">Đăng ký</Link>
+        <Link href="/auth">Register</Link>
       </Button>
     </>
   )
@@ -166,16 +166,16 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8" suppressHydrationWarning>
             <a href="/#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
-              Giới thiệu
+              About Us
             </a>
             <a href="/#services" className="text-slate-600 hover:text-blue-600 transition-colors">
-              Dịch vụ
+              Services
             </a>
             <a href="/#how-it-works" className="text-slate-600 hover:text-blue-600 transition-colors">
-              Cách hoạt động
+              How It Works
             </a>
             <a href="/#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
-              Liên hệ
+              Contact
             </a>
           </nav>
 
@@ -196,26 +196,26 @@ export function Header() {
           <div className="md:hidden py-4 border-t border-blue-100" suppressHydrationWarning>
             <nav className="flex flex-col space-y-4" suppressHydrationWarning>
               <a href="/#about-us" className="text-slate-600 hover:text-blue-600 transition-colors">
-                Giới thiệu
+                About Us
               </a>
               <a href="/#services" className="text-slate-600 hover:text-blue-600 transition-colors">
-                Dịch vụ
+                Services
               </a>
               <a href="/#how-it-works" className="text-slate-600 hover:text-blue-600 transition-colors">
-                Cách hoạt động
+                How It Works
               </a>
               <a href="/#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
-                Liên hệ
+                Contact
               </a>
               {user && (
                 <>
                   <a href="/favorites" className="text-slate-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
                     <Heart className="h-4 w-4" />
-                    <span>Garage yêu thích</span>
+                    <span>Favorite Garages</span>
                   </a>
                   <a href="/notifications" className="text-slate-600 hover:text-blue-600 transition-colors flex items-center space-x-2">
                     <Bell className="h-4 w-4" />
-                    <span>Thông báo</span>
+                    <span>Notifications</span>
                   </a>
                 </>
               )}

@@ -18,7 +18,7 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
       const res = await axios.post("/apis/v1/auth/forgot-password", { email })
       setMessage(res.data)
     } catch (err: any) {
-      setMessage(err.response?.data || "Có lỗi xảy ra")
+      setMessage(err.response?.data || "An error occurred")
     } finally {
       setLoading(false)
     }
@@ -28,13 +28,13 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
         type="email"
-        placeholder="Nhập email đã đăng ký"
+        placeholder="Enter registered email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
       />
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Đang gửi..." : "Gửi link đặt lại mật khẩu"}
+        {loading ? "Sending..." : "Send password reset link"}
       </Button>
 
       {message && <p className="text-sm text-center text-gray-600">{message}</p>}
@@ -42,7 +42,7 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
         onClick={onBack}
         className="text-blue-600 text-sm text-center cursor-pointer hover:underline"
       >
-        Quay lại đăng nhập
+        Back to login
       </p>
     </form>
   )

@@ -61,19 +61,19 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="vehicleName" className="text-sm font-medium">
-              Tên xe *
+              Vehicle Name *
             </Label>
             <Input
               id="vehicleName"
               value={formData.vehicleName || ""}
               onChange={(e) => setFormData({ ...formData, vehicleName: e.target.value })}
-              placeholder="VD: Xe máy Honda của tôi"
+              placeholder="e.g., My Honda motorcycle"
               className="h-10"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="categoryId" className="text-sm font-medium">
-              Danh mục
+              Category
             </Label>
             <select 
               className="w-full h-10 px-3 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -82,7 +82,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
                 setFormData({ ...formData, categoryId: Number(e.target.value) })
               }}
             >
-              <option value="">Chọn danh mục</option>
+              <option value="">Select category</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.icon} {category.name}
@@ -94,7 +94,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
         {/* Vehicle Type */}
         <div className="space-y-2">
             <Label htmlFor="vehicleTypeId" className="text-sm font-medium">
-              Loại xe
+              Vehicle Type
             </Label>
             <select 
               className="w-full h-10 px-3 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -103,7 +103,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
                 setFormData({ ...formData, vehicleTypeId: Number(e.target.value) })
               }}
             >
-              <option value="">Chọn loại xe</option>
+              <option value="">Select vehicle type</option>
               {vehicleTypes.map((type) => (
                 <option key={type.id} value={type.id}>
                   {type.name}
@@ -115,25 +115,25 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="brand" className="text-sm font-medium">
-              Hãng xe *
+              Vehicle Brand *
             </Label>
             <Input
               id="brand"
               value={formData.brand || ""}
               onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-              placeholder="VD: Honda, Toyota, Yamaha"
+              placeholder="e.g., Honda, Toyota, Yamaha"
               className="h-10"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="model" className="text-sm font-medium">
-              Dòng xe
+              Vehicle Model
             </Label>
             <Input
               id="model"
               value={formData.model || ""}
               onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-              placeholder="VD: Wave Alpha 110cc, Vios 1.5G"
+              placeholder="e.g., Wave Alpha 110cc, Vios 1.5G"
               className="h-10"
             />
           </div>
@@ -142,7 +142,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="year" className="text-sm font-medium">
-              Năm sản xuất
+              Year of Manufacture
             </Label>
             <Input
               id="year"
@@ -158,13 +158,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
           </div>
           <div className="space-y-2">
             <Label htmlFor="licensePlate" className="text-sm font-medium">
-              Biển số xe *
+              License Plate *
             </Label>
             <Input
               id="licensePlate"
               value={formData.licensePlate || ""}
               onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value.toUpperCase() })}
-              placeholder="VD: 59H1-12345"
+              placeholder="e.g., 59H1-12345"
               className="h-10 font-mono"
             />
           </div>
@@ -172,13 +172,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
 
         <div className="space-y-2">
           <Label htmlFor="color" className="text-sm font-medium">
-            Màu sắc
+            Color
           </Label>
           <Input
             id="color"
             value={formData.color || ""}
             onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-            placeholder="VD: Đỏ, Trắng ngọc trai, Xanh dương"
+            placeholder="e.g., Red, Pearl White, Sky Blue"
             className="h-10"
           />
         </div>
@@ -189,12 +189,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSubmit, onCanc
             onClick={onCancel}
             className="px-6"
           >
-            Hủy
+            Cancel
           </Button>
           <Button
             className="px-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
           >
-            {initialData ? "Cập nhật" : "Tạo mới"}
+            {initialData ? "Update" : "Create"}
 
           </Button>
         </div>

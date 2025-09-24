@@ -131,16 +131,16 @@ export const getNotificationPriorityIcon = (priority?: string) => {
 export const getNotificationCategoryLabel = (category?: string) => {
   switch (category) {
     case 'EMERGENCY':
-      return 'Khẩn cấp';
+      return 'Emergency';
     case 'FAVORITE':
-      return 'Yêu thích';
+      return 'Favorite';
     case 'APPOINTMENT':
-      return 'Lịch hẹn';
+      return 'Appointment';
     case 'SYSTEM':
-      return 'Hệ thống';
+      return 'System';
     case 'GARAGE':
       return 'Garage';
     default:
-      return 'Chung';
+      return 'General';
   }
 };

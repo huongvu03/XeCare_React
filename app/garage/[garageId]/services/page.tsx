@@ -93,10 +93,10 @@ export default function GarageServicesPage() {
       
       console.log("Fetching data for garage:", garageId)
       
-      // Kiểm tra token trước khi gọi API
+      // Check token before calling API
       const token = localStorage.getItem("token")
       if (!token) {
-        setError("Bạn chưa đăng nhập. Vui lòng đăng nhập lại.")
+        setError("You are not logged in. Please login again.")
         return
       }
       
@@ -118,13 +118,13 @@ export default function GarageServicesPage() {
       console.error("Error response:", err.response)
       console.error("Error message:", err.message)
       
-             // Kiểm tra nếu lỗi 401 hoặc 403, có thể do token hết hạn
+             // Check if error 401 or 403, possibly due to expired token
        if (err.response?.status === 401 || err.response?.status === 403) {
-         setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
+         setError("Login session has expired. Please login again.")
          // Có thể redirect về trang login
          // router.push("/login")
        } else {
-         setError(`Không thể tải thông tin dịch vụ: ${err.response?.data?.message || err.message || "Lỗi không xác định"}`)
+         setError(`Cannot load service information: ${err.response?.data?.message || err.message || "Unknown error"}`)
        }
     } finally {
       setLoading(false)
@@ -136,14 +136,14 @@ export default function GarageServicesPage() {
     console.log("localStorage token:", localStorage.getItem("token"))
     
     if (garageId && user) {
-      // Kiểm tra xem user có phải là owner của garage này không
+      // Check if user is the owner of this garage
       const isOwner = user.garages && user.garages.some(g => g.id === garageId)
       console.log("isOwner:", isOwner, "user.role:", user.role)
       console.log("user.garages:", user.garages)
       
-      // Tạm thời bỏ qua check owner để test
+      // Temporarily skip owner check for testing
       // if (!isOwner && user.role !== "ADMIN") {
-      //   setError("Bạn không có quyền quản lý garage này")
+      //   setError("You do not have permission to manage this garage")
       //   setLoading(false)
       //   return
       // }
@@ -156,19 +156,19 @@ export default function GarageServicesPage() {
     const errors: {[key: string]: string} = {}
     
     if (!data.serviceId) {
-      errors.serviceId = "Vui lòng chọn dịch vụ"
+      errors.serviceId = "Please select a service"
     }
     
     if (data.price !== undefined && data.price <= 0) {
-      errors.price = "Giá phải lớn hơn 0"
+      errors.price = "Price must be greater than 0"
     } else if (data.price !== undefined && data.price > 1000000000) {
-      errors.price = "Giá không được quá 1 tỷ VNĐ"
+      errors.price = "Price cannot exceed 1 billion VND"
     }
     
     if (data.estimatedTimeMinutes !== undefined && data.estimatedTimeMinutes <= 0) {
-      errors.estimatedTimeMinutes = "Thời gian ước tính phải lớn hơn 0"
+      errors.estimatedTimeMinutes = "Estimated time must be greater than 0"
     } else if (data.estimatedTimeMinutes !== undefined && data.estimatedTimeMinutes > 1440) {
-      errors.estimatedTimeMinutes = "Thời gian không được quá 24 giờ (1440 phút)"
+      errors.estimatedTimeMinutes = "Time cannot exceed 24 hours (1440 minutes)"
     }
     
     return errors
@@ -186,7 +186,7 @@ export default function GarageServicesPage() {
         const errors = validateSystemService(formData)
         if (Object.keys(errors).length > 0) {
           setCustomServiceErrors(errors)
-          toast.error("Vui lòng kiểm tra lại thông tin")
+          toast.error("Please check the information again")
           return
         }
       }
@@ -212,7 +212,7 @@ export default function GarageServicesPage() {
         }
         
         await updateGarageService(editingService.id, formData)
-        toast.success("Cập nhật dịch vụ thành công!")
+        toast.success("Service updated successfully!")
         
         // Reset form and close dialog
         setFormData({
@@ -226,7 +226,7 @@ export default function GarageServicesPage() {
         setCustomServiceErrors({})
       } else {
         await createGarageService(formData)
-        toast.success("Thêm dịch vụ thành công! Dịch vụ đã được kích hoạt và sẵn sàng sử dụng.")
+        toast.success("Service added successfully! The service has been activated and is ready to use.")
         
         // Reset form and close dialog
         setFormData({
@@ -255,7 +255,7 @@ export default function GarageServicesPage() {
         )
       }
       
-      toast.error(err.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại.")
+      toast.error(err.response?.data?.message || "An error occurred. Please try again.")
     } finally {
       setSubmitting(false)
     }
@@ -266,36 +266,36 @@ export default function GarageServicesPage() {
     const errors: {[key: string]: string} = {}
     
     if (!data.name || data.name.trim().length < 3) {
-      errors.name = "Tên dịch vụ phải có ít nhất 3 ký tự"
+      errors.name = "Service name must have at least 3 characters"
     }
     
     if (data.name && data.name.length > 100) {
-      errors.name = "Tên dịch vụ không được quá 100 ký tự"
+      errors.name = "Service name cannot exceed 100 characters"
     }
     
     if (data.description && data.description.length > 500) {
-      errors.description = "Mô tả không được quá 500 ký tự"
+      errors.description = "Description cannot exceed 500 characters"
     }
     
     if (!data.basePrice || data.basePrice <= 0) {
-      errors.basePrice = "Giá phải lớn hơn 0"
+      errors.basePrice = "Price must be greater than 0"
     } else if (data.basePrice > 1000000000) {
-      errors.basePrice = "Giá không được quá 1 tỷ VNĐ"
+      errors.basePrice = "Price cannot exceed 1 billion VND"
     }
     
     if (!data.estimatedTimeMinutes || data.estimatedTimeMinutes <= 0) {
-      errors.estimatedTimeMinutes = "Thời gian ước tính phải lớn hơn 0"
+      errors.estimatedTimeMinutes = "Estimated time must be greater than 0"
     } else if (data.estimatedTimeMinutes > 1440) {
-      errors.estimatedTimeMinutes = "Thời gian không được quá 24 giờ (1440 phút)"
+      errors.estimatedTimeMinutes = "Time cannot exceed 24 hours (1440 minutes)"
     }
     
-    // Kiểm tra từ cấm trong tên
+    // Check forbidden words in name
     const forbiddenNameErrors = checkForbiddenWords(data.name, 'name')
     if (forbiddenNameErrors.name) {
       errors.name = forbiddenNameErrors.name
     }
     
-    // Kiểm tra từ cấm trong mô tả
+    // Check forbidden words in description
     if (data.description) {
       const forbiddenDescErrors = checkForbiddenWords(data.description, 'description')
       if (forbiddenDescErrors.description) {
@@ -303,7 +303,7 @@ export default function GarageServicesPage() {
       }
     }
     
-    // Kiểm tra trùng tên
+    // Check duplicate names
     const duplicateErrors = checkDuplicateServiceName(data.name)
     if (duplicateErrors.name) {
       errors.name = duplicateErrors.name
@@ -476,24 +476,24 @@ export default function GarageServicesPage() {
     
     const lowerName = name.toLowerCase().trim()
     
-    // Kiểm tra trùng tên với các dịch vụ đã có trong garage
+    // Check duplicate names với các dịch vụ đã có trong garage
     if (services) {
       const existingService = services.find(service => 
         service.serviceName.toLowerCase() === lowerName
       )
       if (existingService) {
-        errors.name = `Tên dịch vụ "${name}" đã tồn tại trong garage này`
+        errors.name = `Service name "${name}" already exists in this garage`
         return errors
       }
     }
     
-    // Kiểm tra trùng tên với system services
+    // Check duplicate names với system services
     if (systemServices) {
       const existingSystemService = systemServices.find(service => 
         service.name.toLowerCase() === lowerName
       )
       if (existingSystemService) {
-        errors.name = `Tên dịch vụ "${name}" đã tồn tại trong hệ thống`
+        errors.name = `Service name "${name}" already exists in the system`
         return errors
       }
     }
@@ -509,7 +509,7 @@ export default function GarageServicesPage() {
       return errors
     }
     
-    // Kiểm tra từ cấm
+    // Check forbidden words
     const forbiddenWords = [
       'fuck', 'shit', 'bitch', 'ass', 'dick', 'pussy', 'cock', 'cunt', 'whore', 'slut',
       'sex', 'porn', 'xxx', 'adult', '18+', 'nude', 'naked', 'penis', 'vagina',
@@ -524,8 +524,8 @@ export default function GarageServicesPage() {
     console.log(`Checking forbidden words for ${field}:`, text, 'Found:', foundForbiddenWords)
     
     if (foundForbiddenWords.length > 0) {
-      const fieldName = field === 'name' ? 'Tên dịch vụ' : 'Mô tả dịch vụ'
-      errors[field] = `${fieldName} không được chứa từ cấm: ${foundForbiddenWords.join(', ')}`
+      const fieldName = field === 'name' ? 'Service name' : 'Service description'
+      errors[field] = `${fieldName} cannot contain forbidden words: ${foundForbiddenWords.join(', ')}`
     }
     
     return errors
@@ -596,12 +596,12 @@ export default function GarageServicesPage() {
     return (
       <DashboardLayout 
         allowedRoles={["GARAGE"]}
-        title="Quản lý dịch vụ"
-        description="Đang xác thực..."
+        title="Manage Services"
+        description="Authenticating..."
       >
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Đang xác thực người dùng...</span>
+          <span className="ml-2">Authenticating user...</span>
         </div>
       </DashboardLayout>
     )
@@ -611,12 +611,12 @@ export default function GarageServicesPage() {
     return (
       <DashboardLayout 
         allowedRoles={["GARAGE"]}
-        title="Quản lý dịch vụ"
-        description="Đang tải..."
+        title="Manage Services"
+        description="Loading..."
       >
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Đang tải...</span>
+          <span className="ml-2">Loading...</span>
         </div>
       </DashboardLayout>
     )
@@ -626,14 +626,14 @@ export default function GarageServicesPage() {
     return (
       <DashboardLayout 
         allowedRoles={["GARAGE"]}
-        title="Quản lý dịch vụ"
-        description="Có lỗi xảy ra"
+        title="Manage Services"
+        description="An error occurred"
       >
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="text-red-600">{error}</p>
-                         <Button onClick={fetchData} className="mt-4">Thử lại</Button>
+                         <Button onClick={fetchData} className="mt-4">Try Again</Button>
              <Button onClick={handleDebug} className="mt-2 ml-2" variant="outline">Debug User</Button>
              <Button onClick={handleDebugGarage} className="mt-2 ml-2" variant="outline">Debug Garage</Button>
              <Button onClick={handleTestAuth} className="mt-2 ml-2" variant="outline">Test Auth</Button>
@@ -649,7 +649,7 @@ export default function GarageServicesPage() {
     <DashboardLayout 
       allowedRoles={["GARAGE"]}
       title="Quản lý dịch vụ"
-      description="Quản lý các dịch vụ của garage"
+      description="Manage garage services"
     >
       <div className="space-y-6">
         {/* Header */}
@@ -661,11 +661,11 @@ export default function GarageServicesPage() {
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>Quay lại</span>
+              <span>Back</span>
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Quản lý dịch vụ</h1>
-              <p className="text-gray-600">Quản lý các dịch vụ của garage</p>
+              <h1 className="text-2xl font-bold">Manage Services</h1>
+              <p className="text-gray-600">Manage garage services</p>
             </div>
           </div>
           
@@ -695,17 +695,17 @@ export default function GarageServicesPage() {
             <DialogTrigger asChild>
               <Button className="flex items-center space-x-2">
                 <Plus className="h-4 w-4" />
-                <span>Thêm dịch vụ</span>
+                <span>Add Service</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Thêm dịch vụ mới</DialogTitle>
+                <DialogTitle>Add New Service</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 {/* Service Type Selection */}
                 <div>
-                  <Label>Loại dịch vụ</Label>
+                  <Label>Service Type</Label>
                   <div className="flex space-x-4 mt-2">
                     <Button
                       type="button"
@@ -715,7 +715,7 @@ export default function GarageServicesPage() {
                         setCustomServiceErrors({})
                       }}
                     >
-                      Chọn từ danh sách
+                      Select from List
                     </Button>
                     <Button
                       type="button"
@@ -725,7 +725,7 @@ export default function GarageServicesPage() {
                         setCustomServiceErrors({})
                       }}
                     >
-                      Tạo tùy chỉnh
+                      Create Custom
                     </Button>
                   </div>
                 </div>
@@ -733,13 +733,13 @@ export default function GarageServicesPage() {
                 {!isCustomServiceMode ? (
                   // System service selection
                   <div>
-                    <Label htmlFor="service">Dịch vụ</Label>
+                    <Label htmlFor="service">Service</Label>
                     <Select 
                       value={formData.serviceId.toString()} 
                       onValueChange={(value) => setFormData({...formData, serviceId: Number(value)})}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Chọn dịch vụ" />
+                        <SelectValue placeholder="Select service" />
                       </SelectTrigger>
                       <SelectContent>
                         {getAvailableServices().map((service) => (
@@ -754,10 +754,10 @@ export default function GarageServicesPage() {
                   // Custom service form
                   <>
                     <div>
-                      <Label htmlFor="customName">Tên dịch vụ *</Label>
+                      <Label htmlFor="customName">Service Name *</Label>
                       <Input
                         id="customName"
-                        placeholder="Nhập tên dịch vụ"
+                        placeholder="Enter service name"
                         value={customServiceData.name}
                         onChange={(e) => {
                           const newName = e.target.value
@@ -770,14 +770,14 @@ export default function GarageServicesPage() {
                           
                           // Real-time validation for duplicate names and forbidden words
                           if (newName && newName.trim().length >= 3) {
-                            // Kiểm tra từ cấm trước
+                            // Check forbidden words trước
                             const forbiddenErrors = checkForbiddenWords(newName, 'name')
                             if (forbiddenErrors.name) {
                               setCustomServiceErrors({...customServiceErrors, ...forbiddenErrors})
                               return
                             }
                             
-                            // Kiểm tra trùng tên
+                            // Check duplicate names
                             const duplicateErrors = checkDuplicateServiceName(newName)
                             if (duplicateErrors.name) {
                               setCustomServiceErrors({...customServiceErrors, ...duplicateErrors})
@@ -789,15 +789,15 @@ export default function GarageServicesPage() {
                         <p className="text-sm text-red-600 mt-1">{customServiceErrors.name}</p>
                       )}
                       {!customServiceErrors.name && customServiceData.name && customServiceData.name.trim().length >= 3 && (
-                        <p className="text-sm text-green-600 mt-1">✓ Tên dịch vụ hợp lệ</p>
+                        <p className="text-sm text-green-600 mt-1">✓ Valid service name</p>
                       )}
                     </div>
                     
                     <div>
-                      <Label htmlFor="customDescription">Mô tả (tùy chọn)</Label>
+                      <Label htmlFor="customDescription">Description (optional)</Label>
                       <Textarea
                         id="customDescription"
-                        placeholder="Nhập mô tả dịch vụ"
+                        placeholder="Enter service description"
                         value={customServiceData.description}
                         onChange={(e) => {
                           const newDescription = e.target.value
@@ -814,10 +814,10 @@ export default function GarageServicesPage() {
                             
                             // Kiểm tra độ dài mô tả
                             if (newDescription.length > 500) {
-                              errors.description = "Mô tả không được quá 500 ký tự"
+                              errors.description = "Description cannot exceed 500 characters"
                             }
                             
-                            // Kiểm tra từ cấm
+                            // Check forbidden words
                             const forbiddenErrors = checkForbiddenWords(newDescription, 'description')
                             if (forbiddenErrors.description) {
                               errors.description = forbiddenErrors.description
@@ -833,18 +833,18 @@ export default function GarageServicesPage() {
                           <p className="text-sm text-red-600 mt-1">{customServiceErrors.description}</p>
                         )}
                         {!customServiceErrors.description && customServiceData.description && customServiceData.description.trim().length > 0 && customServiceData.description.length <= 500 && (
-                          <p className="text-sm text-green-600 mt-1">✓ Mô tả hợp lệ</p>
+                          <p className="text-sm text-green-600 mt-1">✓ Valid description</p>
                         )}
                     </div>
                   </>
                 )}
                 
                 <div>
-                  <Label htmlFor="price">Giá cơ bản (VNĐ)</Label>
+                  <Label htmlFor="price">Base Price (VND)</Label>
                   <Input
                     id="price"
                     type="number"
-                    placeholder="Nhập giá"
+                    placeholder="Enter price"
                     value={!isCustomServiceMode ? (formData.price || "") : (customServiceData.basePrice || "")}
                     onChange={(e) => {
                       if (!isCustomServiceMode) {
@@ -857,11 +857,11 @@ export default function GarageServicesPage() {
                           const errors: {[key: string]: string} = {}
                           
                           if (isNaN(numValue)) {
-                            errors.price = "Giá phải là số hợp lệ"
+                            errors.price = "Price must be a valid number"
                           } else if (numValue <= 0) {
-                            errors.price = "Giá phải lớn hơn 0"
+                            errors.price = "Price must be greater than 0"
                           } else if (numValue > 1000000000) {
-                            errors.price = "Giá không được quá 1 tỷ VNĐ"
+                            errors.price = "Price cannot exceed 1 billion VND"
                           }
                           
                           if (Object.keys(errors).length > 0) {
@@ -879,7 +879,7 @@ export default function GarageServicesPage() {
                           }
                         }
                       } else {
-                        // Cho phép xóa số 0 trong phần tùy chỉnh
+                        // Allow deleting 0 in custom section
                         const value = e.target.value === "" ? 0 : Number(e.target.value)
                         setCustomServiceData({...customServiceData, basePrice: value})
                         
@@ -894,11 +894,11 @@ export default function GarageServicesPage() {
                           const errors: {[key: string]: string} = {}
                           
                           if (isNaN(numValue)) {
-                            errors.basePrice = "Giá phải là số hợp lệ"
+                            errors.basePrice = "Price must be a valid number"
                           } else if (numValue <= 0) {
-                            errors.basePrice = "Giá phải lớn hơn 0"
+                            errors.basePrice = "Price must be greater than 0"
                           } else if (numValue > 1000000000) {
-                            errors.basePrice = "Giá không được quá 1 tỷ VNĐ"
+                            errors.basePrice = "Price cannot exceed 1 billion VND"
                           }
                           
                           if (Object.keys(errors).length > 0) {
@@ -912,19 +912,19 @@ export default function GarageServicesPage() {
                     <p className="text-sm text-red-600 mt-1">{customServiceErrors.price}</p>
                   )}
                   {!customServiceErrors.price && isCustomServiceMode && customServiceData.basePrice > 0 && customServiceData.basePrice <= 1000000000 && (
-                    <p className="text-sm text-green-600 mt-1">✓ Giá hợp lệ</p>
+                    <p className="text-sm text-green-600 mt-1">✓ Valid price</p>
                   )}
                   {!customServiceErrors.price && !isCustomServiceMode && formData.price && formData.price > 0 && formData.price <= 1000000000 && (
-                    <p className="text-sm text-green-600 mt-1">✓ Giá hợp lệ</p>
+                    <p className="text-sm text-green-600 mt-1">✓ Valid price</p>
                   )}
                 </div>
                 
                 <div>
-                  <Label htmlFor="estimatedTime">Thời gian ước tính (phút)</Label>
+                  <Label htmlFor="estimatedTime">Estimated Time (minutes)</Label>
                   <Input
                     id="estimatedTime"
                     type="number"
-                    placeholder="Nhập thời gian"
+                    placeholder="Enter time"
                     value={!isCustomServiceMode ? (formData.estimatedTimeMinutes || "") : (customServiceData.estimatedTimeMinutes || "")}
                     onChange={(e) => {
                       if (!isCustomServiceMode) {
@@ -937,11 +937,11 @@ export default function GarageServicesPage() {
                           const errors: {[key: string]: string} = {}
                           
                           if (isNaN(numValue)) {
-                            errors.estimatedTimeMinutes = "Thời gian phải là số hợp lệ"
+                            errors.estimatedTimeMinutes = "Time must be a valid number"
                           } else if (numValue <= 0) {
-                            errors.estimatedTimeMinutes = "Thời gian ước tính phải lớn hơn 0"
+                            errors.estimatedTimeMinutes = "Estimated time must be greater than 0"
                           } else if (numValue > 1440) {
-                            errors.estimatedTimeMinutes = "Thời gian không được quá 24 giờ (1440 phút)"
+                            errors.estimatedTimeMinutes = "Time cannot exceed 24 hours (1440 minutes)"
                           }
                           
                           if (Object.keys(errors).length > 0) {
@@ -959,7 +959,7 @@ export default function GarageServicesPage() {
                           }
                         }
                       } else {
-                        // Cho phép xóa số 0 trong phần tùy chỉnh
+                        // Allow deleting 0 in custom section
                         const value = e.target.value === "" ? 0 : Number(e.target.value)
                         setCustomServiceData({...customServiceData, estimatedTimeMinutes: value})
                         
@@ -974,11 +974,11 @@ export default function GarageServicesPage() {
                           const errors: {[key: string]: string} = {}
                           
                           if (isNaN(numValue)) {
-                            errors.estimatedTimeMinutes = "Thời gian phải là số hợp lệ"
+                            errors.estimatedTimeMinutes = "Time must be a valid number"
                           } else if (numValue <= 0) {
-                            errors.estimatedTimeMinutes = "Thời gian ước tính phải lớn hơn 0"
+                            errors.estimatedTimeMinutes = "Estimated time must be greater than 0"
                           } else if (numValue > 1440) {
-                            errors.estimatedTimeMinutes = "Thời gian không được quá 24 giờ (1440 phút)"
+                            errors.estimatedTimeMinutes = "Time cannot exceed 24 hours (1440 minutes)"
                           }
                           
                           if (Object.keys(errors).length > 0) {
@@ -992,10 +992,10 @@ export default function GarageServicesPage() {
                     <p className="text-sm text-red-600 mt-1">{customServiceErrors.estimatedTimeMinutes}</p>
                   )}
                   {!customServiceErrors.estimatedTimeMinutes && isCustomServiceMode && customServiceData.estimatedTimeMinutes > 0 && customServiceData.estimatedTimeMinutes <= 1440 && (
-                    <p className="text-sm text-green-600 mt-1">✓ Thời gian hợp lệ</p>
+                    <p className="text-sm text-green-600 mt-1">✓ Valid time</p>
                   )}
                   {!customServiceErrors.estimatedTimeMinutes && !isCustomServiceMode && formData.estimatedTimeMinutes && formData.estimatedTimeMinutes > 0 && formData.estimatedTimeMinutes <= 1440 && (
-                    <p className="text-sm text-green-600 mt-1">✓ Thời gian hợp lệ</p>
+                    <p className="text-sm text-green-600 mt-1">✓ Valid time</p>
                   )}
                 </div>
                 
@@ -1011,7 +1011,7 @@ export default function GarageServicesPage() {
                       }
                     }}
                   />
-                  <Label htmlFor="isActive">Kích hoạt dịch vụ</Label>
+                  <Label htmlFor="isActive">Activate Service</Label>
                 </div>
                 
                 <div className="flex justify-end space-x-2">
@@ -1035,13 +1035,13 @@ export default function GarageServicesPage() {
                     setIsCustomServiceMode(false)
                     setIsAddDialogOpen(false)
                   }}>
-                    Hủy
+                    Cancel
                   </Button>
                   <Button 
                     onClick={() => isCustomServiceMode ? handleCustomServiceSubmit() : handleSubmit(false)} 
                     disabled={submitting || (!isCustomServiceMode && !formData.serviceId) || (isCustomServiceMode && !customServiceData.name.trim())}
                   >
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Thêm"}
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
                   </Button>
                 </div>
               </div>
@@ -1054,7 +1054,7 @@ export default function GarageServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tổng dịch vụ</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Services</CardTitle>
                 <Wrench className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -1064,7 +1064,7 @@ export default function GarageServicesPage() {
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Đang hoạt động</CardTitle>
+                <CardTitle className="text-sm font-medium">Active</CardTitle>
                 <CheckCircle className="h-4 w-4 text-green-600" />
               </CardHeader>
               <CardContent>
@@ -1074,7 +1074,7 @@ export default function GarageServicesPage() {
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Không hoạt động</CardTitle>
+                <CardTitle className="text-sm font-medium">Inactive</CardTitle>
                 <XCircle className="h-4 w-4 text-red-600" />
               </CardHeader>
               <CardContent>
@@ -1087,13 +1087,13 @@ export default function GarageServicesPage() {
         {/* Services List */}
         <Card>
           <CardHeader>
-            <CardTitle>Danh sách dịch vụ</CardTitle>
+            <CardTitle>Services List</CardTitle>
           </CardHeader>
           <CardContent>
             {services.length === 0 ? (
               <div className="text-center py-8">
                 <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Chưa có dịch vụ nào. Hãy thêm dịch vụ đầu tiên!</p>
+                <p className="text-gray-600">No services yet. Add the first service!</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -1104,7 +1104,7 @@ export default function GarageServicesPage() {
                         <div className="flex items-center space-x-2 mb-2">
                           <h3 className="font-semibold">{service.serviceName}</h3>
                           <Badge variant={service.isActive ? "default" : "secondary"}>
-                            {service.isActive ? "✅ Đang hoạt động" : "⏸️ Tạm dừng"}
+                            {service.isActive ? "✅ Active" : "⏸️ Paused"}
                           </Badge>
                         </div>
                         
@@ -1114,14 +1114,14 @@ export default function GarageServicesPage() {
                           {service.price && (
                             <div className="flex items-center space-x-1">
                               <DollarSign className="h-4 w-4 text-green-600" />
-                              <span>{service.price.toLocaleString()} VNĐ</span>
+                              <span>{service.price.toLocaleString()} VND</span>
                             </div>
                           )}
                           
                           {service.estimatedTimeMinutes && (
                             <div className="flex items-center space-x-1">
                               <Clock className="h-4 w-4 text-blue-600" />
-                              <span>{service.estimatedTimeMinutes} phút</span>
+                              <span>{service.estimatedTimeMinutes} minutes</span>
                             </div>
                           )}
                         </div>
@@ -1141,7 +1141,7 @@ export default function GarageServicesPage() {
                           size="sm"
                           onClick={() => handleToggleStatus(service.id)}
                           disabled={togglingServices.has(service.id)}
-                          title={service.isActive ? "Tạm dừng dịch vụ" : "Kích hoạt dịch vụ"}
+                          title={service.isActive ? "Pause service" : "Activate service"}
                         >
                           {togglingServices.has(service.id) ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -1162,11 +1162,11 @@ export default function GarageServicesPage() {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Cập nhật dịch vụ</DialogTitle>
+              <DialogTitle>Update Service</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Dịch vụ</Label>
+                <Label>Service</Label>
                 <Input
                   value={editingService?.serviceName || ""}
                   disabled
@@ -1175,7 +1175,7 @@ export default function GarageServicesPage() {
               </div>
               
               <div>
-                <Label htmlFor="editPrice">Giá cơ bản (VNĐ)</Label>
+                <Label htmlFor="editPrice">Base Price (VND)</Label>
                 <Input
                   id="editPrice"
                   type="number"
@@ -1196,11 +1196,11 @@ export default function GarageServicesPage() {
                       const errors: {[key: string]: string} = {}
                       
                       if (isNaN(numValue)) {
-                        errors.price = "Giá phải là số hợp lệ"
+                        errors.price = "Price must be a valid number"
                       } else if (numValue <= 0) {
-                        errors.price = "Giá phải lớn hơn 0"
+                        errors.price = "Price must be greater than 0"
                       } else if (numValue > 1000000000) {
-                        errors.price = "Giá không được quá 1 tỷ VNĐ"
+                        errors.price = "Price cannot exceed 1 billion VND"
                       }
                       
                       if (Object.keys(errors).length > 0) {
@@ -1218,7 +1218,7 @@ export default function GarageServicesPage() {
               </div>
               
               <div>
-                <Label htmlFor="editEstimatedTime">Thời gian ước tính (phút)</Label>
+                <Label htmlFor="editEstimatedTime">Estimated Time (minutes)</Label>
                 <Input
                   id="editEstimatedTime"
                   type="number"
@@ -1239,11 +1239,11 @@ export default function GarageServicesPage() {
                       const errors: {[key: string]: string} = {}
                       
                       if (isNaN(numValue)) {
-                        errors.estimatedTimeMinutes = "Thời gian phải là số hợp lệ"
+                        errors.estimatedTimeMinutes = "Time must be a valid number"
                       } else if (numValue <= 0) {
-                        errors.estimatedTimeMinutes = "Thời gian ước tính phải lớn hơn 0"
+                        errors.estimatedTimeMinutes = "Estimated time must be greater than 0"
                       } else if (numValue > 1440) {
-                        errors.estimatedTimeMinutes = "Thời gian không được quá 24 giờ (1440 phút)"
+                        errors.estimatedTimeMinutes = "Time cannot exceed 24 hours (1440 minutes)"
                       }
                       
                       if (Object.keys(errors).length > 0) {
@@ -1280,7 +1280,7 @@ export default function GarageServicesPage() {
                   onClick={() => handleSubmit(true)} 
                   disabled={submitting}
                 >
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Cập nhật"}
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
                 </Button>
               </div>
             </div>

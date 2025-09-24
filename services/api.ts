@@ -81,6 +81,58 @@ function buildQueryString(params: Record<string, any>): string {
   return searchParams.toString();
 }
 
+// Utility function để serialize error objects safely
+function serializeError(error: any): Record<string, any> {
+  const serialized: Record<string, any> = {};
+  
+  // Basic properties
+  if (error?.message) serialized.message = error.message;
+  if (error?.name) serialized.name = error.name;
+  if (error?.code) serialized.code = error.code;
+  if (error?.stack) serialized.stack = error.stack;
+  
+  // HTTP response properties
+  if (error?.response) {
+    serialized.response = {
+      status: error.response.status,
+      statusText: error.response.statusText,
+      data: error.response.data
+    };
+  }
+  
+  // Config/request properties
+  if (error?.config) {
+    serialized.config = {
+      url: error.config.url,
+      method: error.config.method,
+      baseURL: error.config.baseURL
+    };
+  }
+  
+  // Additional properties
+  if (error?.url) serialized.url = error.url;
+  if (error?.status) serialized.status = error.status;
+  if (error?.statusText) serialized.statusText = error.statusText;
+  
+  // Try to get all enumerable properties
+  try {
+    const enumerableProps = Object.getOwnPropertyNames(error);
+    enumerableProps.forEach(prop => {
+      if (!serialized[prop] && typeof error[prop] !== 'function') {
+        try {
+          serialized[prop] = error[prop];
+        } catch (e) {
+          serialized[prop] = '[Cannot serialize]';
+        }
+      }
+    });
+  } catch (e) {
+    serialized.enumerablePropsError = 'Cannot enumerate properties';
+  }
+  
+  return serialized;
+}
+
 // API Client class
 class ApiClient {
   private baseUrl: string;
@@ -113,8 +165,26 @@ class ApiClient {
       const response = await fetch(url, defaultOptions);
       
       if (!response.ok) {
-        console.error('API Error:', { url, status: response.status, statusText: response.statusText });
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        console.error('API Error:', { 
+          url, 
+          status: response.status, 
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        // Provide more specific error messages based on status
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        if (response.status === 404) {
+          errorMessage = `Endpoint not found (404): ${url}. Please check if the backend server is running and the endpoint exists.`;
+        } else if (response.status === 500) {
+          errorMessage = `Server error (500): ${url}. The backend server encountered an internal error.`;
+        } else if (response.status === 401) {
+          errorMessage = `Unauthorized (401): ${url}. Please check your authentication token.`;
+        } else if (response.status === 403) {
+          errorMessage = `Forbidden (403): ${url}. You don't have permission to access this resource.`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       // Handle empty responses
@@ -125,8 +195,27 @@ class ApiClient {
 
       // Check if response is HTML (error page) instead of JSON
       if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-        console.error('Server returned HTML instead of JSON:', { url, text: text.substring(0, 200) });
-        throw new Error('Server returned HTML error page instead of JSON response. Please check if the backend server is running.');
+        console.error('Server returned HTML instead of JSON:', { 
+          url, 
+          status: response.status,
+          statusText: response.statusText,
+          contentType: response.headers.get('content-type'),
+          text: text.substring(0, 200) 
+        });
+        
+        // Provide more specific error messages based on status
+        let errorMessage = 'Server returned HTML error page instead of JSON response.';
+        if (response.status === 404) {
+          errorMessage = `Endpoint not found (404): ${url}. Please check if the backend server is running and the endpoint exists.`;
+        } else if (response.status === 500) {
+          errorMessage = `Server error (500): ${url}. The backend server encountered an internal error.`;
+        } else if (response.status === 0 || !response.status) {
+          errorMessage = `Network error: Cannot connect to backend server at ${this.baseUrl}. Please check if the server is running.`;
+        } else {
+          errorMessage = `Server error (${response.status}): ${url}. Please check if the backend server is running.`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       // Try to parse JSON
@@ -136,9 +225,49 @@ class ApiClient {
         console.error('JSON Parse Error:', { url, text: text.substring(0, 200), parseError });
         throw new Error(`Invalid JSON response from server: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
       }
-    } catch (error) {
-      console.error('API call failed:', error);
-      throw error;
+    } catch (error: any) {
+      // Create a more detailed error object for better debugging
+      const errorDetails = {
+        message: error?.message || 'Unknown error',
+        name: error?.name || 'No error name',
+        url: url,
+        baseUrl: this.baseUrl,
+        status: error?.response?.status || error?.status || 'No status',
+        statusText: error?.response?.statusText || error?.statusText || 'No status text',
+        code: error?.code || 'No error code',
+        stack: error?.stack || 'No stack trace'
+      };
+      
+      console.error('API call failed:', errorDetails);
+      console.error('Serialized error:', serializeError(error));
+      console.error('Raw error object:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      
+      // Handle specific network errors
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        const networkError = new Error(`Network error: Cannot connect to backend server at ${this.baseUrl}. Please check if the server is running.`);
+        networkError.cause = error;
+        throw networkError;
+      } else if (error.name === 'AbortError') {
+        const timeoutError = new Error(`Request timeout: The request to ${url} took too long to complete.`);
+        timeoutError.cause = error;
+        throw timeoutError;
+      }
+      
+      // Create a new error with better information
+      const enhancedError = new Error(errorDetails.message);
+      enhancedError.cause = error;
+      enhancedError.name = errorDetails.name;
+      
+      // Add custom properties for debugging
+      (enhancedError as any).url = url;
+      (enhancedError as any).baseUrl = this.baseUrl;
+      (enhancedError as any).status = errorDetails.status;
+      (enhancedError as any).statusText = errorDetails.statusText;
+      (enhancedError as any).code = errorDetails.code;
+      
+      throw enhancedError;
     }
   }
 
@@ -172,7 +301,21 @@ class ApiClient {
 
   // Services API
   async getAllServices(): Promise<Service[]> {
-    return this.fetchApi<Service[]>('/apis/admin/services');
+    // Use public endpoint instead of admin endpoint to avoid authentication issues
+    try {
+      const serviceNames = await this.fetchApi<string[]>('/apis/garage/services/available');
+      // Convert service names to Service objects
+      return serviceNames.map((name, index) => ({
+        id: index + 1,
+        name: name,
+        description: `Service: ${name}`,
+        isActive: true
+      }));
+    } catch (error) {
+      console.error('Error fetching services from public endpoint:', error);
+      // Fallback to admin endpoint if public endpoint fails
+      return this.fetchApi<Service[]>('/apis/admin/services');
+    }
   }
 
   async getAvailableVehicleTypes(): Promise<string[]> {
@@ -219,6 +362,4 @@ class ApiClient {
 
 // Export singleton instance
 export const apiClient = new ApiClient();
-// Export types
-export type { PublicGarageResponseDto, GarageSearchParams, PaginatedResponse, GarageStats, Service };
 

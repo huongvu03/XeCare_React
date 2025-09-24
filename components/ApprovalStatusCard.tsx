@@ -40,26 +40,26 @@ export function ApprovalStatusCard({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "APPROVED":
-        return <Badge variant="default" className="bg-green-100 text-green-800">Đã duyệt</Badge>
+        return <Badge variant="default" className="bg-green-100 text-green-800">Approved</Badge>
       case "REJECTED":
-        return <Badge variant="destructive">Bị từ chối</Badge>
+        return <Badge variant="destructive">Rejected</Badge>
       case "PENDING":
-        return <Badge variant="secondary">Chờ duyệt</Badge>
+        return <Badge variant="secondary">Pending</Badge>
       default:
-        return <Badge variant="outline">Không xác định</Badge>
+        return <Badge variant="outline">Unknown</Badge>
     }
   }
 
   const getItemTitle = (itemKey: string) => {
     switch (itemKey) {
       case "basicInfo":
-        return "Thông tin cơ bản"
+        return "Basic Information"
       case "businessInfo":
-        return "Thông tin kinh doanh"
+        return "Business Information"
       case "services":
-        return "Dịch vụ"
+        return "Services"
       case "vehicleTypes":
-        return "Loại xe"
+        return "Vehicle Types"
       default:
         return itemKey
     }
@@ -80,7 +80,7 @@ export function ApprovalStatusCard({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <AlertCircle className="h-5 w-5 text-blue-600" />
-            <span>Trạng thái phê duyệt</span>
+            <span>Approval Status</span>
           </div>
           {getStatusBadge(approvalDetails.overallStatus)}
         </CardTitle>
@@ -91,8 +91,8 @@ export function ApprovalStatusCard({
           <Alert variant="destructive">
             <XCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Garage của bạn đã bị từ chối phê duyệt.</strong> 
-              Vui lòng xem chi tiết bên dưới và chỉnh sửa thông tin theo yêu cầu.
+              <strong>Your garage has been rejected for approval.</strong> 
+              Please review the details below and edit the information as requested.
             </AlertDescription>
           </Alert>
         )}
@@ -101,8 +101,8 @@ export function ApprovalStatusCard({
           <Alert>
             <Clock className="h-4 w-4" />
             <AlertDescription>
-              <strong>Garage của bạn đang chờ phê duyệt.</strong> 
-              Admin sẽ xem xét và phê duyệt trong thời gian sớm nhất.
+              <strong>Your garage is pending approval.</strong> 
+              Admin will review and approve as soon as possible.
             </AlertDescription>
           </Alert>
         )}
@@ -111,8 +111,8 @@ export function ApprovalStatusCard({
           <Alert className="border-green-200 bg-green-50">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              <strong>Garage của bạn đã được phê duyệt!</strong> 
-              Bạn có thể bắt đầu hoạt động kinh doanh.
+              <strong>Your garage has been approved!</strong> 
+              You can start business operations.
             </AlertDescription>
           </Alert>
         )}
@@ -120,7 +120,7 @@ export function ApprovalStatusCard({
         {/* Rejected Items */}
         {rejectedItems.length > 0 && (
           <div className="space-y-2">
-            <h4 className="font-medium text-red-700">Các mục bị từ chối:</h4>
+            <h4 className="font-medium text-red-700">Rejected Items:</h4>
             <div className="space-y-2">
               {rejectedItems.map(([itemKey, item]) => (
                 <div key={itemKey} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
@@ -130,7 +130,7 @@ export function ApprovalStatusCard({
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-red-600 font-medium">
-                      Lý do: {item.rejectionReason || "Không có lý do cụ thể"}
+                      Reason: {item.rejectionReason || "No specific reason provided"}
                     </div>
                     <div className="text-xs text-gray-500">
                       {item.approvedAt && new Date(item.approvedAt).toLocaleString("vi-VN")}
@@ -145,7 +145,7 @@ export function ApprovalStatusCard({
         {/* Pending Items */}
         {pendingItems.length > 0 && (
           <div className="space-y-2">
-            <h4 className="font-medium text-yellow-700">Các mục chờ duyệt:</h4>
+            <h4 className="font-medium text-yellow-700">Pending Items:</h4>
             <div className="space-y-2">
               {pendingItems.map(([itemKey, item]) => (
                 <div key={itemKey} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
@@ -153,7 +153,7 @@ export function ApprovalStatusCard({
                     {getStatusIcon(item.status)}
                     <span className="font-medium">{getItemTitle(itemKey)}</span>
                   </div>
-                  <Badge variant="secondary">Chờ duyệt</Badge>
+                  <Badge variant="secondary">Pending</Badge>
                 </div>
               ))}
             </div>
@@ -163,7 +163,7 @@ export function ApprovalStatusCard({
         {/* Approved Items */}
         {approvedItems.length > 0 && (
           <div className="space-y-2">
-            <h4 className="font-medium text-green-700">Các mục đã được duyệt:</h4>
+            <h4 className="font-medium text-green-700">Approved Items:</h4>
             <div className="space-y-2">
               {approvedItems.map(([itemKey, item]) => (
                 <div key={itemKey} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
@@ -171,7 +171,7 @@ export function ApprovalStatusCard({
                     {getStatusIcon(item.status)}
                     <span className="font-medium">{getItemTitle(itemKey)}</span>
                   </div>
-                  <Badge variant="default" className="bg-green-100 text-green-800">Đã duyệt</Badge>
+                  <Badge variant="default" className="bg-green-100 text-green-800">Approved</Badge>
                 </div>
               ))}
             </div>
@@ -186,7 +186,7 @@ export function ApprovalStatusCard({
             variant={rejectedItems.length > 0 ? "default" : "outline"}
           >
             <Edit className="h-4 w-4 mr-2" />
-            Chỉnh sửa thông tin
+            Edit Information
           </Button>
         </div>
       </CardContent>

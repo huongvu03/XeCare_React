@@ -44,16 +44,16 @@ export default function GarageDetailPage() {
   useEffect(() => {
     const loadGarage = async () => {
       try {
-        // Kiểm tra xem user có phải là owner của garage này không
+        // Check if user is the owner of this garage
         const userIsOwner = user && user.garages && user.garages.some(g => g.id === garageId)
         setIsOwner(userIsOwner || isOwnerView)
         
         let response
         if (userIsOwner || isOwnerView) {
-          // Nếu là owner hoặc có parameter owner=true, lấy thông tin chi tiết
+          // If owner or has parameter owner=true, get detailed information
           response = await getMyGarageById(garageId)
         } else {
-          // Nếu không phải owner, lấy thông tin public
+          // If not owner, get public information
           response = await getPublicGarageById(garageId)
         }
         
@@ -62,9 +62,9 @@ export default function GarageDetailPage() {
       } catch (err: any) {
         console.error("Error loading garage:", err)
         if (err.response?.status === 403) {
-          setError("Bạn không có quyền xem thông tin chi tiết garage này")
+          setError("You do not have permission to view detailed garage information")
         } else {
-          setError("Không thể tải thông tin garage")
+          setError("Cannot load garage information")
         }
         setLoading(false)
       }
@@ -79,13 +79,13 @@ export default function GarageDetailPage() {
     return (
               <DashboardLayout
           allowedRoles={["USER", "GARAGE", "ADMIN"]}
-          title="Chi tiết Garage"
-          description="Đang tải..."
+          title="Garage Details"
+          description="Loading..."
         >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-slate-600">Đang tải thông tin garage...</p>
+            <p className="text-slate-600">Loading garage information...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -96,13 +96,13 @@ export default function GarageDetailPage() {
     return (
       <DashboardLayout
         allowedRoles={["USER", "GARAGE", "ADMIN"]}
-        title="Lỗi"
-        description="Không tìm thấy garage"
+        title="Error"
+        description="Garage not found"
       >
         <Alert className="border-red-200 bg-red-50">
           <XCircle className="h-4 w-4" />
           <AlertDescription className="text-red-700">
-            {error || "Không tìm thấy garage"}
+            {error || "Garage not found"}
           </AlertDescription>
         </Alert>
       </DashboardLayout>
@@ -113,7 +113,7 @@ export default function GarageDetailPage() {
     <DashboardLayout
       allowedRoles={["USER", "GARAGE", "ADMIN"]}
       title={`Garage: ${garage.name}`}
-      description="Thông tin chi tiết garage"
+      description="Detailed garage information"
     >
       <div className="space-y-6">
         {/* Header with back button */}
@@ -124,7 +124,7 @@ export default function GarageDetailPage() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Quay lại My Garages</span>
+            <span>Back to My Garages</span>
           </Button>
           
           <div className="flex items-center space-x-2">
@@ -140,7 +140,7 @@ export default function GarageDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Building2 className="h-5 w-5 text-blue-600" />
-                  <span>Thông tin cơ bản</span>
+                  <span>Basic Information</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -149,7 +149,7 @@ export default function GarageDetailPage() {
                     <Building2 className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="font-medium text-slate-900">{garage.name}</p>
-                      <p className="text-sm text-slate-600">Tên garage</p>
+                      <p className="text-sm text-slate-600">Garage Name</p>
                     </div>
                   </div>
                   
@@ -157,7 +157,7 @@ export default function GarageDetailPage() {
                     <MapPin className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="font-medium text-slate-900">{garage.address}</p>
-                      <p className="text-sm text-slate-600">Địa chỉ</p>
+                      <p className="text-sm text-slate-600">Address</p>
                     </div>
                   </div>
                   
@@ -165,7 +165,7 @@ export default function GarageDetailPage() {
                     <Phone className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="font-medium text-slate-900">{garage.phone}</p>
-                      <p className="text-sm text-slate-600">Số điện thoại</p>
+                      <p className="text-sm text-slate-600">Phone Number</p>
                     </div>
                   </div>
                   
@@ -180,7 +180,7 @@ export default function GarageDetailPage() {
                 
                 {garage.description && (
                   <div className="pt-4 border-t">
-                    <h4 className="font-medium text-slate-900 mb-2">Mô tả</h4>
+                    <h4 className="font-medium text-slate-900 mb-2">Description</h4>
                     <p className="text-slate-600">{garage.description}</p>
                   </div>
                 )}
@@ -209,8 +209,8 @@ export default function GarageDetailPage() {
                        <Alert className="border-yellow-200 bg-yellow-50">
                          <ClockIcon className="h-4 w-4" />
                          <AlertDescription className="text-yellow-700">
-                           <strong>Đang chờ phê duyệt:</strong> Garage của bạn đang được admin xem xét. 
-                           Bạn sẽ nhận được thông báo khi có kết quả.
+                           <strong>Pending Approval:</strong> Your garage is being reviewed by admin. 
+                           You will receive a notification when there is a result.
                          </AlertDescription>
                        </Alert>
                      )}
@@ -219,7 +219,7 @@ export default function GarageDetailPage() {
                        <Alert className="border-red-200 bg-red-50">
                          <XCircle className="h-4 w-4" />
                          <AlertDescription className="text-red-700">
-                           <strong>Bị từ chối:</strong> {garage.rejectionReason}
+                           <strong>Rejected:</strong> {garage.rejectionReason}
                          </AlertDescription>
                        </Alert>
                      )}
@@ -228,7 +228,7 @@ export default function GarageDetailPage() {
                        <Alert className="border-green-200 bg-green-50">
                          <CheckCircle className="h-4 w-4" />
                          <AlertDescription className="text-green-700">
-                           <strong>Đã được phê duyệt:</strong> Garage của bạn đã hoạt động và có thể nhận lịch hẹn từ khách hàng.
+                           <strong>Approved:</strong> Your garage is now active and can receive appointments from customers.
                          </AlertDescription>
                        </Alert>
                      )}
@@ -244,7 +244,7 @@ export default function GarageDetailPage() {
              {isOwner && (
                <Card className="border-blue-100">
                  <CardHeader>
-                   <CardTitle className="text-lg">Thao tác nhanh</CardTitle>
+                   <CardTitle className="text-lg">Quick Actions</CardTitle>
                  </CardHeader>
                  <CardContent className="space-y-3">
                    <Button 
@@ -253,7 +253,7 @@ export default function GarageDetailPage() {
                      onClick={() => router.push(`/garage/${garageId}/appointments`)}
                    >
                      <Calendar className="h-4 w-4 mr-2" />
-                     Quản lý lịch hẹn
+                     Manage Appointments
                    </Button>
                    
                    <Button 
@@ -262,7 +262,7 @@ export default function GarageDetailPage() {
                      onClick={() => router.push(`/garage/${garageId}/edit`)}
                    >
                      <Settings className="h-4 w-4 mr-2" />
-                     Chỉnh sửa thông tin
+                     Edit Information
                    </Button>
                    
                    <Button 
@@ -271,7 +271,7 @@ export default function GarageDetailPage() {
                      onClick={() => router.push(`/garage/${garageId}/services`)}
                    >
                      <Building2 className="h-4 w-4 mr-2" />
-                     Quản lý dịch vụ
+                     Manage Services
                    </Button>
                  </CardContent>
                </Card>
@@ -288,15 +288,15 @@ function StatusBadge({ status, rejectionReason }: { status: string, rejectionRea
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return { label: "Hoạt động", className: "bg-green-100 text-green-700" }
+        return { label: "Active", className: "bg-green-100 text-green-700" }
       case "PENDING":
-        return { label: "Chờ phê duyệt", className: "bg-yellow-100 text-yellow-700" }
+        return { label: "Pending Approval", className: "bg-yellow-100 text-yellow-700" }
       case "INACTIVE":
-        return { label: "Không hoạt động", className: "bg-red-100 text-red-700" }
+        return { label: "Inactive", className: "bg-red-100 text-red-700" }
       case "PENDING_UPDATE":
-        return { label: "Chờ cập nhật", className: "bg-blue-100 text-blue-700" }
+        return { label: "Pending Update", className: "bg-blue-100 text-blue-700" }
       default:
-        return { label: "Không xác định", className: "bg-gray-100 text-gray-700" }
+        return { label: "Unknown", className: "bg-gray-100 text-gray-700" }
     }
   }
 
@@ -309,7 +309,7 @@ function StatusBadge({ status, rejectionReason }: { status: string, rejectionRea
       </Badge>
       {status === "INACTIVE" && rejectionReason && (
         <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded border border-red-200">
-          <div className="font-medium">Lý do tạm ngưng:</div>
+          <div className="font-medium">Suspension Reason:</div>
           <div className="mt-1">{rejectionReason}</div>
         </div>
       )}

@@ -60,8 +60,8 @@ export default function FavoritesPage() {
         if (error.response?.status === 403) {
           console.log("🚫 [FavoritesPage] Access forbidden");
           toast({
-            title: "Không có quyền truy cập",
-            description: "Bạn không có quyền xem danh sách yêu thích",
+            title: "Access Denied",
+            description: "You don't have permission to view favorites list",
             variant: "destructive",
           });
           return;
@@ -73,30 +73,30 @@ export default function FavoritesPage() {
             if (errorMessage.includes("Database table 'Favorites' does not exist")) {
               console.log("🗄️ [FavoritesPage] Database table missing");
               toast({
-                title: "Lỗi hệ thống",
-                description: "Bảng dữ liệu yêu thích chưa được tạo. Vui lòng liên hệ admin.",
+                title: "System Error",
+                description: "Favorites database table not created. Please contact admin.",
                 variant: "destructive",
               });
             } else if (errorMessage.includes("Cannot access database")) {
               console.log("🔌 [FavoritesPage] Database connection error");
               toast({
-                title: "Lỗi kết nối",
-                description: "Không thể kết nối database. Vui lòng thử lại sau.",
+                title: "Connection Error",
+                description: "Cannot connect to database. Please try again later.",
                 variant: "destructive",
               });
             } else {
               console.log("💥 [FavoritesPage] Server error");
               toast({
-                title: "Lỗi server",
-                description: "Có lỗi xảy ra ở server. Vui lòng thử lại sau.",
+                title: "Server Error",
+                description: "An error occurred on the server. Please try again later.",
                 variant: "destructive",
               });
             }
           } else {
             console.log("💥 [FavoritesPage] Server error (unknown format)");
             toast({
-              title: "Lỗi server",
-              description: "Có lỗi xảy ra ở server. Vui lòng thử lại sau.",
+              title: "Server Error",
+              description: "An error occurred on the server. Please try again later.",
               variant: "destructive",
             });
           }
@@ -106,8 +106,8 @@ export default function FavoritesPage() {
         // Lỗi khác
         console.log("❓ [FavoritesPage] Unknown error");
         toast({
-          title: "Lỗi không xác định",
-          description: "Có lỗi xảy ra khi tải danh sách yêu thích. Vui lòng thử lại sau.",
+          title: "Unknown Error",
+          description: "An error occurred while loading favorites list. Please try again later.",
           variant: "destructive",
         });
       } catch (toastError) {
@@ -130,8 +130,8 @@ export default function FavoritesPage() {
       setFavorites(prev => prev.filter(fav => fav.garageId !== garageId));
       
       toast({
-        title: "Đã bỏ yêu thích",
-        description: "Garage đã được bỏ khỏi danh sách yêu thích",
+        title: "Removed from Favorites",
+        description: "Garage has been removed from favorites list",
         variant: "default",
       });
     } catch (error: any) {
@@ -140,8 +140,8 @@ export default function FavoritesPage() {
       if (error.response?.status === 401) {
         console.log("🔑 [FavoritesPage] Token expired, redirecting to login");
         toast({
-          title: "Phiên đăng nhập hết hạn",
-          description: "Vui lòng đăng nhập lại để tiếp tục",
+          title: "Session Expired",
+          description: "Please login again to continue",
           variant: "destructive",
         });
         router.push("/auth");
@@ -149,8 +149,8 @@ export default function FavoritesPage() {
       }
       
       toast({
-        title: "Lỗi",
-        description: "Không thể bỏ yêu thích. Vui lòng thử lại.",
+        title: "Error",
+        description: "Cannot remove from favorites. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -166,6 +166,11 @@ export default function FavoritesPage() {
   // Function to get proper image URL
   const getImageUrl = (imageUrl: string) => {
     if (!imageUrl) return '';
+    
+    // Check for invalid/example URLs
+    if (imageUrl.includes('example.com') || imageUrl.includes('placeholder') || imageUrl.includes('dummy')) {
+      return '';
+    }
     
     // If it's already a full URL, return as is
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
@@ -198,8 +203,8 @@ export default function FavoritesPage() {
                   <Heart className="h-10 w-10 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Danh Sách Yêu Thích</h1>
-                  <p className="text-pink-100 text-lg mt-2">Các garage bạn đã yêu thích</p>
+                  <h1 className="text-4xl font-bold tracking-tight">Favorites List</h1>
+                  <p className="text-pink-100 text-lg mt-2">Garages you have favorited</p>
                 </div>
               </div>
             </div>
@@ -242,8 +247,8 @@ export default function FavoritesPage() {
                   <Heart className="h-10 w-10 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Danh Sách Yêu Thích</h1>
-                  <p className="text-pink-100 text-lg mt-2">Các garage bạn đã yêu thích</p>
+                  <h1 className="text-4xl font-bold tracking-tight">Favorites List</h1>
+                  <p className="text-pink-100 text-lg mt-2">Garages you have favorited</p>
                 </div>
               </div>
             </div>
@@ -260,10 +265,10 @@ export default function FavoritesPage() {
               </div>
               
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                Chưa có garage yêu thích
+                No Favorite Garages Yet
               </h2>
               <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">
-                Bạn chưa có garage nào trong danh sách yêu thích. Hãy khám phá và thêm garage yêu thích!
+                You don't have any garages in your favorites list yet. Explore and add your favorite garages!
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -272,14 +277,14 @@ export default function FavoritesPage() {
                   className="bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <Navigation className="h-5 w-5 mr-2" />
-                  Tìm Kiếm Garage
+                  Search Garages
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => router.push("/")}
                   className="border-pink-200 text-pink-700 hover:bg-pink-50 px-8 py-3 rounded-xl transition-all duration-300"
                 >
-                  Về Trang Chủ
+                  Back to Home
                 </Button>
               </div>
             </div>
@@ -305,8 +310,8 @@ export default function FavoritesPage() {
                   <Heart className="h-10 w-10 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Danh Sách Yêu Thích</h1>
-                  <p className="text-pink-100 text-lg mt-2">Các garage bạn đã yêu thích</p>
+                  <h1 className="text-4xl font-bold tracking-tight">Favorites List</h1>
+                  <p className="text-pink-100 text-lg mt-2">Garages you have favorited</p>
                 </div>
               </div>
               
@@ -324,44 +329,44 @@ export default function FavoritesPage() {
             <Card key={favorite.id} className="overflow-hidden bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 hover:shadow-2xl hover:scale-105 transition-all duration-300">
             {/* Enhanced Garage Image */}
             <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-              {favorite.garageImageUrl ? (
-                <>
-                  <Image
-                    src={getImageUrl(favorite.garageImageUrl)}
-                    alt={favorite.garageName}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+              {favorite.garageImageUrl && getImageUrl(favorite.garageImageUrl) ? (
+                <Image
+                  src={getImageUrl(favorite.garageImageUrl)}
+                  alt={favorite.garageName}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-110"
                     onError={(e) => {
-                      console.error('❌ [FavoritesPage] Image load error:', favorite.garageImageUrl);
+                      console.warn('⚠️ [FavoritesPage] Image load failed for:', favorite.garageImageUrl);
+                      // Hide the failed image
                       e.currentTarget.style.display = 'none';
-                      // Show fallback
+                      // Show fallback immediately
                       const fallback = e.currentTarget.parentElement?.querySelector('.image-fallback') as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
+                      if (fallback) {
+                        fallback.style.display = 'flex';
+                        fallback.style.zIndex = '10';
+                      }
                     }}
-                    onLoad={() => {
-                      console.log('✅ [FavoritesPage] Image loaded successfully:', favorite.garageImageUrl);
-                    }}
-                  />
-                  {/* Fallback image when main image fails to load */}
-                  <div className="image-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200" style={{ display: 'none' }}>
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gradient-to-r from-pink-100 to-red-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                        <Heart className="h-8 w-8 text-pink-500" />
-                      </div>
-                      <span className="text-gray-500 text-sm font-medium">Image Error</span>
-                    </div>
+                  onLoad={() => {
+                    console.log('✅ [FavoritesPage] Image loaded successfully:', favorite.garageImageUrl);
+                  }}
+                />
+              ) : null}
+              
+              {/* Always show fallback (either initially or after image error) */}
+              <div 
+                className="image-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 z-10"
+                style={{ 
+                  display: favorite.garageImageUrl && getImageUrl(favorite.garageImageUrl) ? 'none' : 'flex',
+                  minHeight: '100%'
+                }}
+              >
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-pink-100 to-red-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <Heart className="h-8 w-8 text-pink-500" />
                   </div>
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-pink-100 to-red-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                      <Heart className="h-8 w-8 text-pink-500" />
-                    </div>
-                    <span className="text-gray-500 text-sm font-medium">No Image</span>
-                  </div>
+                  <span className="text-gray-500 text-sm font-medium">No Image Available</span>
                 </div>
-              )}
+              </div>
               
               {/* Enhanced Status Badge */}
               <div className="absolute top-3 left-3">
@@ -377,7 +382,7 @@ export default function FavoritesPage() {
                   ) : (
                     <Clock className="h-3 w-3" />
                   )}
-                  {favorite.garageStatus === "ACTIVE" ? "Hoạt động" : "Tạm ngưng"}
+                  {favorite.garageStatus === "ACTIVE" ? "Active" : "Inactive"}
                 </Badge>
               </div>
 
@@ -386,7 +391,7 @@ export default function FavoritesPage() {
                 <div className="absolute top-3 right-3">
                   <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
                     <Star className="h-3 w-3 mr-1" />
-                    Đã xác thực
+                    Verified
                   </Badge>
                 </div>
               )}
@@ -466,7 +471,7 @@ export default function FavoritesPage() {
               <div className="flex items-center text-xs text-gray-500 bg-pink-50 rounded-lg p-2">
                 <Calendar className="h-4 w-4 mr-2 text-pink-600" />
                 <span className="font-medium">
-                  Đã thêm {formatDistanceToNow(new Date(favorite.favoritedAt), { 
+                  Added {formatDistanceToNow(new Date(favorite.favoritedAt), { 
                     addSuffix: true, 
                     locale: vi 
                   })}
@@ -482,7 +487,7 @@ export default function FavoritesPage() {
                   onClick={() => handleGarageClick(favorite.garageId)}
                 >
                   <Info className="h-4 w-4 mr-2" />
-                  Xem Chi Tiết
+                  View Details
                 </Button>
                 <Button 
                   size="sm"
@@ -495,7 +500,7 @@ export default function FavoritesPage() {
                   ) : (
                     <>
                       <Heart className="h-4 w-4 mr-2" />
-                      Bỏ Yêu Thích
+                      Remove Favorite
                     </>
                   )}
                 </Button>

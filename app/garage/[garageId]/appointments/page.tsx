@@ -28,7 +28,7 @@ import { getMyGarageById } from "@/lib/api/UserApi"
 import { getGarageAppointments, type Appointment, type AppointmentSearchResponse } from "@/lib/api/AppointmentApi"
 import type { GarageInfo } from "@/hooks/use-auth"
 
-// Appointment interface từ API
+// Appointment interface from API
 interface AppointmentDisplay {
   id: number
   customerName: string
@@ -62,10 +62,10 @@ export default function AppointmentsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Kiểm tra quyền sở hữu
+        // Check ownership permissions
         const isOwner = user && user.garages && user.garages.some(g => g.id === garageId)
         if (!isOwner) {
-          setError("Bạn không có quyền quản lý garage này")
+          setError("You do not have permission to manage this garage")
           setLoading(false)
           return
         }
@@ -77,7 +77,7 @@ export default function AppointmentsPage() {
         // Load real appointments from API
         const appointmentsResponse = await getGarageAppointments(garageId, { 
           page: 0, 
-          size: 100 // Load nhiều appointments
+          size: 100 // Load many appointments
         })
         
         // Transform API data to display format
@@ -102,11 +102,11 @@ export default function AppointmentsPage() {
       } catch (err: any) {
         console.error("Error loading data:", err)
         if (err.response?.status === 403) {
-          setError("Bạn không có quyền truy cập lịch hẹn của garage này")
+          setError("You do not have permission to access this garage's appointments")
         } else if (err.response?.status === 401) {
-          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại")
+          setError("Login session has expired. Please login again")
         } else {
-          setError("Không thể tải dữ liệu")
+          setError("Cannot load data")
         }
         setLoading(false)
       }
@@ -120,17 +120,17 @@ export default function AppointmentsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-700">Chờ xác nhận</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
       case "CONFIRMED":
-        return <Badge className="bg-blue-100 text-blue-700">Đã xác nhận</Badge>
+        return <Badge className="bg-blue-100 text-blue-700">Confirmed</Badge>
       case "IN_PROGRESS":
-        return <Badge className="bg-orange-100 text-orange-700">Đang thực hiện</Badge>
+        return <Badge className="bg-orange-100 text-orange-700">In Progress</Badge>
       case "COMPLETED":
-        return <Badge className="bg-green-100 text-green-700">Hoàn thành</Badge>
+        return <Badge className="bg-green-100 text-green-700">Completed</Badge>
       case "CANCELLED":
-        return <Badge className="bg-red-100 text-red-700">Đã hủy</Badge>
+        return <Badge className="bg-red-100 text-red-700">Cancelled</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>
     }
   }
 
@@ -150,13 +150,13 @@ export default function AppointmentsPage() {
     return (
       <DashboardLayout
         allowedRoles={["USER", "USER_AND_GARAGE", "GARAGE", "ADMIN"]}
-        title="Quản lý lịch hẹn"
-        description="Đang tải..."
+        title="Manage Appointments"
+        description="Loading..."
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-slate-600">Đang tải dữ liệu...</p>
+            <p className="text-slate-600">Loading data...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -167,8 +167,8 @@ export default function AppointmentsPage() {
     return (
       <DashboardLayout
         allowedRoles={["USER", "USER_AND_GARAGE", "GARAGE", "ADMIN"]}
-        title="Lỗi"
-        description="Không thể tải dữ liệu"
+        title="Error"
+        description="Cannot load data"
       >
         <Alert className="border-red-200 bg-red-50">
           <XCircle className="h-4 w-4" />
@@ -181,8 +181,8 @@ export default function AppointmentsPage() {
   return (
     <DashboardLayout
       allowedRoles={["USER", "USER_AND_GARAGE", "GARAGE", "ADMIN"]}
-      title={`Quản lý lịch hẹn - ${garage?.name}`}
-      description="Quản lý lịch hẹn của garage"
+      title={`Manage Appointments - ${garage?.name}`}
+      description="Manage garage appointments"
     >
       <div className="space-y-6">
         {/* Header */}
@@ -193,7 +193,7 @@ export default function AppointmentsPage() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Quay lại</span>
+            <span>Back</span>
           </Button>
         </div>
 
@@ -205,7 +205,7 @@ export default function AppointmentsPage() {
                 <Calendar className="h-8 w-8 text-blue-600" />
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{appointments.length}</p>
-                  <p className="text-sm text-slate-600">Tổng lịch hẹn</p>
+                  <p className="text-sm text-slate-600">Total Appointments</p>
                 </div>
               </div>
             </CardContent>
@@ -217,7 +217,7 @@ export default function AppointmentsPage() {
                 <Clock className="h-8 w-8 text-yellow-600" />
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{getStatusCount("PENDING")}</p>
-                  <p className="text-sm text-slate-600">Chờ xác nhận</p>
+                  <p className="text-sm text-slate-600">Pending</p>
                 </div>
               </div>
             </CardContent>
@@ -229,7 +229,7 @@ export default function AppointmentsPage() {
                 <Clock className="h-8 w-8 text-blue-600" />
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{getStatusCount("CONFIRMED")}</p>
-                  <p className="text-sm text-slate-600">Đã xác nhận</p>
+                  <p className="text-sm text-slate-600">Confirmed</p>
                 </div>
               </div>
             </CardContent>
@@ -241,7 +241,7 @@ export default function AppointmentsPage() {
                 <Clock className="h-8 w-8 text-orange-600" />
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{getStatusCount("IN_PROGRESS")}</p>
-                  <p className="text-sm text-slate-600">Đang thực hiện</p>
+                  <p className="text-sm text-slate-600">In Progress</p>
                 </div>
               </div>
             </CardContent>
@@ -253,7 +253,7 @@ export default function AppointmentsPage() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{getStatusCount("COMPLETED")}</p>
-                  <p className="text-sm text-slate-600">Hoàn thành</p>
+                  <p className="text-sm text-slate-600">Completed</p>
                 </div>
               </div>
             </CardContent>
@@ -265,7 +265,7 @@ export default function AppointmentsPage() {
                 <XCircle className="h-8 w-8 text-red-600" />
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{getStatusCount("CANCELLED")}</p>
-                  <p className="text-sm text-slate-600">Đã hủy</p>
+                  <p className="text-sm text-slate-600">Cancelled</p>
                 </div>
               </div>
             </CardContent>
@@ -281,7 +281,7 @@ export default function AppointmentsPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Tìm kiếm theo tên, số điện thoại, dịch vụ..."
+                    placeholder="Search by name, phone, service..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -296,12 +296,12 @@ export default function AppointmentsPage() {
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="ALL">Tất cả trạng thái</option>
-                  <option value="PENDING">Chờ xác nhận</option>
-                  <option value="CONFIRMED">Đã xác nhận</option>
-                  <option value="IN_PROGRESS">Đang thực hiện</option>
-                  <option value="COMPLETED">Hoàn thành</option>
-                  <option value="CANCELLED">Đã hủy</option>
+                  <option value="ALL">All Status</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="CANCELLED">Cancelled</option>
                 </select>
               </div>
             </div>
@@ -313,15 +313,15 @@ export default function AppointmentsPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-blue-600" />
-              <span>Danh sách lịch hẹn ({filteredAppointments.length})</span>
+              <span>Appointments List ({filteredAppointments.length})</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {filteredAppointments.length === 0 ? (
               <div className="text-center py-8">
                 <Calendar className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">Chưa có lịch hẹn nào</h3>
-                <p className="text-slate-600">Hãy tạo lịch hẹn đầu tiên cho garage của bạn!</p>
+                <h3 className="text-lg font-medium text-slate-900 mb-2">No appointments yet</h3>
+                <p className="text-slate-600">Create the first appointment for your garage!</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -354,27 +354,27 @@ export default function AppointmentsPage() {
                             <div className="flex items-center space-x-2">
                               <Calendar className="h-4 w-4 text-slate-400" />
                               <span className="text-slate-600">
-                                {new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')} - {appointment.appointmentTime}
+                                {new Date(appointment.appointmentDate).toLocaleDateString('en-US')} - {appointment.appointmentTime}
                               </span>
                             </div>
                           </div>
                           
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
-                              <span className="font-medium text-slate-900">Dịch vụ:</span>
+                              <span className="font-medium text-slate-900">Service:</span>
                               <span className="text-slate-600">{appointment.serviceName}</span>
                             </div>
                             {appointment.totalPrice && (
                               <div className="flex items-center space-x-2">
-                                <span className="font-medium text-slate-900">Giá:</span>
+                                <span className="font-medium text-slate-900">Price:</span>
                                 <span className="text-green-600 font-semibold">
-                                  {appointment.totalPrice.toLocaleString('vi-VN')} VNĐ
+                                  {appointment.totalPrice.toLocaleString('en-US')} VND
                                 </span>
                               </div>
                             )}
                             {appointment.notes && (
                               <div className="flex items-start space-x-2">
-                                <span className="font-medium text-slate-900">Ghi chú:</span>
+                                <span className="font-medium text-slate-900">Notes:</span>
                                 <span className="text-slate-600 text-sm">{appointment.notes}</span>
                               </div>
                             )}
@@ -389,7 +389,7 @@ export default function AppointmentsPage() {
                           className="hover:bg-blue-50 hover:border-blue-300 transition-colors"
                           onClick={() => router.push(`/garage/${garageId}/appointments/${appointment.id}`)}
                         >
-                          Xem chi tiết
+                          View Details
                         </Button>
                       </div>
                     </div>

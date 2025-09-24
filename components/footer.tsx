@@ -28,8 +28,8 @@ export function Footer() {
               <span className="text-xl font-bold">XeCare</span>
             </div>
             <p className="text-slate-400 leading-relaxed max-w-md">
-              Nền tảng công nghệ hàng đầu Việt Nam kết nối người dùng với mạng lưới garage sửa xe uy tín, mang đến trải
-              nghiệm sửa chữa xe hơi hiện đại và tiện lợi nhất.
+              Vietnam's leading technology platform connecting users with a network of trusted auto repair garages, delivering
+              the most modern and convenient car repair experience.
             </p>
 
             {/* Newsletter signup */}
@@ -65,31 +65,31 @@ export function Footer() {
 
           {/* Quick links */}
           <div className="space-y-4" suppressHydrationWarning>
-            <h3 className="text-lg font-semibold">Dịch vụ</h3>
+            <h3 className="text-lg font-semibold">Services</h3>
             <ul className="space-y-2" suppressHydrationWarning>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Tìm garage gần tôi
+                  Find Nearby Garage
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Đặt lịch sửa xe
+                  Book Car Repair
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Cứu hộ 24/7
+                  24/7 Emergency Rescue
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Bảo dưỡng định kỳ
+                  Regular Maintenance
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Kiểm định xe
+                  Vehicle Inspection
                 </a>
               </li>
             </ul>
@@ -97,31 +97,31 @@ export function Footer() {
 
           {/* Support */}
           <div className="space-y-4" suppressHydrationWarning>
-            <h3 className="text-lg font-semibold">Hỗ trợ</h3>
+            <h3 className="text-lg font-semibold">Support</h3>
             <ul className="space-y-2" suppressHydrationWarning>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Trung tâm trợ giúp
+                  Help Center
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Hướng dẫn sử dụng
+                  User Guide
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Chính sách bảo hành
+                  Warranty Policy
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Quy trình khiếu nại
+                  Complaint Process
                 </a>
               </li>
               <li>
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">
-                  Câu hỏi thường gặp
+                  FAQ
                 </a>
               </li>
             </ul>
@@ -129,14 +129,14 @@ export function Footer() {
 
           {/* Contact & Download */}
           <div className="space-y-4" suppressHydrationWarning>
-            <h3 className="text-lg font-semibold">Liên hệ</h3>
+            <h3 className="text-lg font-semibold">Contact</h3>
             <div className="space-y-3" suppressHydrationWarning>
               <div className="flex items-center space-x-3" suppressHydrationWarning>
                 <MapPin className="h-4 w-4 text-blue-400 flex-shrink-0" />
                 <span className="text-slate-400 text-sm">
-                  Tầng 10, Tòa nhà ABC
+                  10th Floor, ABC Building
                   <br />
-                  123 Nguyễn Huệ, Q1, TP.HCM
+                  123 Nguyen Hue, District 1, HCMC
                 </span>
               </div>
               <div className="flex items-center space-x-3" suppressHydrationWarning>
@@ -151,7 +151,7 @@ export function Footer() {
 
             {/* App download */}
             <div className="space-y-3" suppressHydrationWarning>
-              <h4 className="font-semibold text-white">Tải ứng dụng</h4>
+              <h4 className="font-semibold text-white">Download App</h4>
               <div className="space-y-2" suppressHydrationWarning>
                 <Button
                   variant="outline"
@@ -178,13 +178,13 @@ export function Footer() {
         <div className="border-t border-slate-800 mt-12 pt-8" suppressHydrationWarning>
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0" suppressHydrationWarning>
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-slate-400" suppressHydrationWarning>
-              <p>© 2024 XeCare. Tất cả quyền được bảo lưu.</p>
+              <p>© 2024 XeCare. All rights reserved.</p>
               <div className="flex space-x-4" suppressHydrationWarning>
                 <a href="/terms" className="hover:text-white transition-colors">
-                  Điều khoản sử dụng
+                  Terms of Service
                 </a>
                 <a href="#" className="hover:text-white transition-colors">
-                  Chính sách bảo mật
+                  Privacy Policy
                 </a>
                 <a href="/privacy" className="hover:text-white transition-colors">
                   Cookie
@@ -200,7 +200,7 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-2 text-xs text-slate-400" suppressHydrationWarning>
                 <Award className="h-4 w-4" />
-                <span>Đã xác thực</span>
+                <span>Verified</span>
               </div>
             </div>
           </div>

@@ -5,56 +5,56 @@ const stats = [
   {
     icon: Users,
     number: "125,000+",
-    label: "Khách hàng tin tưởng",
-    description: "Trên toàn quốc",
-    growth: "+25% năm nay",
+    label: "Trusted Customers",
+    description: "Nationwide",
+    growth: "+25% this year",
   },
   {
     icon: MapPin,
     number: "1,200+",
-    label: "Garage đối tác",
-    description: "63 tỉnh thành",
-    growth: "+180 garage mới",
+    label: "Partner Garages",
+    description: "63 provinces",
+    growth: "+180 new garages",
   },
   {
     icon: Clock,
     number: "24/7",
-    label: "Hỗ trợ cứu hộ",
-    description: "Không ngừng nghỉ",
-    growth: "15 phút phản hồi",
+    label: "Emergency Support",
+    description: "Non-stop",
+    growth: "15 min response",
   },
   {
     icon: Star,
     number: "4.8/5",
-    label: "Đánh giá trung bình",
-    description: "Từ 50K+ reviews",
-    growth: "98% hài lòng",
+    label: "Average Rating",
+    description: "From 50K+ reviews",
+    growth: "98% satisfied",
   },
   {
     icon: TrendingUp,
     number: "350K+",
-    label: "Lượt đặt lịch",
-    description: "Thành công",
-    growth: "+40% tháng này",
+    label: "Bookings",
+    description: "Successful",
+    growth: "+40% this month",
   },
   {
     icon: Shield,
     number: "99.2%",
-    label: "Tỷ lệ hoàn thành",
-    description: "Đúng hẹn",
-    growth: "Cam kết chất lượng",
+    label: "Completion Rate",
+    description: "On time",
+    growth: "Quality commitment",
   },
   {
     icon: Award,
     number: "12 tháng",
-    label: "Bảo hành tối đa",
-    description: "Cho dịch vụ",
-    growth: "An tâm sử dụng",
+    label: "Maximum Warranty",
+    description: "For services",
+    growth: "Peace of mind",
   },
   {
     icon: Heart,
     number: "2.5M+",
-    label: "Lượt tải app",
+    label: "App Downloads",
     description: "iOS & Android",
     growth: "Top 10 Lifestyle",
   },
@@ -71,10 +71,10 @@ export function Stats() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white">Những con số ấn tượng</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-white">Impressive Numbers</h2>
           <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-            Sự tin tưởng và hài lòng của khách hàng là động lực để chúng tôi không ngừng phát triển và hoàn thiện dịch
-            vụ
+            Customer trust and satisfaction is the driving force for us to continuously develop and improve our
+            services
           </p>
         </div>
 
@@ -106,15 +106,15 @@ export function Stats() {
         <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
           <div className="space-y-2">
             <div className="text-2xl font-bold text-white">Top 3</div>
-            <div className="text-blue-100">Ứng dụng sửa xe hàng đầu Việt Nam</div>
+            <div className="text-blue-100">Vietnam's leading car repair app</div>
           </div>
           <div className="space-y-2">
             <div className="text-2xl font-bold text-white">ISO 27001</div>
-            <div className="text-blue-100">Chứng nhận bảo mật thông tin quốc tế</div>
+            <div className="text-blue-100">International information security certification</div>
           </div>
           <div className="space-y-2">
             <div className="text-2xl font-bold text-white">5 năm</div>
-            <div className="text-blue-100">Kinh nghiệm phục vụ thị trường</div>
+            <div className="text-blue-100">Market service experience</div>
           </div>
         </div>
 
@@ -127,12 +127,12 @@ export function Stats() {
               ))}
             </div>
             <blockquote className="text-xl text-white italic">
-              "XeCare đã thay đổi cách tôi chăm sóc xe. Tìm garage uy tín dễ dàng, đặt lịch nhanh chóng, và luôn
-              được hỗ trợ tận tình."
+              "XeCare has changed how I take care of my car. Finding trusted garages is easy, booking is quick, and I
+              always receive dedicated support."
             </blockquote>
             <div className="text-blue-200">
-              <div className="font-semibold">Anh Minh Tuấn</div>
-              <div className="text-sm">Khách hàng thân thiết từ 2022</div>
+              <div className="font-semibold">Mr. Minh Tuan</div>
+              <div className="text-sm">Loyal customer since 2022</div>
             </div>
           </div>
         </div>

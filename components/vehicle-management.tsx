@@ -132,8 +132,8 @@ const response = res.data;
       } catch (error) {
         console.error("Error fetching categories:", error)
         toast({
-          title: "Lỗi",
-          description: "Không thể tải danh mục xe.",
+          title: "Error",
+          description: "Cannot load vehicle categories.",
           variant: "destructive",
         })
       }
@@ -149,8 +149,8 @@ const response = res.data;
       } catch (error) {
         console.error("❌ [fetchTypes] Error fetching vehicle types:", error)
         toast({
-          title: "Lỗi",
-          description: "Không thể tải loại xe.",
+          title: "Error",
+          description: "Cannot load vehicle types.",
           variant: "destructive",
         })
       }
@@ -192,8 +192,8 @@ const response = res.data;
   const handleConfirmLock = async () => {
     if (!lockingVehicle || !lockReason.trim()) {
       toast({
-        title: "Lỗi",
-        description: "Vui lòng nhập lý do khóa xe",
+        title: "Error",
+        description: "Please enter lock reason",
         variant: "destructive",
       })
       return
@@ -207,14 +207,14 @@ const response = res.data;
       setLockReason("")
       fetchVehicles(currentPage, searchTerm, sortBy, sortDirection)
       toast({
-        title: "Thành công",
-        description: "Đã khóa xe thành công",
+        title: "Success",
+        description: "Vehicle locked successfully",
       })
     } catch (error) {
       console.error("Error locking vehicle:", error)
       toast({
-        title: "Lỗi",
-        description: "Không thể khóa xe. Vui lòng thử lại.",
+        title: "Error",
+        description: "Cannot lock vehicle. Please try again.",
         variant: "destructive",
       })
     }
@@ -235,8 +235,8 @@ const response = res.data;
     setCurrentPage(0)
     fetchVehicles(0, "", "createdAt", "desc")
     toast({
-      title: "Đã xóa bộ lọc",
-      description: "Hiển thị tất cả xe",
+      title: "Filters cleared",
+      description: "Showing all vehicles",
     })
   }
 
@@ -272,7 +272,7 @@ const response = res.data;
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <span className="ml-3 text-slate-600">Đang tải dữ liệu xe...</span>
+        <span className="ml-3 text-slate-600">Loading vehicle data...</span>
       </div>
     )
   }
@@ -300,14 +300,14 @@ const response = res.data;
       fetchVehicles();
       
       toast({
-        title: "Thành công",
-        description: "Cập nhật xe thành công",
+        title: "Success",
+        description: "Vehicle updated successfully",
       });
     } catch (error: any) {
       console.error('❌ [handleUpdate] Error:', error);
       toast({
-        title: "Lỗi",
-        description: error.response?.data?.message || "Không thể cập nhật xe. Vui lòng thử lại.",
+        title: "Error",
+        description: error.response?.data?.message || "Cannot update vehicle. Please try again.",
         variant: "destructive",
       });
     }
@@ -338,7 +338,7 @@ const response = res.data;
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Tìm kiếm xe theo tên, hãng, model, biển số..."
+              placeholder="Search vehicles by name, brand, model, license plate..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-10"
@@ -348,12 +348,12 @@ const response = res.data;
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shrink-0">
                 <Plus className="h-4 w-4 mr-2" />
-                Thêm xe mới
+                Add New Vehicle
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl">
               <DialogHeader>
-                <DialogTitle>{editingVehicle ? "Sửa phương tiện" : "Thêm phương tiện"}</DialogTitle>
+                <DialogTitle>{editingVehicle ? "Edit Vehicle" : "Add Vehicle"}</DialogTitle>
               </DialogHeader>
               <VehicleForm
             initialData={editingVehicle || undefined}
@@ -373,13 +373,13 @@ const response = res.data;
           <div className="flex flex-wrap gap-3 items-center">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[180px] h-10">
-                <SelectValue placeholder="Sắp xếp theo" />
+                <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="createdAt">Ngày tạo</SelectItem>
-                <SelectItem value="vehicleName">Tên xe</SelectItem>
-                <SelectItem value="brand">Hãng xe</SelectItem>
-                <SelectItem value="year">Năm sản xuất</SelectItem>
+                <SelectItem value="createdAt">Creation Date</SelectItem>
+                <SelectItem value="vehicleName">Vehicle Name</SelectItem>
+                <SelectItem value="brand">Brand</SelectItem>
+                <SelectItem value="year">Year of Manufacture</SelectItem>
               </SelectContent>
             </Select>
 
@@ -388,18 +388,18 @@ const response = res.data;
               size="sm"
               onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
               className="h-10 px-3"
-              title={`Sắp xếp ${sortDirection === "asc" ? "tăng dần" : "giảm dần"}`}
+              title={`Sort ${sortDirection === "asc" ? "ascending" : "descending"}`}
             >
               {sortDirection === "asc" ? "↑" : "↓"}
             </Button>
 
             <Select value={filterByCategory} onValueChange={setFilterByCategory}>
               <SelectTrigger className="w-[150px] h-10">
-                <SelectValue placeholder="Danh mục" />
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả danh mục</SelectItem>
-                <SelectItem value="uncategorized">Chưa phân loại</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="uncategorized">Uncategorized</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
                     <div className="flex items-center space-x-2">
@@ -413,20 +413,20 @@ const response = res.data;
 
             <Select value={showLocked} onValueChange={(value: any) => setShowLocked(value)}>
               <SelectTrigger className="w-[150px] h-10">
-                <SelectValue placeholder="Xe hoạt động" />
+                <SelectValue placeholder="Active Vehicles" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả xe</SelectItem>
+                <SelectItem value="all">All Vehicles</SelectItem>
                 <SelectItem value="active">
                   <div className="flex items-center space-x-2">
                     <span>🔓</span>
-                    <span>Xe hoạt động</span>
+                    <span>Active Vehicles</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="locked">
                   <div className="flex items-center space-x-2">
                     <span>🔒</span>
-                    <span>Xe đã khóa</span>
+                    <span>Locked Vehicles</span>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -437,10 +437,10 @@ const response = res.data;
               size="sm"
               onClick={clearAllFilters}
               className="h-10 px-4 text-slate-600 hover:text-slate-900 bg-transparent"
-              title="Xóa tất cả bộ lọc"
+              title="Clear all filters"
             >
               <span className="mr-2">🔄</span>
-              Hiển thị tất cả
+              Show All
             </Button>
           </div>
       </div>
@@ -449,16 +449,16 @@ const response = res.data;
       <div className="flex items-center justify-between text-sm text-slate-600 bg-slate-50 rounded-lg p-4">
         <div className="flex items-center space-x-6 flex-wrap">
           <span>
-            Tổng cộng: <strong className="text-slate-900">{totalElements}</strong> xe
+            Total: <strong className="text-slate-900">{totalElements}</strong> vehicles
           </span>
           <span>
-            Hiển thị: <strong className="text-slate-900">{filteredVehicles.length}</strong> xe
+            Displaying: <strong className="text-slate-900">{filteredVehicles.length}</strong> vehicles
           </span>
           <span>
-            Hoạt động: <strong className="text-green-700">{vehicles.filter((v) => !v.locked).length}</strong> xe
+            Active: <strong className="text-green-700">{vehicles.filter((v) => !v.locked).length}</strong> vehicles
           </span>
           <span>
-            Đã khóa: <strong className="text-red-700">{vehicles.filter((v) => v.locked).length}</strong> xe
+            Locked: <strong className="text-red-700">{vehicles.filter((v) => v.locked).length}</strong> vehicles
           </span>
         </div>
       </div>
@@ -469,12 +469,12 @@ const response = res.data;
           <div className="text-center py-12">
             <Car className="h-16 w-16 text-slate-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              {searchTerm ? "Không tìm thấy xe nào" : "Chưa có xe nào"}
+              {searchTerm ? "No vehicles found" : "No vehicles yet"}
             </h3>
             <p className="text-slate-500 mb-6">
               {searchTerm
-                ? "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc"
-                : "Thêm xe đầu tiên để bắt đầu quản lý phương tiện của bạn"}
+                ? "Try changing search keywords or filters"
+                : "Add your first vehicle to start managing your vehicles"}
             </p>
             {!searchTerm && (
               <Button
@@ -482,7 +482,7 @@ const response = res.data;
                 className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Thêm xe đầu tiên
+                Add First Vehicle
               </Button>
             )}
           </div>
@@ -506,7 +506,7 @@ const response = res.data;
       />
     ))
   ) : (
-    <p className="text-gray-500">Không có phương tiện nào</p>
+    <p className="text-gray-500">No vehicles available</p>
   )
 )}
       </div>
@@ -517,25 +517,25 @@ const response = res.data;
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Wrench className="h-5 w-5 text-blue-600" />
-              <span>Tổng quan lịch sử sửa xe</span>
+              <span>Vehicle Service History Overview</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-6">
               <p className="text-slate-600 mb-4">
-                Để xem lịch sử sửa xe chi tiết cho từng xe, hãy click vào icon 📋 (History) trên xe tương ứng.
+                To view detailed service history for each vehicle, click the 📋 (History) icon on the corresponding vehicle.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="font-medium text-blue-900">Tổng số xe</p>
+                  <p className="font-medium text-blue-900">Total Vehicles</p>
                   <p className="text-2xl font-bold text-blue-600">{vehicles.length}</p>
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg">
-                  <p className="font-medium text-green-900">Xe hoạt động</p>
+                  <p className="font-medium text-green-900">Active Vehicles</p>
                   <p className="text-2xl font-bold text-green-600">{vehicles.filter(v => !v.locked).length}</p>
                 </div>
                 <div className="p-3 bg-orange-50 rounded-lg">
-                  <p className="font-medium text-orange-900">Xe đã khóa</p>
+                  <p className="font-medium text-orange-900">Locked Vehicles</p>
                   <p className="text-2xl font-bold text-orange-600">{vehicles.filter(v => v.locked).length}</p>
                 </div>
               </div>
@@ -548,7 +548,7 @@ const response = res.data;
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-600">
-            Trang {currentPage + 1} / {totalPages} (Tổng {totalElements} xe)
+            Page {currentPage + 1} / {totalPages} (Total {totalElements} vehicles)
           </div>
           <div className="flex space-x-2">
             <Button
@@ -557,7 +557,7 @@ const response = res.data;
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 0}
             >
-              Trước
+              Previous
             </Button>
             <Button
               variant="outline"
@@ -565,7 +565,7 @@ const response = res.data;
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= totalPages - 1}
             >
-              Sau
+              Next
             </Button>
           </div>
         </div>
@@ -575,7 +575,7 @@ const response = res.data;
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Chỉnh sửa thông tin xe</DialogTitle>
+            <DialogTitle>Edit Vehicle Information</DialogTitle>
           </DialogHeader>
           <VehicleForm
             initialData={editingVehicle || undefined}
@@ -596,7 +596,7 @@ const response = res.data;
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Chi tiết xe</DialogTitle>
+            <DialogTitle>Vehicle Details</DialogTitle>
           </DialogHeader>
           {selectedVehicle && <VehicleDetailView vehicle={selectedVehicle} open={isDetailOpen} onClose={() => setIsDetailOpen(false)} />}
         </DialogContent>
@@ -606,19 +606,19 @@ const response = res.data;
       <Dialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Khóa xe</DialogTitle>
+            <DialogTitle>Lock Vehicle</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
-              Bạn có chắc chắn muốn khóa xe <strong>{lockingVehicle?.vehicleName}</strong>?
+              Are you sure you want to lock vehicle <strong>{lockingVehicle?.vehicleName}</strong>?
             </p>
             <div className="space-y-2">
-              <Label htmlFor="lockReason">Lý do khóa *</Label>
+              <Label htmlFor="lockReason">Lock Reason *</Label>
               <Input
                 id="lockReason"
                 value={lockReason}
                 onChange={(e) => setLockReason(e.target.value)}
-                placeholder="Nhập lý do khóa xe..."
+                placeholder="Enter lock reason..."
               />
             </div>
             <div className="flex justify-end space-x-3">
@@ -630,14 +630,14 @@ const response = res.data;
                   setLockReason("")
                 }}
               >
-                Hủy
+                Cancel
               </Button>
               <Button
                 onClick={handleConfirmLock}
                 disabled={!lockReason.trim()}
                 className="bg-orange-600 hover:bg-orange-700"
               >
-                Khóa xe
+                Lock Vehicle
               </Button>
             </div>
           </div>

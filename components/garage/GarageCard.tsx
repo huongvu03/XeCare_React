@@ -116,7 +116,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
               {garage.verified && (
                 <Badge className="bg-green-500 text-white border-0 shadow-sm">
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  Đã xác thực
+                  Verified
                 </Badge>
               )}
               <Badge className={`${getStatusColor(garage.status)} border shadow-sm`}>
@@ -170,7 +170,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
                 {renderStars(garage.averageRating)}
               </div>
               <span className="text-sm text-gray-500">
-                ({garage.totalReviews} đánh giá)
+                ({garage.totalReviews} reviews)
               </span>
             </div>
           </div>
@@ -195,7 +195,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Wrench className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-semibold text-gray-700">Dịch vụ:</span>
+                <span className="text-sm font-semibold text-gray-700">Services:</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {garage.serviceNames.slice(0, 3).map((service, index) => (
@@ -205,7 +205,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
                 ))}
                 {garage.serviceNames.length > 3 && (
                   <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
-                    +{garage.serviceNames.length - 3} khác
+                    +{garage.serviceNames.length - 3} more
                   </Badge>
                 )}
               </div>
@@ -217,7 +217,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Car className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-semibold text-gray-700">Loại xe:</span>
+                <span className="text-sm font-semibold text-gray-700">Vehicle Types:</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {garage.vehicleTypeNames.map((type, index) => (
@@ -251,14 +251,14 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             className="flex-1 h-10 font-medium hover:bg-gray-50"
             onClick={() => onViewDetails?.(garage)}
           >
-            Xem chi tiết
+            View Details
           </Button>
           <Button
             size="sm"
             className="flex-1 h-10 font-medium bg-blue-600 hover:bg-blue-700"
             onClick={() => onContact?.(garage)}
           >
-            Liên hệ
+            Contact
           </Button>
         </div>
       </CardFooter>

@@ -63,17 +63,45 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         detail: { count: Math.max(0, unreadCount - 1) }
       }));
       
+      // Gọi API để đánh dấu đã đọc
+      const { markNotificationAsRead } = await import("@/lib/api/NotificationApi");
+      await markNotificationAsRead(id);
+      
     } catch (error) {
-      // Silent error handling
+      console.error('Error marking notification as read:', error);
+      // Revert local state if API call fails
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, isRead: false } : n)
+      );
+      setUnreadCount(prev => prev + 1);
     }
   }, [unreadCount]);
 
   const markAllAsRead = useCallback(async () => {
-    // Update local state immediately for better UX
-    setNotifications(prev => 
-      prev.map(n => ({ ...n, isRead: true }))
-    );
-    setUnreadCount(0);
+    try {
+      // Update local state immediately for better UX
+      setNotifications(prev => 
+        prev.map(n => ({ ...n, isRead: true }))
+      );
+      setUnreadCount(0);
+      
+      // Trigger animation cho chuông thông báo
+      window.dispatchEvent(new CustomEvent('newNotification', {
+        detail: { count: 0 }
+      }));
+      
+      // Gọi API để đánh dấu tất cả đã đọc
+      const { markAllNotificationsAsRead } = await import("@/lib/api/NotificationApi");
+      await markAllNotificationsAsRead();
+      
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      // Revert local state if API call fails
+      const { getMyNotifications } = await import("@/lib/api/NotificationApi");
+      const response = await getMyNotifications();
+      setNotifications(response.data);
+      setUnreadCount(response.data.filter(n => !n.isRead).length);
+    }
   }, []);
 
   useEffect(() => {

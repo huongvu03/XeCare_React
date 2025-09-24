@@ -31,10 +31,10 @@ export default function EditGaragePage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  // Geocoding hook (giống hệt form đăng ký)
+  // Geocoding hook (same as registration form)
   const { geocodeAddress, isLoading: geocodingLoading, error: geocodingError, result: geocodingResult, clearError: clearGeocodingError } = useGeocoding(1500)
 
-  // Form data (giống hệt form đăng ký)
+  // Form data (same as registration form)
   const [garageName, setGarageName] = useState("")
   const [address, setAddress] = useState("")
   const [phone, setPhone] = useState("")
@@ -56,7 +56,7 @@ export default function EditGaragePage() {
   const [servicesLoading, setServicesLoading] = useState(true)
   const [vehicleTypesLoading, setVehicleTypesLoading] = useState(true)
 
-  // Get current location (giống hệt form đăng ký)
+  // Get current location (same as registration form)
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       setLoading(true)
@@ -68,16 +68,16 @@ export default function EditGaragePage() {
         },
         (error) => {
           console.error("Error getting location:", error)
-          setError("Không thể lấy vị trí hiện tại. Vui lòng nhập thủ công.")
+          setError("Cannot get current location. Please enter manually.")
           setLoading(false)
         }
       )
     } else {
-      setError("Trình duyệt không hỗ trợ định vị.")
+      setError("Browser does not support geolocation.")
     }
   }
 
-  // Handle address change with geocoding (giống hệt form đăng ký)
+  // Handle address change with geocoding (same as registration form)
   const handleAddressChange = (newAddress: string) => {
     setAddress(newAddress)
     if (newAddress.length >= 10) {
@@ -85,7 +85,7 @@ export default function EditGaragePage() {
     }
   }
 
-  // Auto-fill coordinates when geocoding result is available (giống hệt form đăng ký)
+  // Auto-fill coordinates when geocoding result is available (same as registration form)
   useEffect(() => {
     if (geocodingResult) {
       setLatitude(geocodingResult.lat)
@@ -100,7 +100,7 @@ export default function EditGaragePage() {
     }
   }, [address, geocodingError, clearGeocodingError])
 
-  // Handle service selection (giống hệt form đăng ký)
+  // Handle service selection (same as registration form)
   const handleServiceToggle = (serviceId: number) => {
     setSelectedServices(prev => 
       prev.includes(serviceId) 
@@ -109,7 +109,7 @@ export default function EditGaragePage() {
     )
   }
 
-  // Handle vehicle type selection (giống hệt form đăng ký)
+  // Handle vehicle type selection (same as registration form)
   const handleVehicleTypeToggle = (vehicleTypeId: number) => {
     setSelectedVehicleTypes(prev => 
       prev.includes(vehicleTypeId) 
@@ -118,7 +118,7 @@ export default function EditGaragePage() {
     )
   }
 
-  // Handle image upload (giống hệt form đăng ký)
+  // Handle image upload (same as registration form)
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -135,7 +135,7 @@ export default function EditGaragePage() {
         const response = await getMyGarageById(garageId)
         const garageData = response.data
         
-        // Populate form data (giống hệt form đăng ký)
+        // Populate form data (same as registration form)
         setGarageName(garageData.name || "")
         setAddress(garageData.address || "")
         setPhone(garageData.phone || "")
@@ -176,7 +176,7 @@ export default function EditGaragePage() {
         setLoading(false)
       } catch (err: any) {
         console.error("Error loading garage:", err)
-        setError("Không thể tải thông tin garage")
+        setError("Cannot load garage information")
         setLoading(false)
       }
     }
@@ -215,51 +215,51 @@ export default function EditGaragePage() {
     
     if (!user) return
 
-    // Validation (giống hệt form đăng ký)
+    // Validation (same as registration form)
     if (!garageName || !address || !phone || !email || !description) {
-      setError("Vui lòng điền đầy đủ thông tin bắt buộc.")
+      setError("Please fill in all required information.")
       return
     }
 
     // Validate phone number format (10-11 digits)
     const phoneRegex = /^[0-9]{10,11}$/
     if (!phoneRegex.test(phone)) {
-      setError("Số điện thoại phải có 10-11 chữ số.")
+      setError("Phone number must have 10-11 digits.")
       return
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      setError("Email không hợp lệ.")
+      setError("Invalid email format.")
       return
     }
 
     // Validate name length
     if (garageName.length < 2 || garageName.length > 100) {
-      setError("Tên garage phải từ 2-100 ký tự.")
+      setError("Garage name must be 2-100 characters.")
       return
     }
 
     // Validate description length
     if (description.length > 500) {
-      setError("Mô tả không được quá 500 ký tự.")
+      setError("Description cannot exceed 500 characters.")
       return
     }
 
     // Validate address length
     if (address.length > 255) {
-      setError("Địa chỉ không được quá 255 ký tự.")
+      setError("Address cannot exceed 255 characters.")
       return
     }
 
     if (selectedServices.length === 0) {
-      setError("Vui lòng chọn ít nhất một dịch vụ.")
+      setError("Please select at least one service.")
       return
     }
 
     if (selectedVehicleTypes.length === 0) {
-      setError("Vui lòng chọn ít nhất một loại xe.")
+      setError("Please select at least one vehicle type.")
       return
     }
 
@@ -269,13 +269,13 @@ export default function EditGaragePage() {
     try {
       let imageUrl = ""
       
-      // Upload image if selected (giống hệt form đăng ký)
+      // Upload image if selected (same as registration form)
       if (image) {
         const imageResponse = await uploadTempGarageImage(image)
         imageUrl = imageResponse.data
       }
 
-      // Prepare update data (giống hệt form đăng ký)
+      // Prepare update data (same as registration form)
       const garageData: any = {
         name: garageName,
         address,
@@ -309,7 +309,7 @@ export default function EditGaragePage() {
       const response = await updateGarage(garageId, garageData)
       console.log("Update response:", response)
       
-      setSuccess("Cập nhật thông tin garage thành công! Garage sẽ được gửi lại cho admin phê duyệt.")
+      setSuccess("Garage information updated successfully! The garage will be sent to admin for re-approval.")
       
       // Redirect back to garage detail page after 3 seconds
       setTimeout(() => {
@@ -320,7 +320,7 @@ export default function EditGaragePage() {
       console.error("Error updating garage:", err)
       console.error("Error response:", err.response?.data)
       console.error("Error status:", err.response?.status)
-      setError(err.response?.data?.message || "Không thể cập nhật thông tin garage")
+      setError(err.response?.data?.message || "Cannot update garage information")
     } finally {
       setSubmitting(false)
     }
@@ -330,13 +330,13 @@ export default function EditGaragePage() {
     return (
       <DashboardLayout
         allowedRoles={["USER", "GARAGE", "ADMIN"]}
-        title="Chỉnh sửa Garage"
-        description="Đang tải..."
+        title="Edit Garage"
+        description="Loading..."
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-slate-600">Đang tải thông tin garage...</p>
+            <p className="text-slate-600">Loading garage information...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -346,8 +346,8 @@ export default function EditGaragePage() {
   return (
     <DashboardLayout
       allowedRoles={["USER", "GARAGE", "ADMIN"]}
-      title={`Chỉnh sửa: ${garageName}`}
-      description="Cập nhật thông tin garage"
+      title={`Edit: ${garageName}`}
+      description="Update garage information"
     >
       <div className="space-y-6">
         {/* Header */}
@@ -358,7 +358,7 @@ export default function EditGaragePage() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Quay lại</span>
+            <span>Back</span>
           </Button>
         </div>
 
@@ -384,29 +384,29 @@ export default function EditGaragePage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Building2 className="h-5 w-5 text-blue-600" />
-                <span>Thông tin Garage</span>
+                <span>Garage Information</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Tên garage *</Label>
+                  <Label htmlFor="name">Garage Name *</Label>
                   <Input
                     id="name"
                     value={garageName}
                     onChange={(e) => setGarageName(e.target.value)}
-                    placeholder="Nhập tên garage"
+                    placeholder="Enter garage name"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Số điện thoại *</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <Input
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Nhập số điện thoại"
+                    placeholder="Enter phone number"
                     required
                   />
                 </div>
@@ -418,19 +418,19 @@ export default function EditGaragePage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Nhập email"
+                    placeholder="Enter email"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Địa chỉ *</Label>
+                  <Label htmlFor="address">Address *</Label>
                   <div className="relative">
                     <Input
                       id="address"
                       value={address}
                       onChange={(e) => handleAddressChange(e.target.value)}
-                      placeholder="Nhập địa chỉ đầy đủ (sẽ tự động tìm tọa độ)"
+                      placeholder="Enter full address (coordinates will be found automatically)"
                       required
                     />
                     {geocodingLoading && (
@@ -457,19 +457,19 @@ export default function EditGaragePage() {
                   {geocodingResult && (
                     <div className="flex items-center space-x-2 text-sm text-green-600 mt-1">
                       <CheckCircle className="h-4 w-4" />
-                      <span>Đã tìm thấy: {geocodingResult.display_name}</span>
+                      <span>Found: {geocodingResult.display_name}</span>
                     </div>
                   )}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Mô tả *</Label>
+                <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Mô tả về garage, dịch vụ, kinh nghiệm..."
+                  placeholder="Describe garage, services, experience..."
                   rows={4}
                   required
                 />
@@ -482,7 +482,7 @@ export default function EditGaragePage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Clock className="h-5 w-5 text-blue-600" />
-                <span>Giờ làm việc</span>
+                <span>Working Hours</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -498,25 +498,25 @@ export default function EditGaragePage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <MapPin className="h-5 w-5 text-blue-600" />
-                <span>Vị trí (GPS)</span>
+                <span>Location (GPS)</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="latitude">Vĩ độ</Label>
+                  <Label htmlFor="latitude">Latitude</Label>
                   <Input
                     id="latitude"
                     type="number"
                     step="any"
                     value={latitude || ""}
                     onChange={(e) => setLatitude(parseFloat(e.target.value) || null)}
-                    placeholder="Ví dụ: 10.8231"
+                    placeholder="e.g., 10.8231"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="longitude">Kinh độ</Label>
+                  <Label htmlFor="longitude">Longitude</Label>
                   <div className="flex space-x-2">
                     <Input
                       id="longitude"
@@ -524,7 +524,7 @@ export default function EditGaragePage() {
                       step="any"
                       value={longitude || ""}
                       onChange={(e) => setLongitude(parseFloat(e.target.value) || null)}
-                      placeholder="Ví dụ: 106.6297"
+                      placeholder="e.g., 106.6297"
                     />
                     <Button
                       type="button"
@@ -536,7 +536,7 @@ export default function EditGaragePage() {
                       {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "Lấy vị trí hiện tại"
+                        "Get Current Location"
                       )}
                     </Button>
                   </div>
@@ -547,7 +547,7 @@ export default function EditGaragePage() {
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                   <div className="flex items-center space-x-2 text-green-700">
                     <CheckCircle className="h-4 w-4" />
-                    <span>Tọa độ đã được thiết lập: {latitude.toFixed(6)}, {longitude.toFixed(6)}</span>
+                    <span>Coordinates set: {latitude.toFixed(6)}, {longitude.toFixed(6)}</span>
                   </div>
                 </div>
               )}
@@ -559,7 +559,7 @@ export default function EditGaragePage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Car className="h-5 w-5 text-blue-600" />
-                <span>Loại xe phục vụ *</span>
+                <span>Vehicle Types Served *</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -567,7 +567,7 @@ export default function EditGaragePage() {
                 <div className="flex items-center justify-center py-8">
                   <div className="text-center">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                    <p className="text-sm text-slate-600">Đang tải loại xe...</p>
+                    <p className="text-sm text-slate-600">Loading vehicle types...</p>
                   </div>
                 </div>
               ) : (
@@ -592,7 +592,7 @@ export default function EditGaragePage() {
                     </div>
                   </div>
                   {selectedVehicleTypes.length === 0 && (
-                    <p className="text-sm text-red-600 mt-2">Vui lòng chọn ít nhất một loại xe</p>
+                    <p className="text-sm text-red-600 mt-2">Please select at least one vehicle type</p>
                   )}
                 </>
               )}
@@ -604,7 +604,7 @@ export default function EditGaragePage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Building2 className="h-5 w-5 text-blue-600" />
-                <span>Dịch vụ cung cấp *</span>
+                <span>Services Provided *</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -612,7 +612,7 @@ export default function EditGaragePage() {
                 <div className="flex items-center justify-center py-8">
                   <div className="text-center">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                    <p className="text-sm text-slate-600">Đang tải dịch vụ...</p>
+                    <p className="text-sm text-slate-600">Loading services...</p>
                   </div>
                 </div>
               ) : (
@@ -637,7 +637,7 @@ export default function EditGaragePage() {
                     </div>
                   </div>
                   {selectedServices.length === 0 && (
-                    <p className="text-sm text-red-600 mt-2">Vui lòng chọn ít nhất một dịch vụ</p>
+                    <p className="text-sm text-red-600 mt-2">Please select at least one service</p>
                   )}
                 </>
               )}
@@ -649,18 +649,18 @@ export default function EditGaragePage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Upload className="h-5 w-5 text-blue-600" />
-                <span>Hình ảnh garage</span>
+                <span>Garage Image</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center space-y-4">
                 <p className="text-sm text-gray-600">
-                  Tải lên hình ảnh garage để khách hàng dễ nhận biết
+                  Upload garage image for customers to easily identify
                 </p>
                 {imagePreview && (
                   <div className="flex items-center justify-center space-x-2 text-sm text-green-600">
                     <CheckCircle className="h-4 w-4" />
-                    <span>Hình ảnh đã được tải lên</span>
+                    <span>Image uploaded successfully</span>
                   </div>
                 )}
                 <div className="flex justify-center">
@@ -671,7 +671,7 @@ export default function EditGaragePage() {
                     className="flex items-center space-x-2"
                   >
                     <Upload className="h-4 w-4" />
-                    <span>Chọn hình ảnh</span>
+                    <span>Select Image</span>
                   </Button>
                 </div>
                 <input
@@ -705,7 +705,7 @@ export default function EditGaragePage() {
               onClick={() => router.push(`/garage/${garageId}?owner=true`)}
               disabled={submitting}
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -715,12 +715,12 @@ export default function EditGaragePage() {
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Đang lưu...
+                  Saving...
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Lưu thay đổi
+                  Save Changes
                 </>
               )}
             </Button>
@@ -729,7 +729,7 @@ export default function EditGaragePage() {
           {/* Note */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">
-              Lưu ý: Sau khi cập nhật, garage của bạn sẽ cần được admin phê duyệt lại trước khi có thể nhận lịch hẹn từ khách hàng.
+              Note: After updating, your garage will need to be re-approved by admin before it can receive appointments from customers.
             </p>
           </div>
         </form>

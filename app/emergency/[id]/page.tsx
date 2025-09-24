@@ -188,7 +188,7 @@ export default function EmergencyDetailPage() {
       setCarProgress(prev => ({
         ...prev,
         status: 'traveling',
-        currentLocation: 'Đang rời garage'
+        currentLocation: 'Leaving garage'
       }))
     }, preparingTime)
 
@@ -223,19 +223,19 @@ export default function EmergencyDetailPage() {
       }))
 
       // Update location based on progress với timing hợp lý
-      let location = 'Đang di chuyển'
+      let location = 'Traveling'
       if (progress < 15) {
-        location = 'Đang rời garage'
+        location = 'Leaving garage'
       } else if (progress < 35) {
-        location = 'Trên đường chính'
+        location = 'On main road'
       } else if (progress < 60) {
-        location = 'Tiếp tục hành trình'
+        location = 'Continuing journey'
       } else if (progress < 80) {
-        location = 'Gần đến khu vực'
+        location = 'Near the area'
       } else if (progress < 95) {
-        location = 'Sắp đến vị trí sự cố'
+        location = 'Approaching incident location'
       } else if (progress >= 100) {
-        location = 'Đã đến vị trí sự cố'
+        location = 'Arrived at incident location'
         setCarProgress(prev => ({
           ...prev,
           status: 'arrived',
@@ -280,8 +280,15 @@ export default function EmergencyDetailPage() {
         // Try to load quotes
         try {
           const quotesResponse = await EmergencyApi.getQuotes(requestId)
-          setQuotes(quotesResponse.data || [])
-          console.log('💰 Quotes loaded:', quotesResponse.data?.length || 0)
+          // Ensure quotes is always an array
+          const quotesData = quotesResponse.data
+          if (Array.isArray(quotesData)) {
+            setQuotes(quotesData)
+            console.log('💰 Quotes loaded:', quotesData.length)
+          } else {
+            console.log('⚠️ Quotes data is not an array:', quotesData)
+            setQuotes([])
+          }
         } catch (quotesError) {
           console.log('⚠️ No quotes found for request:', requestId)
           setQuotes([])
@@ -294,11 +301,11 @@ export default function EmergencyDetailPage() {
       console.error("❌ Error loading request details:", error)
       
       if (error.response?.status === 404) {
-        setError("Không tìm thấy yêu cầu cứu hộ này")
+        setError("Emergency request not found")
       } else if (error.code === 'ERR_NETWORK') {
-        setError("Không thể kết nối tới server backend")
+        setError("Cannot connect to backend server")
       } else {
-        setError("Không thể tải chi tiết yêu cầu cứu hộ")
+        setError("Cannot load emergency request details")
       }
     } finally {
       setLoading(false)
@@ -310,33 +317,33 @@ export default function EmergencyDetailPage() {
       const response = await EmergencyApi.acceptQuote(quoteId)
       
       // Update local state
-      setQuotes(prev => prev.map(quote => 
+      setQuotes(prev => Array.isArray(prev) ? prev.map(quote => 
         quote.id === quoteId 
           ? { ...quote, accepted: true }
           : quote
-      ))
+      ) : [])
       
       if (request) {
         setRequest(prev => prev ? { ...prev, status: 'ACCEPTED' } : null)
       }
       
       toast({
-        title: "Thành công",
-        description: "Đã chấp nhận báo giá",
+        title: "Success",
+        description: "Quote accepted",
       })
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể chấp nhận báo giá. Đang sử dụng chế độ demo.",
+        title: "Error",
+        description: "Cannot accept quote. Using demo mode.",
         variant: "destructive",
       })
       
       // Mock success for demo
-      setQuotes(prev => prev.map(quote => 
+      setQuotes(prev => Array.isArray(prev) ? prev.map(quote => 
         quote.id === quoteId 
           ? { ...quote, accepted: true }
           : quote
-      ))
+      ) : [])
       
       if (request) {
         setRequest(prev => prev ? { ...prev, status: 'ACCEPTED' } : null)
@@ -345,20 +352,24 @@ export default function EmergencyDetailPage() {
       setTimeout(() => {
         toast({
           title: "Demo Success",
-          description: "Báo giá đã được chấp nhận (demo mode)",
+          description: "Quote has been accepted (demo mode)",
         })
       }, 1000)
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    const date = new Date(dateString)
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear()
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    
+    // Remove leading zero from hour if it's 00
+    const formattedHour = hour === '00' ? '0' : hour
+    
+    return `${formattedHour}:${minute} ${day}/${month}/${year}`
   }
 
   const formatPrice = (price: number) => {
@@ -398,7 +409,7 @@ export default function EmergencyDetailPage() {
         
         setRouteInfo({
           distance: `${distance.toFixed(1)} km`,
-          duration: `${estimatedTime} phút`,
+          duration: `${estimatedTime} min`,
           status: 'loaded'
         })
       } else {
@@ -410,7 +421,7 @@ export default function EmergencyDetailPage() {
         
         setRouteInfo({
           distance: `${mockDistance} km`,
-          duration: `${mockDuration} phút`,
+          duration: `${mockDuration} min`,
           status: 'loaded'
         })
       }
@@ -437,8 +448,8 @@ export default function EmergencyDetailPage() {
   const openGoogleMapsNavigation = () => {
     if (!request) {
       toast({
-        title: "Lỗi",
-        description: "Không thể lấy thông tin yêu cầu",
+        title: "Error",
+        description: "Cannot get request information",
         variant: "destructive",
       })
       return
@@ -458,8 +469,8 @@ export default function EmergencyDetailPage() {
       window.open(url, '_blank')
     } else {
       toast({
-        title: "Lỗi",
-        description: "Không thể lấy thông tin vị trí garage",
+        title: "Error",
+        description: "Cannot get garage location information",
         variant: "destructive",
       })
     }
@@ -475,7 +486,7 @@ export default function EmergencyDetailPage() {
         <div className="flex items-center justify-center py-16">
           <div className="text-center space-y-4">
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-lg font-semibold text-gray-700">Đang tải chi tiết...</p>
+            <p className="text-lg font-semibold text-gray-700">Loading details...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -496,13 +507,13 @@ export default function EmergencyDetailPage() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Quay lại</span>
+            <span>Go Back</span>
           </Button>
           
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              {error || "Không tìm thấy yêu cầu cứu hộ"}
+              {error || "Emergency request not found"}
             </AlertDescription>
           </Alert>
         </div>
@@ -513,8 +524,8 @@ export default function EmergencyDetailPage() {
   return (
     <DashboardLayout
       allowedRoles={["USER", "ADMIN", "GARAGE"]}
-      title={`Yêu cầu cứu hộ #${request.id}`}
-      description="Chi tiết yêu cầu cứu hộ và báo giá"
+      title={`Emergency Request #${request.id}`}
+      description="Emergency request details and quotes"
     >
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="container mx-auto px-4 py-6 lg:py-8 space-y-6 lg:space-y-8">
@@ -528,7 +539,7 @@ export default function EmergencyDetailPage() {
                   className="flex items-center gap-2 bg-white hover:bg-gray-50 border-gray-300 text-gray-700 rounded-xl px-4 py-2 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline">Quay lại</span>
+                  <span className="hidden sm:inline">Go Back</span>
                 </Button>
                 
                 
@@ -537,8 +548,8 @@ export default function EmergencyDetailPage() {
                     #{request.id}
                   </div>
                   <div>
-                    <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Yêu cầu cứu hộ</h1>
-                    <p className="text-sm text-gray-600">Chi tiết và quản lý yêu cầu</p>
+                    <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Emergency Request</h1>
+                    <p className="text-sm text-gray-600">Details and request management</p>
                   </div>
                 </div>
               </div>
@@ -550,13 +561,13 @@ export default function EmergencyDetailPage() {
                   className="flex items-center gap-2 bg-white hover:bg-gray-50 border-gray-300 text-gray-700 rounded-xl px-4 py-2 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  <span className="hidden sm:inline">Làm mới</span>
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
                 
                 <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-green-700">Trạng thái: {request.status}</span>
+                    <span className="text-sm font-medium text-green-700">Status: {request.status}</span>
                   </div>
                 </div>
               </div>
@@ -581,7 +592,7 @@ export default function EmergencyDetailPage() {
                     className="flex items-center gap-2 bg-white/90 hover:bg-white border border-gray-200 rounded-xl px-6 py-3 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-indigo-300 data-[state=active]:text-indigo-700 transition-all duration-200"
                   >
                     <MessageSquare className="h-4 w-4" />
-                    <span className="font-medium">Chi tiết yêu cầu</span>
+                    <span className="font-medium">Request Details</span>
                   </TabsTrigger>
                   {/* <TabsTrigger 
                     value="quotes" 
@@ -595,7 +606,7 @@ export default function EmergencyDetailPage() {
                     className="flex items-center gap-2 bg-white/90 hover:bg-white border border-gray-200 rounded-xl px-6 py-3 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-indigo-300 data-[state=active]:text-indigo-700 transition-all duration-200"
                   >
                     <MapPin className="h-4 w-4" />
-                    <span className="font-medium">Vị trí sự cố</span>
+                    <span className="font-medium">Incident Location</span>
                   </TabsTrigger>
                   {(request.status as string) === 'ACCEPTED' && (
                     <TabsTrigger 
@@ -603,7 +614,7 @@ export default function EmergencyDetailPage() {
                       className="flex items-center gap-2 bg-white/90 hover:bg-white border border-gray-200 rounded-xl px-6 py-3 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-indigo-300 data-[state=active]:text-indigo-700 transition-all duration-200"
                     >
                       <Route className="h-4 w-4" />
-                      <span className="font-medium">Hành trình</span>
+                      <span className="font-medium">Route</span>
                     </TabsTrigger>
                   )}
                 </TabsList>
@@ -619,8 +630,8 @@ export default function EmergencyDetailPage() {
                           <User className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900">Thông tin khách hàng</h3>
-                          <p className="text-sm text-gray-600">Chi tiết người yêu cầu cứu hộ</p>
+                          <h3 className="text-xl font-bold text-gray-900">Customer Information</h3>
+                          <p className="text-sm text-gray-600">Details of the person requesting rescue</p>
                         </div>
                       </div>
                       
@@ -631,8 +642,8 @@ export default function EmergencyDetailPage() {
                               <User className="h-4 w-4 text-blue-600" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-700">Tên khách hàng</p>
-                              <p className="text-lg font-semibold text-gray-900">{request.user?.name || 'Chưa có thông tin'}</p>
+                              <p className="text-sm font-medium text-gray-700">Customer Name</p>
+                              <p className="text-lg font-semibold text-gray-900">{request.user?.name || 'No information available'}</p>
                             </div>
                           </div>
                         </div>
@@ -643,7 +654,7 @@ export default function EmergencyDetailPage() {
                               <Phone className="h-4 w-4 text-green-600" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-700">Số điện thoại</p>
+                              <p className="text-sm font-medium text-gray-700">Phone Number</p>
                               <p className="text-lg font-semibold text-gray-900">{request.user?.phone || 'N/A'}</p>
                             </div>
                           </div>
@@ -655,7 +666,7 @@ export default function EmergencyDetailPage() {
                               <Calendar className="h-4 w-4 text-purple-600" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-700">Thời gian tạo</p>
+                              <p className="text-sm font-medium text-gray-700">Created Time</p>
                               <p className="text-lg font-semibold text-gray-900">{formatDate(request.createdAt)}</p>
                             </div>
                           </div>
@@ -670,8 +681,8 @@ export default function EmergencyDetailPage() {
                           <AlertTriangle className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900">Mô tả sự cố</h3>
-                          <p className="text-sm text-gray-600">Chi tiết về tình trạng xe và sự cố</p>
+                          <h3 className="text-xl font-bold text-gray-900">Incident Description</h3>
+                          <p className="text-sm text-gray-600">Details about vehicle condition and incident</p>
                         </div>
                       </div>
                       
@@ -681,9 +692,9 @@ export default function EmergencyDetailPage() {
                             <MessageSquare className="h-4 w-4 text-orange-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-700 mb-2">Mô tả chi tiết</p>
+                            <p className="text-sm font-medium text-gray-700 mb-2">Detailed Description</p>
                             <p className="text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg border-l-4 border-orange-500">
-                              {request.description || 'Không có mô tả chi tiết về sự cố'}
+                              {request.description || 'No detailed description about the incident'}
                             </p>
                           </div>
                         </div>
@@ -693,7 +704,7 @@ export default function EmergencyDetailPage() {
                             <MapPin className="h-4 w-4 text-blue-600" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-700">Vị trí sự cố</p>
+                            <p className="text-sm font-medium text-gray-700">Incident Location</p>
                             <p className="text-sm font-mono text-gray-600 bg-blue-50 px-3 py-1 rounded-lg">
                               {request.latitude?.toFixed(6)}, {request.longitude?.toFixed(6)}
                             </p>
@@ -711,8 +722,8 @@ export default function EmergencyDetailPage() {
                           <Car className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900">Garage phụ trách</h3>
-                          <p className="text-sm text-gray-600">Thông tin garage cứu hộ</p>
+                          <h3 className="text-xl font-bold text-gray-900">Assigned Garage</h3>
+                          <p className="text-sm text-gray-600">Emergency rescue garage information</p>
                         </div>
                       </div>
                       
@@ -723,7 +734,7 @@ export default function EmergencyDetailPage() {
                               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                                 <Car className="h-4 w-4 text-purple-600" />
                               </div>
-                              <p className="text-sm font-medium text-gray-700">Tên garage</p>
+                              <p className="text-sm font-medium text-gray-700">Garage Name</p>
                             </div>
                             <p className="text-lg font-bold text-purple-800">{request.garage.name}</p>
                           </div>
@@ -743,7 +754,7 @@ export default function EmergencyDetailPage() {
                               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                                 <MapPin className="h-4 w-4 text-blue-600" />
                               </div>
-                              <p className="text-sm font-medium text-gray-700">Địa chỉ</p>
+                              <p className="text-sm font-medium text-gray-700">Address</p>
                             </div>
                             <p className="text-sm font-bold text-blue-800 leading-relaxed">{request.garage.address}</p>
                           </div>
@@ -755,7 +766,7 @@ export default function EmergencyDetailPage() {
                             className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                           >
                             <Phone className="h-4 w-4 mr-2" />
-                            Gọi garage ngay
+                            Call Garage Now
                           </Button>
                           <Button
                             variant="outline"
@@ -766,7 +777,7 @@ export default function EmergencyDetailPage() {
                             className="border-purple-300 text-purple-700 hover:bg-purple-50 px-6 py-3 rounded-xl transition-all duration-200"
                           >
                             <MapPin className="h-4 w-4 mr-2" />
-                            Xem vị trí garage
+                            View Garage Location
                           </Button>
                         </div>
                       </div>
@@ -776,19 +787,19 @@ export default function EmergencyDetailPage() {
               </TabsContent>
 
               <TabsContent value="quotes" className="p-6 lg:p-8">
-                {quotes.length === 0 ? (
+                {!Array.isArray(quotes) || quotes.length === 0 ? (
                   <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-2xl border border-gray-200 p-8 lg:p-12 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-gray-400 to-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <DollarSign className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-700 mb-3">Chưa có báo giá</h3>
+                    <h3 className="text-xl font-bold text-gray-700 mb-3">No Quotes Yet</h3>
                     <p className="text-gray-600 max-w-md mx-auto">
-                      Các garage sẽ gửi báo giá sớm nhất có thể. Vui lòng chờ đợi hoặc liên hệ trực tiếp với garage.
+                      Garages will send quotes as soon as possible. Please wait or contact the garage directly.
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {quotes.map((quote) => (
+                    {Array.isArray(quotes) && quotes.map((quote) => (
                       <div 
                         key={quote.id} 
                         className={`bg-gradient-to-br rounded-2xl border p-6 lg:p-8 transition-all duration-200 ${
@@ -810,7 +821,7 @@ export default function EmergencyDetailPage() {
                             </div>
                             
                             <div className="bg-white rounded-xl p-4 border border-gray-100 mb-4">
-                              <p className="text-sm font-medium text-gray-700 mb-2">Mô tả dịch vụ:</p>
+                              <p className="text-sm font-medium text-gray-700 mb-2">Service Description:</p>
                               <p className="text-gray-800">{quote.message}</p>
                             </div>
                             
@@ -833,7 +844,7 @@ export default function EmergencyDetailPage() {
                             {quote.accepted && (
                               <div className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-xl font-medium mb-4">
                                 <CheckCircle className="h-4 w-4" />
-                                Đã chấp nhận
+                                Accepted
                               </div>
                             )}
                             
@@ -844,7 +855,7 @@ export default function EmergencyDetailPage() {
                                   className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                                 >
                                   <CheckCircle className="h-4 w-4 mr-2" />
-                                  Chấp nhận báo giá
+                                  Accept Quote
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -852,7 +863,7 @@ export default function EmergencyDetailPage() {
                                   className="border-purple-300 text-purple-700 hover:bg-purple-50 px-6 py-3 rounded-xl transition-all duration-200"
                                 >
                                   <Phone className="h-4 w-4 mr-2" />
-                                  Liên hệ garage
+                                  Contact Garage
                                 </Button>
                               </div>
                             )}
@@ -871,8 +882,8 @@ export default function EmergencyDetailPage() {
                       <MapPin className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">Vị trí sự cố</h3>
-                      <p className="text-sm text-gray-600">Tọa độ và bản đồ vị trí xảy ra sự cố</p>
+                      <h3 className="text-xl font-bold text-gray-900">Incident Location</h3>
+                      <p className="text-sm text-gray-600">Coordinates and map of incident location</p>
                     </div>
                   </div>
                   
@@ -883,7 +894,7 @@ export default function EmergencyDetailPage() {
                           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                             <MapPin className="h-4 w-4 text-blue-600" />
                           </div>
-                          <p className="text-sm font-medium text-gray-700">Vĩ độ (Latitude)</p>
+                          <p className="text-sm font-medium text-gray-700">Latitude</p>
                         </div>
                         <p className="text-xl font-mono font-bold text-blue-800 bg-blue-50 p-3 rounded-lg border border-blue-200">
                           {request.latitude.toFixed(6)}
@@ -895,7 +906,7 @@ export default function EmergencyDetailPage() {
                           <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                             <MapPin className="h-4 w-4 text-purple-600" />
                           </div>
-                          <p className="text-sm font-medium text-gray-700">Kinh độ (Longitude)</p>
+                          <p className="text-sm font-medium text-gray-700">Longitude</p>
                         </div>
                         <p className="text-xl font-mono font-bold text-purple-800 bg-purple-50 p-3 rounded-lg border border-purple-200">
                           {request.longitude.toFixed(6)}
@@ -912,21 +923,21 @@ export default function EmergencyDetailPage() {
                         className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                       >
                         <Navigation className="h-4 w-4 mr-2" />
-                        Xem trên Google Maps
+                        View on Google Maps
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => {
                           navigator.clipboard.writeText(`${request.latitude}, ${request.longitude}`)
                           toast({
-                            title: "Đã sao chép",
-                            description: "Tọa độ đã được sao chép vào clipboard",
+            title: "Copied",
+            description: "Coordinates have been copied to clipboard",
                           })
                         }}
                         className="border-green-300 text-green-700 hover:bg-green-50 px-6 py-3 rounded-xl transition-all duration-200"
                       >
                         <MapPin className="h-4 w-4 mr-2" />
-                        Sao chép tọa độ
+                        Copy Coordinates
                       </Button>
                     </div>
                   </div>
@@ -943,8 +954,8 @@ export default function EmergencyDetailPage() {
                         <Route className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900">Hành trình cứu hộ</h3>
-                        <p className="text-sm text-gray-600">Thông tin khoảng cách và thời gian từ garage đến vị trí sự cố</p>
+                        <h3 className="text-xl font-bold text-gray-900">Rescue Route</h3>
+                        <p className="text-sm text-gray-600">Distance and time information from garage to incident location</p>
                       </div>
                     </div>
                     
@@ -953,7 +964,7 @@ export default function EmergencyDetailPage() {
                         <div className="flex items-center justify-center py-8">
                           <div className="text-center space-y-4">
                             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-                            <p className="text-lg font-semibold text-gray-700">Đang tính toán hành trình...</p>
+                            <p className="text-lg font-semibold text-gray-700">Calculating route...</p>
                           </div>
                         </div>
                       </div>
@@ -968,7 +979,7 @@ export default function EmergencyDetailPage() {
                                 <Route className="h-5 w-5 text-green-600" />
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-700">Khoảng cách</p>
+                                <p className="text-sm font-medium text-gray-700">Distance</p>
                                 <p className="text-2xl font-bold text-green-700">{routeInfo.distance}</p>
                               </div>
                             </div>
@@ -980,7 +991,7 @@ export default function EmergencyDetailPage() {
                                 <Timer className="h-5 w-5 text-orange-600" />
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-700">Thời gian dự tính</p>
+                                <p className="text-sm font-medium text-gray-700">Estimated Time</p>
                                 <p className="text-2xl font-bold text-orange-700">{routeInfo.duration}</p>
                               </div>
                             </div>
@@ -1032,7 +1043,7 @@ export default function EmergencyDetailPage() {
                               <div className="mb-6">
                                 <div className="flex items-center gap-2 mb-2">
                                   <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                  <p className="text-sm font-medium text-gray-700">Điểm xuất phát</p>
+                                  <p className="text-sm font-medium text-gray-700">Starting Point</p>
                                 </div>
                                 <p className="text-lg font-semibold text-gray-900">{request.garage?.name}</p>
                                 <p className="text-sm text-gray-600">{request.garage?.address}</p>
@@ -1041,7 +1052,7 @@ export default function EmergencyDetailPage() {
                               {/* Progress Info */}
                               <div className="bg-white rounded-lg p-4 border border-gray-200 mb-6">
                                 <div className="flex items-center justify-between mb-3">
-                                  <p className="text-sm font-medium text-gray-700">Tiến độ di chuyển</p>
+                                  <p className="text-sm font-medium text-gray-700">Movement Progress</p>
                                   <span className="text-sm font-bold text-blue-600">{Math.round(carProgress.progress)}%</span>
                                 </div>
                                 
@@ -1063,9 +1074,9 @@ export default function EmergencyDetailPage() {
                                     'bg-green-500'
                                   }`}></div>
                                   <span className="text-sm font-medium text-gray-700">
-                                    {carProgress.status === 'preparing' ? 'Đang chuẩn bị' :
-                                     carProgress.status === 'traveling' ? 'Đang di chuyển' :
-                                     'Đã đến nơi'}
+                                    {carProgress.status === 'preparing' ? 'Preparing' :
+                                     carProgress.status === 'traveling' ? 'On Route' :
+                                     'Arrived'}
                                   </span>
                                 </div>
                                 
@@ -1077,13 +1088,13 @@ export default function EmergencyDetailPage() {
                                   {carProgress.status !== 'arrived' && carProgress.remainingTime > 0 && (
                                     <div className="p-2 bg-blue-50 rounded-lg border border-blue-200">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs font-medium text-blue-700">Thời gian còn lại:</span>
+                                        <span className="text-xs font-medium text-blue-700">Time Remaining:</span>
                                         <span className="text-sm font-bold text-blue-800">
                                           {Math.floor(carProgress.remainingTime / 60)}:{(carProgress.remainingTime % 60).toString().padStart(2, '0')}
                                         </span>
                                       </div>
                                       <div className="mt-1 text-xs text-blue-600">
-                                        Ước tính {routeInfo.duration} từ garage
+                                        Estimated {routeInfo.duration} from garage
                                       </div>
                                     </div>
                                   )}
@@ -1092,7 +1103,7 @@ export default function EmergencyDetailPage() {
                                   {carProgress.status === 'traveling' && carProgress.currentSpeed > 0 && (
                                     <div className="p-2 bg-green-50 rounded-lg border border-green-200">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs font-medium text-green-700">Tốc độ hiện tại:</span>
+                                        <span className="text-xs font-medium text-green-700">Current Speed:</span>
                                         <span className="text-sm font-bold text-green-800">
                                           {carProgress.currentSpeed} km/h
                                         </span>
@@ -1104,7 +1115,7 @@ export default function EmergencyDetailPage() {
                                   {carProgress.distance > 0 && (
                                     <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-xs font-medium text-gray-700">Khoảng cách:</span>
+                                        <span className="text-xs font-medium text-gray-700">Distance:</span>
                                         <span className="text-sm font-bold text-gray-800">
                                           {carProgress.distance} km
                                         </span>
@@ -1117,7 +1128,7 @@ export default function EmergencyDetailPage() {
                                   <div className="mt-3 p-2 bg-green-50 rounded-lg border border-green-200">
                                     <div className="flex items-center gap-2">
                                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                      <span className="text-sm font-medium text-green-700">Đã đến vị trí sự cố!</span>
+                                      <span className="text-sm font-medium text-green-700">Arrived at incident location!</span>
                                     </div>
                                   </div>
                                 )}
@@ -1125,14 +1136,14 @@ export default function EmergencyDetailPage() {
                               
                               {/* Route Info */}
                               <div className="bg-white rounded-lg p-4 border border-gray-200">
-                                <p className="text-sm font-medium text-gray-700 mb-2">Thông tin hành trình</p>
+                                <p className="text-sm font-medium text-gray-700 mb-2">Route Information</p>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                   <div>
-                                    <span className="text-gray-600">Khoảng cách: </span>
+                                    <span className="text-gray-600">Distance: </span>
                                     <span className="font-semibold text-green-600">{routeInfo.distance}</span>
                                   </div>
                                   <div>
-                                    <span className="text-gray-600">Thời gian: </span>
+                                    <span className="text-gray-600">Time: </span>
                                     <span className="font-semibold text-orange-600">{routeInfo.duration}</span>
                                   </div>
                                 </div>
@@ -1144,11 +1155,11 @@ export default function EmergencyDetailPage() {
                                   <div className={`w-3 h-3 rounded-full ${
                                     carProgress.status === 'arrived' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
                                   }`}></div>
-                                  <p className="text-sm font-medium text-gray-700">Điểm đến</p>
+                                  <p className="text-sm font-medium text-gray-700">Destination</p>
                                 </div>
-                                <p className="text-lg font-semibold text-gray-900">Vị trí sự cố</p>
+                                <p className="text-lg font-semibold text-gray-900">Incident Location</p>
                                 <p className="text-sm text-gray-600">
-                                  Tọa độ: {request.latitude?.toFixed(6)}, {request.longitude?.toFixed(6)}
+                                  Coordinates: {request.latitude?.toFixed(6)}, {request.longitude?.toFixed(6)}
                                 </p>
                               </div>
                             </div>
@@ -1162,23 +1173,23 @@ export default function EmergencyDetailPage() {
                             className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                           >
                             <Navigation className="h-4 w-4 mr-2" />
-                            Mở Google Maps
+                            Open Google Maps
                           </Button>
                           
                           <Button
                             variant="outline"
                             onClick={() => {
-                              const text = `Hành trình từ ${request.garage?.name} đến vị trí sự cố: ${routeInfo.distance} - ${routeInfo.duration}`
+                              const text = `Route from ${request.garage?.name} to incident location: ${routeInfo.distance} - ${routeInfo.duration}`
                               navigator.clipboard.writeText(text)
                               toast({
-                                title: "Đã sao chép",
-                                description: "Thông tin hành trình đã được sao chép",
+                                title: "Copied",
+                                description: "Route information has been copied",
                               })
                             }}
                             className="border-blue-300 text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-xl transition-all duration-200"
                           >
                             <Route className="h-4 w-4 mr-2" />
-                            Sao chép thông tin
+                            Copy Information
                           </Button>
                           
                           <Button
@@ -1195,7 +1206,7 @@ export default function EmergencyDetailPage() {
                             className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-xl transition-all duration-200"
                           >
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            Làm mới
+                            Refresh
                           </Button>
 
                           <Button
@@ -1207,7 +1218,7 @@ export default function EmergencyDetailPage() {
                             className="border-green-300 text-green-700 hover:bg-green-50 px-6 py-3 rounded-xl transition-all duration-200"
                           >
                             <Car className="h-4 w-4 mr-2" />
-                            Xem lại hành trình
+                            Replay Route
                           </Button>
                         </div>
                       </div>
@@ -1219,9 +1230,9 @@ export default function EmergencyDetailPage() {
                           <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                             <AlertTriangle className="h-8 w-8 text-red-600" />
                           </div>
-                          <h3 className="text-lg font-bold text-gray-700 mb-2">Không thể tính toán hành trình</h3>
+                          <h3 className="text-lg font-bold text-gray-700 mb-2">Cannot Calculate Route</h3>
                           <p className="text-gray-600 mb-4">
-                            Có lỗi xảy ra khi tính toán khoảng cách và thời gian.
+                            An error occurred while calculating distance and time.
                           </p>
                           <Button
                             onClick={calculateRoute}
@@ -1229,7 +1240,7 @@ export default function EmergencyDetailPage() {
                             className="border-red-300 text-red-700 hover:bg-red-50"
                           >
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            Thử lại
+                            Try Again
                           </Button>
                         </div>
                       </div>
@@ -1244,8 +1255,8 @@ export default function EmergencyDetailPage() {
                           <Map className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900">Điều hướng nhanh</h3>
-                          <p className="text-sm text-gray-600">Các tùy chọn điều hướng và liên lạc</p>
+                          <h3 className="text-xl font-bold text-gray-900">Quick Navigation</h3>
+                          <p className="text-sm text-gray-600">Navigation and contact options</p>
                         </div>
                       </div>
                       
@@ -1261,7 +1272,7 @@ export default function EmergencyDetailPage() {
                           className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 h-auto flex flex-col items-center gap-2"
                         >
                           <MapPin className="h-6 w-6" />
-                          <span className="font-medium">Vị trí Garage</span>
+                          <span className="font-medium">Garage Location</span>
                         </Button>
                         
                         <Button
@@ -1269,7 +1280,7 @@ export default function EmergencyDetailPage() {
                           className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 h-auto flex flex-col items-center gap-2"
                         >
                           <AlertTriangle className="h-6 w-6" />
-                          <span className="font-medium">Vị trí sự cố</span>
+                          <span className="font-medium">Incident Location</span>
                         </Button>
                         
                         <Button
@@ -1277,7 +1288,7 @@ export default function EmergencyDetailPage() {
                           className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 h-auto flex flex-col items-center gap-2"
                         >
                           <Navigation className="h-6 w-6" />
-                          <span className="font-medium">Chỉ dẫn đường</span>
+                          <span className="font-medium">Get Directions</span>
                         </Button>
                       </div>
                     </div>
@@ -1294,8 +1305,8 @@ export default function EmergencyDetailPage() {
                       <Clock className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">Hành trình sẽ hiển thị khi</h3>
-                      <p className="text-sm text-gray-600">Yêu cầu cứu hộ được garage chấp nhận</p>
+                      <h3 className="text-xl font-bold text-gray-900">Route will be displayed when</h3>
+                      <p className="text-sm text-gray-600">Emergency request is accepted by garage</p>
                     </div>
                   </div>
                   
@@ -1310,7 +1321,7 @@ export default function EmergencyDetailPage() {
                           <Clock className="h-8 w-8" />
                         </div>
                         <p className="text-sm font-medium text-gray-700">PENDING</p>
-                        <p className="text-xs text-gray-500">Chờ garage phản hồi</p>
+                        <p className="text-xs text-gray-500">Waiting for garage response</p>
                       </div>
                       
                       <div className="text-center">
@@ -1322,7 +1333,7 @@ export default function EmergencyDetailPage() {
                           <CheckCircle className="h-8 w-8" />
                         </div>
                         <p className="text-sm font-medium text-gray-700">ACCEPTED</p>
-                        <p className="text-xs text-gray-500">Garage đã chấp nhận</p>
+                        <p className="text-xs text-gray-500">Garage has accepted</p>
                       </div>
                       
                       <div className="text-center">
@@ -1334,21 +1345,21 @@ export default function EmergencyDetailPage() {
                           <Star className="h-8 w-8" />
                         </div>
                         <p className="text-sm font-medium text-gray-700">COMPLETED</p>
-                        <p className="text-xs text-gray-500">Hoàn thành cứu hộ</p>
+                        <p className="text-xs text-gray-500">Rescue completed</p>
                       </div>
                     </div>
                     
                     <div className="mt-6 text-center">
                       <p className="text-sm text-gray-600 mb-4">
-                        {request.status === 'PENDING' && "Hiện tại yêu cầu đang chờ garage phản hồi. Hành trình sẽ hiển thị khi garage chấp nhận yêu cầu."}
-                        {request.status === 'COMPLETED' && "Yêu cầu cứu hộ đã hoàn thành. Hành trình đã kết thúc."}
-                        {request.status === 'QUOTED' && "Garage đã gửi báo giá. Hành trình sẽ hiển thị khi bạn chấp nhận báo giá."}
+                        {request.status === 'PENDING' && "Currently the request is waiting for garage response. Route will be displayed when garage accepts the request."}
+                        {request.status === 'COMPLETED' && "Emergency request has been completed. Route has ended."}
+                        {request.status === 'QUOTED' && "Garage has sent a quote. Route will be displayed when you accept the quote."}
                       </p>
                       
                       {request.status === 'PENDING' && (
                         <div className="flex items-center justify-center gap-2 text-yellow-600">
                           <Clock className="h-4 w-4" />
-                          <span className="text-sm font-medium">Vui lòng chờ garage phản hồi...</span>
+                          <span className="text-sm font-medium">Please wait for garage response...</span>
                         </div>
                       )}
                     </div>

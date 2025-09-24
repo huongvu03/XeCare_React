@@ -81,9 +81,9 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
     } catch (err: any) {
       console.error("Debug - Login error:", err)
       if (err.response?.status === 403) {
-        setError("Email hoặc mật khẩu không đúng.")
+        setError("Email or password is incorrect.")
       } else {
-        setError("Lỗi máy chủ. Vui lòng thử lại.")
+        setError("Server error. Please try again.")
       }
     } finally {
       setIsLoading(false)
@@ -120,7 +120,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span>Đăng nhập với Google</span>
+            <span>Login with Google</span>
           </div>
           </a>
         </Button>
@@ -139,7 +139,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
                 d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
               />
             </svg>
-            <span>Đăng nhập với Facebook</span>
+            <span>Login with Facebook</span>
           </div>
           </a>
         </Button>
@@ -151,7 +151,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           <span className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-2 text-slate-500">Hoặc</span>
+          <span className="bg-white px-2 text-slate-500">OR</span>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             <Input
               id="email"
               type="email"
-              placeholder="Nhập email của bạn"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10"
@@ -179,13 +179,13 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Mật khẩu</Label>
+          <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Nhập mật khẩu"
+              placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pl-10 pr-10"
@@ -209,12 +209,12 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           {isLoading ? (
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Đang đăng nhập...</span>
+              <span>Logging in...</span>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
               <LogIn className="h-4 w-4" />
-              <span>Đăng nhập</span>
+              <span>Login</span>
             </div>
           )}
         </Button>
@@ -222,7 +222,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
 
         <div className="text-center">
           <a href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
-            Quên mật khẩu?
+            Forgot password?
           </a>
         </div>
       </form>

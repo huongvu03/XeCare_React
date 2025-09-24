@@ -5,39 +5,39 @@ import { Search, MapPin, Calendar, CheckCircle, MessageCircle, CreditCard } from
 const steps = [
   {
     icon: Search,
-    title: "Tìm kiếm garage",
-    description: "Nhập địa chỉ hoặc bật GPS để tìm garage gần nhất. Sử dụng bộ lọc để tìm garage phù hợp với nhu cầu.",
-    details: ["Tìm theo vị trí GPS", "Lọc theo dịch vụ", "So sánh giá cả", "Xem đánh giá"],
+    title: "Search Garage",
+    description: "Enter address or enable GPS to find the nearest garage. Use filters to find garages that match your needs.",
+    details: ["Find by GPS location", "Filter by service", "Compare prices", "View reviews"],
   },
   {
     icon: MapPin,
-    title: "Chọn garage ưng ý",
-    description: "Xem thông tin chi tiết garage, đánh giá từ khách hàng, bảng giá dịch vụ và thời gian hoạt động.",
-    details: ["Xem ảnh garage", "Đọc review", "So sánh giá", "Kiểm tra khoảng cách"],
+    title: "Choose Preferred Garage",
+    description: "View detailed garage information, customer reviews, service pricing and operating hours.",
+    details: ["View garage photos", "Read reviews", "Compare prices", "Check distance"],
   },
   {
     icon: MessageCircle,
-    title: "Tư vấn & báo giá",
-    description: "Chat trực tiếp với garage, mô tả vấn đề, gửi ảnh/video để được tư vấn và báo giá chính xác.",
-    details: ["Chat realtime", "Gửi ảnh/video", "Nhận báo giá", "Tư vấn chuyên môn"],
+    title: "Consultation & Quote",
+    description: "Chat directly with garage, describe the problem, send photos/videos for consultation and accurate quotes.",
+    details: ["Real-time chat", "Send photos/videos", "Receive quotes", "Professional consultation"],
   },
   {
     icon: Calendar,
-    title: "Đặt lịch hẹn",
-    description: "Chọn thời gian phù hợp, xác nhận dịch vụ và nhận thông báo xác nhận từ garage.",
-    details: ["Chọn thời gian", "Xác nhận dịch vụ", "Nhận xác nhận", "Nhắc lịch hẹn"],
+    title: "Book Appointment",
+    description: "Choose suitable time, confirm service and receive confirmation notification from garage.",
+    details: ["Choose time", "Confirm service", "Receive confirmation", "Appointment reminder"],
   },
   {
     icon: CheckCircle,
-    title: "Sửa xe & theo dõi",
-    description: "Theo dõi tiến độ sửa xe realtime, nhận thông báo khi hoàn thành và kiểm tra xe trước khi nhận.",
-    details: ["Theo dõi tiến độ", "Nhận thông báo", "Kiểm tra xe", "Xác nhận hoàn thành"],
+    title: "Repair & Track",
+    description: "Track car repair progress in real-time, receive notifications when completed and inspect car before pickup.",
+    details: ["Track progress", "Receive notifications", "Inspect car", "Confirm completion"],
   },
   {
     icon: CreditCard,
-    title: "Thanh toán & đánh giá",
-    description: "Thanh toán bằng nhiều hình thức, nhận hóa đơn VAT và đánh giá chất lượng dịch vụ.",
-    details: ["Thanh toán đa dạng", "Hóa đơn VAT", "Đánh giá dịch vụ", "Nhận bảo hành"],
+    title: "Payment & Review",
+    description: "Pay through multiple methods, receive VAT invoice and rate service quality.",
+    details: ["Multiple payment methods", "VAT invoice", "Service rating", "Receive warranty"],
   },
 ]
 
@@ -46,9 +46,9 @@ export function HowItWorks() {
     <section id="how-it-works" className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">Quy trình đặt lịch sửa xe</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">Car Repair Booking Process</h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Chỉ với 6 bước đơn giản, bạn có thể tìm được garage uy tín và đặt lịch sửa xe một cách nhanh chóng, tiện lợi
+            With just 6 simple steps, you can find a trusted garage and book car repair services quickly and conveniently
           </p>
         </div>
 
@@ -98,20 +98,20 @@ export function HowItWorks() {
         {/* CTA Section */}
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-8 text-white">
-            <h3 className="text-2xl font-bold mb-4">Sẵn sàng bắt đầu?</h3>
+            <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
             <p className="text-blue-100 mb-6">
-              Tìm garage gần bạn ngay bây giờ và trải nghiệm dịch vụ sửa xe hiện đại nhất
+              Find a garage near you now and experience the most modern car repair service
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-                <a href="/search">Tìm garage ngay</a>
+                <a href="/search">Find Garage Now</a>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="border-white text-blue-600 hover:bg-white hover:text-blue-600"
               >
-                Tải ứng dụng
+                Download App
               </Button>
             </div>
           </div>

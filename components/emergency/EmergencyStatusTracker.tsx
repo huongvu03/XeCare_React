@@ -35,9 +35,9 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       
       if (hours > 0) {
-        setTimeElapsed(`${hours}h ${minutes}m trước`)
+        setTimeElapsed(`${hours}h ${minutes}m ago`)
       } else {
-        setTimeElapsed(`${minutes}m trước`)
+        setTimeElapsed(`${minutes}m ago`)
       }
     }
 
@@ -54,47 +54,47 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
           color: 'yellow',
           progress: 25,
           icon: <Clock className="h-4 w-4" />,
-          title: 'Đang chờ xử lý',
-          description: 'Yêu cầu đang được gửi đến các garage gần nhất'
+          title: 'Waiting for Processing',
+          description: 'Request is being sent to nearby garages'
         }
       case 'QUOTED':
         return {
           color: 'blue',
           progress: 50,
           icon: <MessageSquare className="h-4 w-4" />,
-          title: 'Đã có báo giá',
-          description: 'Garage đã gửi báo giá, vui lòng xem xét'
+          title: 'Quote Received',
+          description: 'Garage has sent a quote, please review'
         }
       case 'ACCEPTED':
         return {
           color: 'green',
           progress: 75,
           icon: <Car className="h-4 w-4" />,
-          title: 'Đang thực hiện',
-          description: 'Garage đang trên đường đến vị trí của bạn'
+          title: 'On Route',
+          description: 'Garage is on the way to your location'
         }
       case 'COMPLETED':
         return {
           color: 'emerald',
           progress: 100,
           icon: <CheckCircle className="h-4 w-4" />,
-          title: 'Hoàn thành',
-          description: 'Dịch vụ cứu hộ đã hoàn thành thành công'
+          title: 'Completed',
+          description: 'Emergency rescue service has been completed successfully'
         }
       case 'CANCELLED':
         return {
           color: 'red',
           progress: 0,
           icon: <AlertTriangle className="h-4 w-4" />,
-          title: 'Đã hủy',
-          description: 'Yêu cầu cứu hộ đã bị hủy'
+          title: 'Cancelled',
+          description: 'Emergency request has been cancelled'
         }
       default:
         return {
           color: 'gray',
           progress: 0,
           icon: <Clock className="h-4 w-4" />,
-          title: 'Không xác định',
+          title: 'Unknown',
           description: ''
         }
     }
@@ -103,13 +103,17 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
   const statusInfo = getStatusInfo(request.status)
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    const date = new Date(dateString)
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear()
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    
+    // Remove leading zero from hour if it's 00
+    const formattedHour = hour === '00' ? '0' : hour
+    
+    return `${formattedHour}:${minute} ${day}/${month}/${year}`
   }
 
   return (
@@ -117,7 +121,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl">
-            Theo dõi yêu cầu #{request.id}
+            Track Request #{request.id}
           </CardTitle>
           <div className="flex items-center space-x-2 text-sm text-gray-500">
             <Timer className="h-4 w-4" />
@@ -154,7 +158,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
             className="h-2"
           />
           <p className="text-xs text-gray-500 text-center">
-            {statusInfo.progress}% hoàn thành
+            {statusInfo.progress}% completed
           </p>
         </div>
 
@@ -164,7 +168,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
             <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
               <MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-700">Vị trí</p>
+                <p className="text-sm font-medium text-gray-700">Location</p>
                 <p className="text-sm text-gray-600">
                   {request.latitude.toFixed(6)}, {request.longitude.toFixed(6)}
                 </p>
@@ -174,7 +178,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
             <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
               <Clock className="h-5 w-5 text-green-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-700">Thời gian tạo</p>
+                <p className="text-sm font-medium text-gray-700">Created Time</p>
                 <p className="text-sm text-gray-600">{formatDate(request.createdAt)}</p>
               </div>
             </div>
@@ -185,7 +189,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
               <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                 <Car className="h-5 w-5 text-purple-600 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Garage phụ trách</p>
+                  <p className="text-sm font-medium text-gray-700">Assigned Garage</p>
                   <p className="text-sm text-gray-900 font-medium">{request.garage.name}</p>
                   <p className="text-sm text-gray-600">{request.garage.phone}</p>
                 </div>
@@ -195,7 +199,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
             <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
               <MessageSquare className="h-5 w-5 text-orange-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-700">Mô tả sự cố</p>
+                <p className="text-sm font-medium text-gray-700">Incident Description</p>
                 <p className="text-sm text-gray-600">{request.description}</p>
               </div>
             </div>
@@ -212,7 +216,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
               className="flex-1"
             >
               <Phone className="h-4 w-4 mr-2" />
-              Gọi garage
+              Call Garage
             </Button>
           )}
           
@@ -223,7 +227,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
             className="flex-1"
           >
             <AlertTriangle className="h-4 w-4 mr-2" />
-            Làm mới
+            Refresh
           </Button>
 
         </div>
@@ -231,7 +235,7 @@ export function EmergencyStatusTracker({ request, onRefresh }: EmergencyStatusTr
         {/* Images if available */}
         {request.images && request.images.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-700">Hình ảnh sự cố</h4>
+            <h4 className="text-sm font-medium text-gray-700">Incident Images</h4>
             <div className="flex gap-2 overflow-x-auto">
               {request.images.map((image, index) => (
                 <img

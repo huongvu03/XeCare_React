@@ -6,37 +6,36 @@ export function Features() {
     <section id="about-us" className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">Về XeCare</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">About XeCare</h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Nền tảng công nghệ kết nối người dùng với mạng lưới garage uy tín hàng đầu Việt Nam
+            Technology platform connecting users with Vietnam's leading network of trusted garages
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <div className="space-y-6">
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-slate-900">Câu chuyện của chúng tôi</h3>
+              <h3 className="text-2xl font-bold text-slate-900">Our Story</h3>
               <p className="text-slate-600">
-                XeCare được thành lập vào năm 2020 bởi nhóm kỹ sư công nghệ và chuyên gia ô tô với sứ mệnh chuyển
-                đổi số ngành dịch vụ sửa chữa ô tô tại Việt Nam. Từ một ý tưởng đơn giản về việc kết nối chủ xe với các
-                garage uy tín, chúng tôi đã phát triển thành nền tảng toàn diện với hơn 500 garage đối tác trên toàn
-                quốc.
+                XeCare was founded in 2020 by a team of technology engineers and automotive experts with the mission to
+                digitally transform Vietnam's car repair service industry. From a simple idea of connecting car owners with
+                trusted garages, we have developed into a comprehensive platform with over 500 partner garages nationwide.
               </p>
               <p className="text-slate-600">
-                Với đội ngũ 50+ nhân viên tài năng và đam mê, chúng tôi không ngừng đổi mới để mang đến trải nghiệm sửa
-                chữa ô tô hiện đại, minh bạch và thuận tiện nhất cho người dùng Việt Nam.
+                With a team of 50+ talented and passionate employees, we continuously innovate to bring the most modern,
+                transparent and convenient car repair experience to Vietnamese users.
               </p>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-slate-900">Tầm nhìn & Sứ mệnh</h3>
+              <h3 className="text-2xl font-bold text-slate-900">Vision & Mission</h3>
               <p className="text-slate-600">
-                <strong>Tầm nhìn:</strong> Trở thành nền tảng kết nối dịch vụ ô tô số 1 Đông Nam Á, nơi mọi chủ xe đều
-                có thể tiếp cận dịch vụ sửa chữa chất lượng cao với sự minh bạch tuyệt đối.
+                <strong>Vision:</strong> To become Southeast Asia's #1 automotive service connection platform, where every car
+                owner can access high-quality repair services with absolute transparency.
               </p>
               <p className="text-slate-600">
-                <strong>Sứ mệnh:</strong> Chuyển đổi số ngành dịch vụ ô tô, xóa bỏ rào cản thông tin giữa chủ xe và
-                garage, tạo ra hệ sinh thái dịch vụ ô tô hiện đại và đáng tin cậy.
+                <strong>Mission:</strong> To digitally transform the automotive service industry, eliminate information barriers
+                between car owners and garages, creating a modern and reliable automotive service ecosystem.
               </p>
             </div>
           </div>
@@ -47,8 +46,8 @@ export function Features() {
                 <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                   <Calendar className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Thành lập</h3>
-                <p className="text-slate-600 text-sm">2020, Thành phố Hồ Chí Minh</p>
+                <h3 className="text-lg font-semibold text-slate-900">Founded</h3>
+                <p className="text-slate-600 text-sm">2020, Ho Chi Minh City</p>
               </CardContent>
             </Card>
 
@@ -57,8 +56,8 @@ export function Features() {
                 <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                   <Users className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Đội ngũ</h3>
-                <p className="text-slate-600 text-sm">50+ nhân viên tài năng</p>
+                <h3 className="text-lg font-semibold text-slate-900">Team</h3>
+                <p className="text-slate-600 text-sm">50+ talented employees</p>
               </CardContent>
             </Card>
 
@@ -67,8 +66,8 @@ export function Features() {
                 <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                   <Globe className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Phạm vi</h3>
-                <p className="text-slate-600 text-sm">Hiện diện tại 25+ tỉnh thành</p>
+                <h3 className="text-lg font-semibold text-slate-900">Coverage</h3>
+                <p className="text-slate-600 text-sm">Present in 25+ provinces</p>
               </CardContent>
             </Card>
 
@@ -77,8 +76,8 @@ export function Features() {
                 <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                   <Briefcase className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">Đối tác</h3>
-                <p className="text-slate-600 text-sm">500+ garage trên toàn quốc</p>
+                <h3 className="text-lg font-semibold text-slate-900">Partners</h3>
+                <p className="text-slate-600 text-sm">500+ garages nationwide</p>
               </CardContent>
             </Card>
           </div>
@@ -90,8 +89,8 @@ export function Features() {
               <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                 <Target className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Giá trị cốt lõi</h3>
-              <p className="text-slate-600 text-sm">Minh bạch - Chất lượng - Đổi mới - Tận tâm</p>
+              <h3 className="text-lg font-semibold text-slate-900">Core Values</h3>
+              <p className="text-slate-600 text-sm">Transparency - Quality - Innovation - Dedication</p>
             </CardContent>
           </Card>
 
@@ -100,8 +99,8 @@ export function Features() {
               <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                 <Award className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Giải thưởng</h3>
-              <p className="text-slate-600 text-sm">Top 10 Startup Việt 2022 - Sáng tạo vì cộng đồng 2023</p>
+              <h3 className="text-lg font-semibold text-slate-900">Awards</h3>
+              <p className="text-slate-600 text-sm">Top 10 Vietnamese Startup 2022 - Community Innovation 2023</p>
             </CardContent>
           </Card>
 
@@ -110,7 +109,7 @@ export function Features() {
               <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                 <Zap className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Công nghệ</h3>
+              <h3 className="text-lg font-semibold text-slate-900">Technology</h3>
               <p className="text-slate-600 text-sm">AI, Machine Learning, GPS, Cloud Computing</p>
             </CardContent>
           </Card>
@@ -120,15 +119,15 @@ export function Features() {
               <div className="mx-auto w-14 h-14 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center">
                 <Shield className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Cam kết</h3>
-              <p className="text-slate-600 text-sm">Bảo vệ quyền lợi khách hàng, đảm bảo chất lượng dịch vụ</p>
+              <h3 className="text-lg font-semibold text-slate-900">Commitment</h3>
+              <p className="text-slate-600 text-sm">Protect customer rights, ensure service quality</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Trust indicators */}
         <div className="mt-16 text-center">
-          <p className="text-slate-500 mb-8">Được tin tưởng bởi</p>
+          <p className="text-slate-500 mb-8">Trusted by</p>
           <div className="flex justify-center items-center space-x-8 opacity-60">
             <div className="text-2xl font-bold text-slate-400">Honda</div>
             <div className="text-2xl font-bold text-slate-400">Yamaha</div>

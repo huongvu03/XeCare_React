@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Nút "Đã đọc" Nhỏ - XeCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .notification-card {
+            transition: all 0.3s ease;
+        }
+        .notification-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .read-button {
+            transition: all 0.2s ease;
+        }
+        .read-button:hover {
+            transform: scale(1.05);
+        }
+        .notification-unread {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+            border-left: 4px solid #6366f1;
+        }
+        .notification-read {
+            background: rgba(249, 250, 251, 0.8);
+            border-left: 4px solid #d1d5db;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen">
+    <div class="container mx-auto px-6 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Demo Nút "Đã đọc" Nhỏ</h1>
+            <p class="text-lg text-gray-600">Chức năng đánh dấu từng thông báo đã đọc</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-3xl font-bold text-indigo-600" id="total-count">3</div>
+                <div class="text-sm text-gray-600">Tổng thông báo</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-3xl font-bold text-red-600" id="unread-count">2</div>
+                <div class="text-sm text-gray-600">Chưa đọc</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="text-3xl font-bold text-green-600" id="read-count">1</div>
+                <div class="text-sm text-gray-600">Đã đọc</div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 mb-8 justify-center">
+            <button onclick="markAllAsRead()" 
+                    class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
+                <i data-lucide="check-check" class="w-5 h-5"></i>
+                Đánh dấu tất cả đã đọc
+            </button>
+            <button onclick="resetNotifications()" 
+                    class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                Reset
+            </button>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="space-y-6" id="notifications-list">
+            <!-- Notification 1 -->
+            <div class="notification-card bg-white rounded-xl shadow-lg p-6 notification-unread" data-id="1">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl">
+                        🔔
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-indigo-900 mb-2">Đăng nhập thành công! 👋</h3>
+                                <p class="text-gray-600 mb-4">Chào mừng bạn quay trở lại! Bạn có thể quản lý garage và lịch hẹn của mình.</p>
+                                <div class="flex items-center gap-4 text-sm text-gray-500">
+                                    <div class="flex items-center gap-1">
+                                        <i data-lucide="clock" class="w-4 h-4"></i>
+                                        <span>1 phút trước</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <i data-lucide="filter" class="w-4 h-4"></i>
+                                        <span>Hệ thống</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                <div class="flex gap-2">
+                                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold">LOW</span>
+                                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">SYSTEM UPDATE</span>
+                                </div>
+                                <span class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">✨ Mới</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div></div>
+                            <button onclick="markAsRead(1)" 
+                                    class="read-button bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                Đã đọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification 2 -->
+            <div class="notification-card bg-white rounded-xl shadow-lg p-6 notification-unread" data-id="2">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center text-white text-xl">
+                        🚨
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-red-900 mb-2">Yêu cầu cứu hộ mới</h3>
+                                <p class="text-gray-600 mb-4">Bạn có một yêu cầu cứu hộ khẩn cấp cần xử lý ngay lập tức.</p>
+                                <div class="flex items-center gap-4 text-sm text-gray-500">
+                                    <div class="flex items-center gap-1">
+                                        <i data-lucide="clock" class="w-4 h-4"></i>
+                                        <span>5 phút trước</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <i data-lucide="filter" class="w-4 h-4"></i>
+                                        <span>Cứu hộ</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                <div class="flex gap-2">
+                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">HIGH</span>
+                                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold">EMERGENCY</span>
+                                </div>
+                                <span class="bg-gradient-to-r from-red-500 to-pink-600 text-white px-2 py-1 rounded-full text-xs font-semibold pulse-animation">🔥 Khẩn cấp</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div></div>
+                            <button onclick="markAsRead(2)" 
+                                    class="read-button bg-gradient-to-r from-red-500 to-pink-600 text-white px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                Đã đọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification 3 (Already Read) -->
+            <div class="notification-card bg-white rounded-xl shadow-lg p-6 notification-read" data-id="3">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-gray-300 to-gray-400 rounded-xl flex items-center justify-center text-white text-xl">
+                        ⭐
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-gray-700 mb-2">Đã thêm vào yêu thích</h3>
+                                <p class="text-gray-600 mb-4">Bạn đã thêm garage ABC Garage vào danh sách yêu thích của mình.</p>
+                                <div class="flex items-center gap-4 text-sm text-gray-500">
+                                    <div class="flex items-center gap-1">
+                                        <i data-lucide="clock" class="w-4 h-4"></i>
+                                        <span>1 giờ trước</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <i data-lucide="filter" class="w-4 h-4"></i>
+                                        <span>Yêu thích</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                <div class="flex gap-2">
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">LOW</span>
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">FAVORITE</span>
+                                </div>
+                                <span class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-2 py-1 rounded-full text-xs font-semibold">✓ Đã đọc</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div></div>
+                            <button onclick="markAsUnread(3)" 
+                                    class="read-button bg-gradient-to-r from-gray-400 to-gray-500 text-white px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
+                                <i data-lucide="undo" class="w-4 h-4"></i>
+                                Đánh dấu chưa đọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-12 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">📋 Hướng dẫn sử dụng</h3>
+            <div class="space-y-2 text-gray-600">
+                <p>• <strong>Nút "Đã đọc" nhỏ:</strong> Click vào nút "Đã đọc" của từng thông báo để đánh dấu đã đọc</p>
+                <p>• <strong>Nút "Đánh dấu tất cả đã đọc":</strong> Đánh dấu tất cả thông báo chưa đọc là đã đọc</p>
+                <p>• <strong>Nút "Reset":</strong> Khôi phục trạng thái ban đầu của tất cả thông báo</p>
+                <p>• <strong>Animation:</strong> Thông báo sẽ có hiệu ứng chuyển đổi mượt mà khi thay đổi trạng thái</p>
+                <p>• <strong>Stats:</strong> Số liệu thống kê sẽ được cập nhật real-time</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Mock data
+        let notifications = [
+            { id: 1, isRead: false, title: "Đăng nhập thành công!", type: "system" },
+            { id: 2, isRead: false, title: "Yêu cầu cứu hộ mới", type: "emergency" },
+            { id: 3, isRead: true, title: "Đã thêm vào yêu thích", type: "favorite" }
+        ];
+
+        function updateStats() {
+            const total = notifications.length;
+            const unread = notifications.filter(n => !n.isRead).length;
+            const read = notifications.filter(n => n.isRead).length;
+            
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('unread-count').textContent = unread;
+            document.getElementById('read-count').textContent = read;
+        }
+
+        function markAsRead(id) {
+            const notification = notifications.find(n => n.id === id);
+            if (notification && !notification.isRead) {
+                notification.isRead = true;
+                
+                // Update UI
+                const card = document.querySelector(`[data-id="${id}"]`);
+                card.classList.remove('notification-unread');
+                card.classList.add('notification-read');
+                
+                // Update icon
+                const icon = card.querySelector('.w-12.h-12');
+                icon.classList.remove('from-indigo-500', 'to-purple-600', 'from-red-500', 'to-pink-600');
+                icon.classList.add('from-gray-300', 'to-gray-400');
+                
+                // Update title color
+                const title = card.querySelector('h3');
+                title.classList.remove('text-indigo-900', 'text-red-900');
+                title.classList.add('text-gray-700');
+                
+                // Hide "Mới" badge
+                const newBadge = card.querySelector('.bg-gradient-to-r.from-indigo-500, .bg-gradient-to-r.from-red-500');
+                if (newBadge) {
+                    newBadge.classList.add('hidden');
+                }
+                
+                // Update button
+                const button = card.querySelector('button');
+                button.innerHTML = '<i data-lucide="undo" class="w-4 h-4"></i>Đánh dấu chưa đọc';
+                button.classList.remove('from-indigo-500', 'to-purple-600', 'from-red-500', 'to-pink-600');
+                button.classList.add('from-gray-400', 'to-gray-500');
+                button.onclick = () => markAsUnread(id);
+                
+                // Add success animation
+                button.classList.add('animate-pulse');
+                setTimeout(() => button.classList.remove('animate-pulse'), 1000);
+                
+                updateStats();
+                lucide.createIcons();
+                
+                // Show success message
+                showToast('Đã đánh dấu thông báo là đã đọc!', 'success');
+            }
+        }
+
+        function markAsUnread(id) {
+            const notification = notifications.find(n => n.id === id);
+            if (notification && notification.isRead) {
+                notification.isRead = false;
+                
+                // Update UI
+                const card = document.querySelector(`[data-id="${id}"]`);
+                card.classList.remove('notification-read');
+                card.classList.add('notification-unread');
+                
+                // Update icon based on type
+                const icon = card.querySelector('.w-12.h-12');
+                icon.classList.remove('from-gray-300', 'to-gray-400');
+                if (notification.type === 'emergency') {
+                    icon.classList.add('from-red-500', 'to-pink-600');
+                } else {
+                    icon.classList.add('from-indigo-500', 'to-purple-600');
+                }
+                
+                // Update title color
+                const title = card.querySelector('h3');
+                title.classList.remove('text-gray-700');
+                if (notification.type === 'emergency') {
+                    title.classList.add('text-red-900');
+                } else {
+                    title.classList.add('text-indigo-900');
+                }
+                
+                // Show "Mới" badge
+                const newBadge = card.querySelector('.hidden');
+                if (newBadge) {
+                    newBadge.classList.remove('hidden');
+                }
+                
+                // Update button
+                const button = card.querySelector('button');
+                button.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i>Đã đọc';
+                button.classList.remove('from-gray-400', 'to-gray-500');
+                if (notification.type === 'emergency') {
+                    button.classList.add('from-red-500', 'to-pink-600');
+                } else {
+                    button.classList.add('from-indigo-500', 'to-purple-600');
+                }
+                button.onclick = () => markAsRead(id);
+                
+                updateStats();
+                lucide.createIcons();
+                
+                showToast('Đã đánh dấu thông báo là chưa đọc!', 'info');
+            }
+        }
+
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                if (!notification.isRead) {
+                    markAsRead(notification.id);
+                }
+            });
+            showToast('Đã đánh dấu tất cả thông báo là đã đọc!', 'success');
+        }
+
+        function resetNotifications() {
+            notifications.forEach(notification => {
+                if (notification.id === 3) {
+                    // Keep notification 3 as read
+                    return;
+                }
+                notification.isRead = false;
+                
+                // Reset UI
+                const card = document.querySelector(`[data-id="${notification.id}"]`);
+                card.classList.remove('notification-read');
+                card.classList.add('notification-unread');
+                
+                // Reset icon
+                const icon = card.querySelector('.w-12.h-12');
+                icon.classList.remove('from-gray-300', 'to-gray-400');
+                if (notification.type === 'emergency') {
+                    icon.classList.add('from-red-500', 'to-pink-600');
+                } else {
+                    icon.classList.add('from-indigo-500', 'to-purple-600');
+                }
+                
+                // Reset title color
+                const title = card.querySelector('h3');
+                title.classList.remove('text-gray-700');
+                if (notification.type === 'emergency') {
+                    title.classList.add('text-red-900');
+                } else {
+                    title.classList.add('text-indigo-900');
+                }
+                
+                // Reset button
+                const button = card.querySelector('button');
+                button.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i>Đã đọc';
+                button.classList.remove('from-gray-400', 'to-gray-500');
+                if (notification.type === 'emergency') {
+                    button.classList.add('from-red-500', 'to-pink-600');
+                } else {
+                    button.classList.add('from-indigo-500', 'to-purple-600');
+                }
+                button.onclick = () => markAsRead(notification.id);
+                
+                // Show "Mới" badge
+                const newBadge = card.querySelector('.hidden');
+                if (newBadge) {
+                    newBadge.classList.remove('hidden');
+                }
+            });
+            
+            updateStats();
+            lucide.createIcons();
+            showToast('Đã reset tất cả thông báo!', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-medium transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize
+        updateStats();
+    </script>
+</body>
+</html>

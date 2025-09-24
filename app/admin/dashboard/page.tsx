@@ -290,13 +290,13 @@ export default function AdminDashboard() {
             <CardTitle className="flex items-center justify-between text-lg">
               <div className="flex items-center space-x-2">
                 <Building className="h-5 w-5 text-blue-600" />
-                <span>Quản lý garage</span>
+                <span>Manage Garages</span>
               </div>
               {totalPendingRequests > 0 && (
                 <div className="flex items-center space-x-1">
                   <AlertTriangle className="h-4 w-4 text-orange-600" />
                   <span className="text-sm font-medium text-orange-600">
-                    {totalPendingRequests} đơn chờ
+                    {totalPendingRequests} pending
                   </span>
                 </div>
               )}
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 text-sm mb-4">
-              Duyệt đăng ký và quản lý garage
+              Review registrations and manage garages
             </p>
             <Button
               variant={totalPendingRequests > 0 ? "default" : "outline"}
@@ -317,8 +317,8 @@ export default function AdminDashboard() {
             >
               <Link href="/admin/garages">
                 {totalPendingRequests > 0
-                  ? `Xử lý ${totalPendingRequests} đơn`
-                  : "Quản lý Garages"}
+                  ? `Process ${totalPendingRequests} requests`
+                  : "Manage Garages"}
               </Link>
             </Button>
           </CardContent>
@@ -410,27 +410,17 @@ export default function AdminDashboard() {
         {/* Emergency Management Card */}
         <Card className="border-red-100 hover:shadow-lg transition-shadow">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-lg">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <span>Quản lý Cứu hộ</span>
-              </div>
-              {emergencyStats.pending > 0 && (
-                <div className="flex items-center space-x-1">
-                  <AlertTriangle className="h-4 w-4 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-600">
-                    {emergencyStats.pending} chờ xử lý
-                  </span>
-                </div>
-              )}
+            <CardTitle className="flex items-center space-x-2 text-lg">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <span>Emergency Management</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 text-sm mb-4">
-              Quản lý yêu cầu cứu hộ khẩn cấp
+              Manage emergency rescue requests
               {emergencyStats.pending > 0 && (
                 <span className="text-orange-600 font-medium">
-                  {" "}- {emergencyStats.pending} yêu cầu chờ xử lý
+                  {" "}- {emergencyStats.pending} requests pending
                 </span>
               )}
             </p>
@@ -440,7 +430,7 @@ export default function AdminDashboard() {
               asChild
             >
               <Link href="/admin/emergency">
-                {emergencyStats.pending > 0 ? `Xử lý ${emergencyStats.pending} yêu cầu` : "Quản lý Cứu hộ"}
+                {emergencyStats.pending > 0 ? `Process ${emergencyStats.pending} requests` : "Emergency Management"}
               </Link>
             </Button>
           </CardContent>

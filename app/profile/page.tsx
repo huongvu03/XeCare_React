@@ -64,12 +64,12 @@ export default function ProfilePage() {
     try {
       // Validate required fields
       if (!formData.name.trim()) {
-        setError("Tên không được để trống")
+        setError("Name cannot be empty")
         setIsLoading(false)
         return
       }
       if (!formData.email.trim()) {
-        setError("Email không được để trống")
+        setError("Email cannot be empty")
         setIsLoading(false)
         return
       }
@@ -77,7 +77,7 @@ export default function ProfilePage() {
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(formData.email)) {
-        setError("Email không đúng định dạng")
+        setError("Invalid email format")
         setIsLoading(false)
         return
       }
@@ -86,58 +86,58 @@ export default function ProfilePage() {
       if (formData.phone && formData.phone.trim()) {
         const phoneRegex = /^[0-9+\-\s()]+$/
         if (!phoneRegex.test(formData.phone)) {
-          setError("Số điện thoại không đúng định dạng")
+          setError("Invalid phone number format")
           setIsLoading(false)
           return
         }
       }
 
-      // Gọi API cập nhật thông tin
+      // Call API to update information
       await updateUserInfoApi(user!.id, {
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone?.trim() || "",
         address: formData.address?.trim() || "",
-        imageUrl: user?.imageUrl, // giữ nguyên imageUrl hiện tại
+        imageUrl: user?.imageUrl, // keep current imageUrl
       })
 
-      // Nếu có ảnh mới → upload riêng
+      // If there is a new image → upload separately
       if (formData.image) {
         await updateUserImageApi(user!.id, formData.image)
       }
 
-      // Lấy lại thông tin mới từ server
+      // Get updated information from server
       const { data: updatedUser } = await getUserProfile()
       updateUser(updatedUser)
 
-      setSuccess("Cập nhật thông tin thành công!")
+      setSuccess("Profile updated successfully!")
       setIsEditing(false)
     } catch (err: any) {
       console.error("Error updating profile:", err)
       
-      // Xử lý lỗi 401 - token hết hạn
+      // Handle 401 error - token expired
       if (err.response?.status === 401) {
-        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
-        // Không tự động redirect, để user tự quyết định
+        setError("Login session has expired. Please login again.")
+        // Do not auto redirect, let user decide
         setTimeout(() => {
           window.location.href = "/auth"
         }, 2000)
         return
       }
       
-      // Xử lý lỗi 403 - không có quyền
+      // Handle 403 error - no permission
       if (err.response?.status === 403) {
-        setError("Bạn không có quyền thực hiện thao tác này.")
+        setError("You do not have permission to perform this action.")
         return
       }
       
-      // Xử lý các lỗi khác
+      // Handle other errors
       if (err.response?.data?.message) {
         setError(err.response.data.message)
       } else if (err.response?.data) {
         setError(err.response.data)
       } else {
-        setError("Đã có lỗi xảy ra. Vui lòng thử lại.")
+        setError("An error occurred. Please try again.")
       }
     } finally {
       setIsLoading(false)
@@ -166,24 +166,24 @@ export default function ProfilePage() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return <Badge className="bg-red-100 text-red-700">Quản trị viên</Badge>
+        return <Badge className="bg-red-100 text-red-700">Administrator</Badge>
       case "GARAGE":
-        return <Badge className="bg-green-100 text-green-700">Chủ GARAGE</Badge>
+        return <Badge className="bg-green-100 text-green-700">Garage Owner</Badge>
       default:
-        return <Badge className="bg-blue-100 text-blue-700">Người dùng</Badge>
+        return <Badge className="bg-blue-100 text-blue-700">User</Badge>
     }
   }
   if (authLoading) {
     return (
       <DashboardLayout
         allowedRoles={["ADMIN", "USER", "GARAGE"]}
-        title="Thông tin cá nhân"
-        description="Quản lý thông tin tài khoản và cài đặt cá nhân"
+        title="Personal Information"
+        description="Manage account information and personal settings"
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-slate-600">Đang tải thông tin...</p>
+            <p className="text-slate-600">Loading information...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -194,21 +194,21 @@ export default function ProfilePage() {
     return (
       <DashboardLayout
         allowedRoles={["ADMIN", "USER", "GARAGE"]}
-        title="Thông tin cá nhân"
-        description="Quản lý thông tin tài khoản và cài đặt cá nhân"
+        title="Personal Information"
+        description="Manage account information and personal settings"
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
               <User className="w-8 h-8 text-red-600" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-900">Chưa đăng nhập</h3>
-            <p className="text-slate-600">Vui lòng đăng nhập để xem thông tin cá nhân</p>
+            <h3 className="text-lg font-semibold text-slate-900">Not logged in</h3>
+            <p className="text-slate-600">Please login to view personal information</p>
             <Button 
               onClick={() => window.location.href = "/auth"}
               className="bg-gradient-to-r from-blue-600 to-cyan-600"
             >
-              Đăng nhập
+              Login
             </Button>
           </div>
         </div>
@@ -302,8 +302,8 @@ export default function ProfilePage() {
 
               {/* Basic Info */}
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-slate-900">{user?.name || 'Người dùng'}</h3>
-                <p className="text-slate-600">{user?.email || 'Chưa có email'}</p>
+                <h3 className="text-xl font-semibold text-slate-900">{user?.name || 'User'}</h3>
+                <p className="text-slate-600">{user?.email || 'No email'}</p>
                 {getRoleBadge(user?.role || "")}
               </div>
 
@@ -314,7 +314,7 @@ export default function ProfilePage() {
                     {user?.role === "GARAGE" ? "156" : user?.role === "ADMIN" ? "1,234" : "12"}
                   </p>
                   <p className="text-sm text-slate-600">
-                    {user?.role === "GARAGE" ? "Khách hàng" : user?.role === "ADMIN" ? "Người dùng" : "Lịch hẹn"}
+                    {user?.role === "GARAGE" ? "Customers" : user?.role === "ADMIN" ? "Users" : "Appointments"}
                   </p>
                 </div>
                 <div className="text-center">
@@ -322,7 +322,7 @@ export default function ProfilePage() {
                     {user?.role === "GARAGE" ? "4.8" : user?.role === "ADMIN" ? "98%" : "5"}
                   </p>
                   <p className="text-sm text-slate-600">
-                    {user?.role === "GARAGE" ? "Đánh giá" : user?.role === "ADMIN" ? "Uptime" : "Đánh giá"}
+                    {user?.role === "GARAGE" ? "Rating" : user?.role === "ADMIN" ? "Uptime" : "Rating"}
                   </p>
                 </div>
               </div>
@@ -350,7 +350,7 @@ export default function ProfilePage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <User className="h-5 w-5 text-blue-600" />
-                <span>Thông tin cá nhân</span>
+                <span>Personal Information</span>
               </CardTitle>
               {!isEditing ? (
                 <Button
@@ -360,7 +360,7 @@ export default function ProfilePage() {
                   className="border-blue-200 text-blue-600"
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  Chỉnh sửa
+                  Edit
                 </Button>
               ) : (
                 <div className="flex space-x-2">
@@ -371,7 +371,7 @@ export default function ProfilePage() {
                     className="border-slate-200 text-slate-600"
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Hủy
+                    Cancel
                   </Button>
                   <Button
                     size="sm"
@@ -384,7 +384,7 @@ export default function ProfilePage() {
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}
-                    Lưu
+                    Save
                   </Button>
                 </div>
               )}
@@ -392,7 +392,7 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">{user?.role === "GARAGE" ? "Tên GARAGE" : "Họ và tên"}</Label>
+                  <Label htmlFor="name">{user?.role === "GARAGE" ? "Garage Name" : "Full Name"}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
@@ -421,7 +421,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Số điện thoại</Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
@@ -430,13 +430,13 @@ export default function ProfilePage() {
                       onChange={(e) => handleInputChange("phone", e.target.value)}
                       disabled={!isEditing}
                       className="pl-10"
-                      placeholder="Nhập số điện thoại"
+                      placeholder="Enter phone number"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="emergencyContact">Liên hệ khẩn cấp</Label>
+                  <Label htmlFor="emergencyContact">Emergency Contact</Label>
                   <div className="relative">
                     <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
@@ -445,14 +445,14 @@ export default function ProfilePage() {
                       onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
                       disabled={!isEditing}
                       className="pl-10"
-                      placeholder="Số điện thoại khẩn cấp"
+                      placeholder="Emergency phone number"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Địa chỉ</Label>
+                <Label htmlFor="address">Address</Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                   <Textarea
@@ -461,7 +461,7 @@ export default function ProfilePage() {
                     onChange={(e) => handleInputChange("address", e.target.value)}
                     disabled={!isEditing}
                     className="pl-10 min-h-[80px]"
-                    placeholder="Nhập địa chỉ đầy đủ"
+                    placeholder="Enter full address"
                   />
                 </div>
               </div>
@@ -480,7 +480,7 @@ export default function ProfilePage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="bio">{user?.role === "GARAGE" ? "Mô tả GARAGE" : "Giới thiệu bản thân"}</Label>
+                <Label htmlFor="bio">{user?.role === "GARAGE" ? "Garage Description" : "About Me"}</Label>
                 <Textarea
                   id="bio"
                   value={formData.bio}
@@ -489,8 +489,8 @@ export default function ProfilePage() {
                   className="min-h-[100px]"
                   placeholder={
                     user?.role === "GARAGE"
-                      ? "Mô tả về GARAGE, dịch vụ và kinh nghiệm..."
-                      : "Viết vài dòng giới thiệu về bản thân..."
+                      ? "Describe your garage, services and experience..."
+                      : "Write a few lines about yourself..."
                   }
                 />
               </div>
@@ -502,18 +502,18 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Shield className="h-5 w-5 text-blue-600" />
-                <span>Thông tin tài khoản</span>
+                <span>Account Information</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Loại tài khoản</Label>
+                  <Label>Account Type</Label>
                   <div className="flex items-center space-x-2">{getRoleBadge(user?.role || "")}</div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Ngày tạo tài khoản</Label>
+                  <Label>Account Created</Label>
                   <div className="flex items-center space-x-2 text-slate-600">
                     <Calendar className="h-4 w-4" />
                     <span>{formData.createdAt}</span>
@@ -521,14 +521,14 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Trạng thái tài khoản</Label>
-                  <Badge className="bg-green-100 text-green-700">Đã xác thực</Badge>
+                  <Label>Account Status</Label>
+                  <Badge className="bg-green-100 text-green-700">Verified</Badge>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Bảo mật</Label>
+                  <Label>Security</Label>
                   <Button variant="outline" size="sm" className="border-blue-200 text-blue-600">
-                    Đổi mật khẩu
+                    Change Password
                   </Button>
                 </div>
               </div>
@@ -539,30 +539,30 @@ export default function ProfilePage() {
           {user?.role !== "ADMIN" && (
             <Card className="border-blue-100">
               <CardHeader>
-                <CardTitle>Hoạt động gần đây</CardTitle>
+                <CardTitle>Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {user?.role === "GARAGE" ? (
                     <>
                       <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Lịch hẹn mới từ Nguyễn Văn A</span>
-                        <span className="text-xs text-blue-600">2 giờ trước</span>
+                        <span className="text-sm text-slate-600">New appointment from Nguyen Van A</span>
+                        <span className="text-xs text-blue-600">2 hours ago</span>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Hoàn thành sửa xe cho Trần Thị B</span>
-                        <span className="text-xs text-blue-600">1 ngày trước</span>
+                        <span className="text-sm text-slate-600">Completed car repair for Tran Thi B</span>
+                        <span className="text-xs text-blue-600">1 day ago</span>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Đặt lịch sửa xe tại GARAGE Thành Công</span>
-                        <span className="text-xs text-blue-600">3 ngày trước</span>
+                        <span className="text-sm text-slate-600">Booked car repair at Thanh Cong Garage</span>
+                        <span className="text-xs text-blue-600">3 days ago</span>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Đánh giá 5 sao cho GARAGE ABC</span>
-                        <span className="text-xs text-blue-600">1 tuần trước</span>
+                        <span className="text-sm text-slate-600">Rated 5 stars for ABC Garage</span>
+                        <span className="text-xs text-blue-600">1 week ago</span>
                       </div>
                     </>
                   )}

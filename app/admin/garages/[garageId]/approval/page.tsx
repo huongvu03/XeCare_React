@@ -79,7 +79,7 @@ export default function GarageApprovalPage() {
       setGarageInfo(garageResponse.data)
     } catch (err: any) {
       console.error("Error fetching data:", err)
-      setError("Không thể tải thông tin. Vui lòng thử lại.")
+      setError("Cannot load information. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -107,10 +107,10 @@ export default function GarageApprovalPage() {
       console.log("Approve response:", response)
       console.log("Response data:", response.data)
       
-      // Hiển thị thông báo thành công chi tiết
-      toast.success(`Đã phê duyệt thành công nội dung "${getItemTitle(itemKey)}"!`)
+      // Show detailed success notification
+      toast.success(`Successfully approved "${getItemTitle(itemKey)}"!`)
       
-      // Cập nhật UI ngay lập tức thay vì fetch lại toàn bộ data
+      // Update UI immediately instead of refetching all data
       if (approvalDetails) {
         const updatedApprovalDetails = { ...approvalDetails }
         if (updatedApprovalDetails.approvalDetails[itemKey]) {
@@ -118,11 +118,11 @@ export default function GarageApprovalPage() {
             ...updatedApprovalDetails.approvalDetails[itemKey],
             status: "APPROVED",
             rejectionReason: undefined,
-            approvedBy: "admin", // Tạm thời, sẽ được cập nhật từ response
+            approvedBy: "admin", // Temporary, will be updated from response
             approvedAt: new Date().toISOString()
           }
           
-          // Cập nhật overall status
+          // Update overall status
           const items = updatedApprovalDetails.approvalDetails
           const allApproved = Object.values(items).every(item => item.status === "APPROVED")
           const anyRejected = Object.values(items).some(item => item.status === "REJECTED")
@@ -139,7 +139,7 @@ export default function GarageApprovalPage() {
         }
       }
       
-      // Kiểm tra nếu tất cả danh mục đã được phê duyệt
+      // Check if all categories have been approved
       setTimeout(() => {
         const updatedDetails = approvalDetails ? { ...approvalDetails } : null
         if (updatedDetails) {
@@ -148,26 +148,26 @@ export default function GarageApprovalPage() {
             status: "APPROVED"
           }
           
-          // Kiểm tra tất cả danh mục đã được phê duyệt
+          // Check if all categories have been approved
           const allApproved = Object.values(updatedDetails.approvalDetails).every(item => item.status === "APPROVED")
           
           if (allApproved) {
-            // Hiển thị SweetAlert khi phê duyệt hoàn tất
+            // Show SweetAlert when approval is complete
             Swal.fire({
-              title: '🎉 Phê duyệt hoàn tất!',
+              title: '🎉 Approval Complete!',
               html: `
                 <div class="text-center">
-                  <p class="text-lg mb-4">Tất cả danh mục của garage <strong>"${garageInfo?.name || 'N/A'}"</strong> đã được phê duyệt thành công!</p>
-                  <p class="text-sm text-gray-600 mb-4">Garage sẽ chuyển về trạng thái <strong>"Hoạt động"</strong> và có thể nhận lịch hẹn từ khách hàng.</p>
+                  <p class="text-lg mb-4">All categories of garage <strong>"${garageInfo?.name || 'N/A'}"</strong> have been successfully approved!</p>
+                  <p class="text-sm text-gray-600 mb-4">The garage will change to <strong>"Active"</strong> status and can receive appointments from customers.</p>
                   <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
                     <p class="text-sm text-green-700">
-                      <strong>Thông báo:</strong> Bạn sẽ được chuyển về trang quản lý garage trong giây lát...
+                      <strong>Notification:</strong> You will be redirected to the garage management page in a moment...
                     </p>
                   </div>
                 </div>
               `,
               icon: 'success',
-              confirmButtonText: 'Tuyệt vời!',
+              confirmButtonText: 'Excellent!',
               confirmButtonColor: '#10b981',
               allowOutsideClick: false,
               allowEscapeKey: false,
@@ -175,17 +175,17 @@ export default function GarageApprovalPage() {
               timer: 4000,
               timerProgressBar: true,
               didOpen: () => {
-                // Auto redirect sau 4 giây
+                // Auto redirect after 4 seconds
                 setTimeout(() => {
                   router.push('/admin/garages')
                 }, 4000)
               }
             }).then(() => {
-              // Redirect ngay lập tức nếu user click button
+              // Redirect immediately if user clicks button
               router.push('/admin/garages')
             })
           } else {
-            toast.info("Đã phê duyệt thành công! Tiếp tục phê duyệt các danh mục còn lại.")
+            toast.info("Successfully approved! Continue approving remaining categories.")
           }
         }
       }, 1000)
@@ -195,7 +195,7 @@ export default function GarageApprovalPage() {
       console.error("Error message:", err.message)
       console.error("Error response:", err.response?.data)
       console.error("Error status:", err.response?.status)
-      toast.error(err.response?.data?.message || "Có lỗi xảy ra khi phê duyệt. Vui lòng thử lại.")
+      toast.error(err.response?.data?.message || "An error occurred while approving. Please try again.")
     } finally {
       setApprovingItem(null)
       console.log("=== APPROVE PROCESS COMPLETED ===")
@@ -207,12 +207,12 @@ export default function GarageApprovalPage() {
 
     
     if (!reason || reason.trim() === "") {
-      toast.error("Vui lòng nhập lý do từ chối")
+      toast.error("Please enter rejection reason")
       return
     }
     
     if (reason.trim().length < 5) {
-      toast.error("Lý do từ chối phải có ít nhất 5 ký tự")
+      toast.error("Rejection reason must be at least 5 characters")
       return
     }
 
@@ -227,10 +227,10 @@ export default function GarageApprovalPage() {
       }
       const response = await approveGarageItem(garageId, requestData)
       
-      // Hiển thị thông báo thành công chi tiết
-      toast.success(`Đã từ chối thành công nội dung "${getItemTitle(itemKey)}"!`)
+      // Show detailed success notification
+      toast.success(`Successfully rejected "${getItemTitle(itemKey)}"!`)
       
-      // Cập nhật UI ngay lập tức thay vì fetch lại toàn bộ data
+      // Update UI immediately instead of refetching all data
       if (approvalDetails) {
         const updatedApprovalDetails = { ...approvalDetails }
         if (updatedApprovalDetails.approvalDetails[itemKey]) {
@@ -238,11 +238,11 @@ export default function GarageApprovalPage() {
             ...updatedApprovalDetails.approvalDetails[itemKey],
             status: "REJECTED",
             rejectionReason: reason,
-            approvedBy: "admin", // Tạm thời, sẽ được cập nhật từ response
+            approvedBy: "admin", // Temporary, will be updated from response
             approvedAt: new Date().toISOString()
           }
           
-          // Cập nhật overall status
+          // Update overall status
           const items = updatedApprovalDetails.approvalDetails
           const allApproved = Object.values(items).every(item => item.status === "APPROVED")
           const anyRejected = Object.values(items).some(item => item.status === "REJECTED")
@@ -262,7 +262,7 @@ export default function GarageApprovalPage() {
       // Clear rejection reason
       setRejectionReasons(prev => ({ ...prev, [itemKey]: "" }))
       
-      // Hiển thị thông báo trạng thái tổng thể
+      // Show overall status notification
       setTimeout(() => {
         const updatedDetails = approvalDetails ? { ...approvalDetails } : null
         if (updatedDetails) {
@@ -271,26 +271,26 @@ export default function GarageApprovalPage() {
             status: "REJECTED"
           }
           
-          // Kiểm tra nếu có danh mục bị từ chối
+          // Check if any category has been rejected
           const hasRejected = Object.values(updatedDetails.approvalDetails).some(item => item.status === "REJECTED")
           
           if (hasRejected) {
-            // Hiển thị SweetAlert thông báo từ chối
+            // Show SweetAlert rejection notification
             Swal.fire({
-              title: '⚠️ Đã từ chối danh mục',
+              title: '⚠️ Category Rejected',
               html: `
                 <div class="text-center">
-                  <p class="text-lg mb-4">Danh mục <strong>"${getItemTitle(itemKey)}"</strong> đã bị từ chối.</p>
-                  <p class="text-sm text-gray-600 mb-4">Garage sẽ chuyển về trạng thái <strong>"Bị từ chối"</strong>.</p>
+                  <p class="text-lg mb-4">Category <strong>"${getItemTitle(itemKey)}"</strong> has been rejected.</p>
+                  <p class="text-sm text-gray-600 mb-4">The garage will change to <strong>"Rejected"</strong> status.</p>
                   <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
                     <p class="text-sm text-amber-700">
-                      <strong>Lưu ý:</strong> Bạn có thể tiếp tục phê duyệt các danh mục khác hoặc quay lại danh sách garage.
+                      <strong>Note:</strong> You can continue approving other categories or return to the garage list.
                     </p>
                   </div>
                 </div>
               `,
               icon: 'warning',
-              confirmButtonText: 'Hiểu rồi',
+              confirmButtonText: 'Understood',
               confirmButtonColor: '#f59e0b',
               allowOutsideClick: true,
               allowEscapeKey: true,
@@ -301,7 +301,7 @@ export default function GarageApprovalPage() {
       }, 1000)
     } catch (err: any) {
       console.error("Error rejecting item:", err)
-      toast.error(err.response?.data?.message || "Có lỗi xảy ra khi từ chối. Vui lòng thử lại.")
+      toast.error(err.response?.data?.message || "An error occurred while rejecting. Please try again.")
     } finally {
       setApprovingItem(null)
 
@@ -311,13 +311,13 @@ export default function GarageApprovalPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "APPROVED":
-        return <Badge className="bg-green-100 text-green-700">Đã phê duyệt</Badge>
+        return <Badge className="bg-green-100 text-green-700">Approved</Badge>
       case "REJECTED":
-        return <Badge className="bg-red-100 text-red-700">Bị từ chối</Badge>
+        return <Badge className="bg-red-100 text-red-700">Rejected</Badge>
       case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-700">Chờ duyệt</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>
     }
   }
 
@@ -339,13 +339,13 @@ export default function GarageApprovalPage() {
   const getItemTitle = (itemKey: string) => {
     switch (itemKey) {
       case "basicInfo":
-        return "Thông tin cơ bản"
+        return "Basic Information"
       case "businessInfo":
-        return "Thông tin kinh doanh"
+        return "Business Information"
       case "services":
-        return "Dịch vụ"
+        return "Services"
       case "vehicleTypes":
-        return "Loại xe"
+        return "Vehicle Types"
       default:
         return itemKey
     }
@@ -355,8 +355,8 @@ export default function GarageApprovalPage() {
     return (
       <DashboardLayout 
         allowedRoles={["ADMIN"]}
-        title="Phê duyệt garage"
-        description="Xem xét và phê duyệt từng nội dung đăng ký"
+        title="Approve Garage"
+        description="Review and approve each registration content"
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -369,8 +369,8 @@ export default function GarageApprovalPage() {
     return (
       <DashboardLayout 
         allowedRoles={["ADMIN"]}
-        title="Phê duyệt garage"
-        description="Xem xét và phê duyệt từng nội dung đăng ký"
+        title="Approve Garage"
+        description="Review and approve each registration content"
       >
         <Alert className="border-red-200 bg-red-50">
           <AlertCircle className="h-4 w-4" />
@@ -384,12 +384,12 @@ export default function GarageApprovalPage() {
     return (
       <DashboardLayout 
         allowedRoles={["ADMIN"]}
-        title="Phê duyệt garage"
-        description="Xem xét và phê duyệt từng nội dung đăng ký"
+        title="Approve Garage"
+        description="Review and approve each registration content"
       >
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Không tìm thấy thông tin phê duyệt</AlertDescription>
+          <AlertDescription>Approval information not found</AlertDescription>
         </Alert>
       </DashboardLayout>
     )
@@ -410,7 +410,7 @@ export default function GarageApprovalPage() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Quay lại</span>
+            <span>Back</span>
           </Button>
           
           {/* Garage Info Header */}
@@ -426,9 +426,9 @@ export default function GarageApprovalPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Tóm tắt trạng thái</span>
+              <span>Status Summary</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600">Trạng thái tổng thể:</span>
+                <span className="text-sm text-slate-600">Overall Status:</span>
                 {getStatusBadge(approvalDetails.overallStatus)}
               </div>
             </CardTitle>
@@ -451,10 +451,10 @@ export default function GarageApprovalPage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Building className="h-5 w-5" />
-                <span>Thông tin tổng quan</span>
+                <span>Overview Information</span>
                 {garageInfo.status === "PENDING_UPDATE" && (
                   <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50">
-                    Đã cập nhật
+                    Updated
                   </Badge>
                 )}
               </CardTitle>
@@ -462,16 +462,16 @@ export default function GarageApprovalPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <p><strong>Tên garage:</strong> {garageInfo.name}</p>
-                  <p><strong>Địa chỉ:</strong> {garageInfo.address}</p>
-                  <p><strong>Số điện thoại:</strong> {garageInfo.phone}</p>
+                  <p><strong>Garage Name:</strong> {garageInfo.name}</p>
+                  <p><strong>Address:</strong> {garageInfo.address}</p>
+                  <p><strong>Phone Number:</strong> {garageInfo.phone}</p>
                   <p><strong>Email:</strong> {garageInfo.email}</p>
                 </div>
                 <div className="space-y-2">
-                  <p><strong>Chủ sở hữu:</strong> {garageInfo.ownerName}</p>
-                  <p><strong>Email chủ sở hữu:</strong> {garageInfo.ownerEmail}</p>
-                  <p><strong>Ngày đăng ký:</strong> {new Date(garageInfo.createdAt).toLocaleDateString("vi-VN")}</p>
-                  <p><strong>Trạng thái:</strong> {garageInfo.status}</p>
+                  <p><strong>Owner:</strong> {garageInfo.ownerName}</p>
+                  <p><strong>Owner Email:</strong> {garageInfo.ownerEmail}</p>
+                  <p><strong>Registration Date:</strong> {new Date(garageInfo.createdAt).toLocaleDateString("en-US")}</p>
+                  <p><strong>Status:</strong> {garageInfo.status}</p>
                 </div>
               </div>
             </CardContent>
@@ -483,9 +483,9 @@ export default function GarageApprovalPage() {
           <Alert className="border-blue-200 bg-blue-50">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Thông báo:</strong> Garage này đã được cập nhật sau khi bị từ chối. 
-              Chỉ những nội dung đã được chỉnh sửa mới hiển thị nút phê duyệt/từ chối.
-              Những nội dung chưa được thay đổi sẽ tự động được giữ nguyên trạng thái phê duyệt trước đó.
+              <strong>Notification:</strong> This garage has been updated after being rejected. 
+              Only modified content will show approve/reject buttons.
+              Unchanged content will automatically maintain its previous approval status.
             </AlertDescription>
           </Alert>
         )}
@@ -507,16 +507,16 @@ export default function GarageApprovalPage() {
                 {/* Item Details */}
                 <div className="bg-slate-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">Nội dung đăng ký:</h4>
+                    <h4 className="font-medium">Registration Content:</h4>
                     <div className="flex items-center space-x-2">
                       {item.isModified && (
                         <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50">
-                          Đã được chỉnh sửa
+                          Modified
                         </Badge>
                       )}
                       {item.status === "REJECTED" && garageInfo?.status === "PENDING_UPDATE" && (
                         <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
-                          Đã được cập nhật
+                          Updated
                         </Badge>
                       )}
                     </div>
@@ -525,14 +525,14 @@ export default function GarageApprovalPage() {
                   {/* Show modification details if content was modified */}
                   {item.isModified && item.originalContent && item.modifiedContent && (
                     <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <h5 className="font-medium text-yellow-800 mb-2">Chi tiết thay đổi:</h5>
+                      <h5 className="font-medium text-yellow-800 mb-2">Change Details:</h5>
                       <div className="grid md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="font-medium text-yellow-700 mb-1">Nội dung cũ:</p>
+                          <p className="font-medium text-yellow-700 mb-1">Old Content:</p>
                           <p className="text-yellow-600 bg-white p-2 rounded border">{item.originalContent}</p>
                         </div>
                         <div>
-                          <p className="font-medium text-yellow-700 mb-1">Nội dung mới:</p>
+                          <p className="font-medium text-yellow-700 mb-1">New Content:</p>
                           <p className="text-yellow-600 bg-white p-2 rounded border">{item.modifiedContent}</p>
                         </div>
                       </div>
@@ -541,27 +541,27 @@ export default function GarageApprovalPage() {
                   <div className="text-sm text-slate-600 space-y-1">
                     {itemKey === "basicInfo" && garageInfo && (
                       <>
-                        <p>• <strong>Tên garage:</strong> {garageInfo.name || "Chưa cập nhật"}</p>
-                        <p>• <strong>Địa chỉ:</strong> {garageInfo.address || "Chưa cập nhật"}</p>
-                        <p>• <strong>Số điện thoại:</strong> {garageInfo.phone || "Chưa cập nhật"}</p>
+                        <p>• <strong>Garage Name:</strong> {garageInfo.name || "Not updated"}</p>
+                        <p>• <strong>Address:</strong> {garageInfo.address || "Not updated"}</p>
+                        <p>• <strong>Phone Number:</strong> {garageInfo.phone || "Not updated"}</p>
                         <p>• <strong>Email:</strong> {garageInfo.email || "Chưa cập nhật"}</p>
-                        <p>• <strong>Mô tả:</strong> {garageInfo.description || "Chưa có mô tả"}</p>
+                        <p>• <strong>Description:</strong> {garageInfo.description || "No description"}</p>
                       </>
                     )}
                     {itemKey === "businessInfo" && garageInfo && (
                       <>
-                        <p>• <strong>Giờ mở cửa:</strong> {garageInfo.openTime || "Chưa cập nhật"}</p>
-                        <p>• <strong>Giờ đóng cửa:</strong> {garageInfo.closeTime || "Chưa cập nhật"}</p>
-                        <p>• <strong>Hình ảnh:</strong> {garageInfo.imageUrl ? "Đã tải lên" : "Chưa có"}</p>
+                        <p>• <strong>Opening Time:</strong> {garageInfo.openTime || "Not updated"}</p>
+                        <p>• <strong>Closing Time:</strong> {garageInfo.closeTime || "Not updated"}</p>
+                        <p>• <strong>Image:</strong> {garageInfo.imageUrl ? "Uploaded" : "Not available"}</p>
                         {garageInfo.imageUrl && (
                           <div className="mt-3">
-                            <p className="font-medium mb-2">Xem trước hình ảnh:</p>
+                            <p className="font-medium mb-2">Image Preview:</p>
                             <div className="relative inline-block">
                               <img 
                                 src={garageInfo.imageUrl.startsWith('/uploads/') 
                                   ? `http://localhost:8080${garageInfo.imageUrl}` 
                                   : garageInfo.imageUrl} 
-                                alt="Hình ảnh garage" 
+                                alt="Garage image" 
                                 className="max-w-xs max-h-48 rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
                                 onClick={() => {
                                   if (isClient && garageInfo.imageUrl) {
@@ -605,11 +605,11 @@ export default function GarageApprovalPage() {
                                    }
                                  }}
                               >
-                                Không thể tải hình ảnh
+                                Cannot load image
                               </div>
                             </div>
                             <div className="text-xs text-gray-600 mt-1">
-                              <p>Click vào ảnh để xem kích thước đầy đủ</p>
+                              <p>Click on image to view full size</p>
                               <p>URL: {garageInfo.imageUrl}</p>
                             </div>
                           </div>
@@ -618,29 +618,29 @@ export default function GarageApprovalPage() {
                     )}
                     {itemKey === "services" && garageInfo && (
                       <>
-                        <p>• <strong>Dịch vụ cung cấp:</strong></p>
+                        <p>• <strong>Services Provided:</strong></p>
                         {garageInfo.services && garageInfo.services.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.services.map((service, index) => (
-                              <li key={index}>- {service.serviceName || `Dịch vụ ${index + 1}`}</li>
+                              <li key={index}>- {service.serviceName || `Service ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (
-                          <p className="ml-4 text-red-500">Chưa có dịch vụ nào được đăng ký</p>
+                          <p className="ml-4 text-red-500">No services registered</p>
                         )}
                       </>
                     )}
                     {itemKey === "vehicleTypes" && garageInfo && (
                       <>
-                        <p>• <strong>Loại xe phục vụ:</strong></p>
+                        <p>• <strong>Vehicle Types Served:</strong></p>
                         {garageInfo.vehicleTypes && garageInfo.vehicleTypes.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.vehicleTypes.map((vehicleType, index) => (
-                              <li key={index}>- {vehicleType.vehicleTypeName || `Loại xe ${index + 1}`}</li>
+                              <li key={index}>- {vehicleType.vehicleTypeName || `Vehicle Type ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (
-                          <p className="ml-4 text-red-500">Chưa có loại xe nào được đăng ký</p>
+                          <p className="ml-4 text-red-500">No vehicle types registered</p>
                         )}
                       </>
                     )}
@@ -650,27 +650,27 @@ export default function GarageApprovalPage() {
                 {/* Approval History */}
                 {item.approvedBy && (
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2 text-blue-900">Lịch sử phê duyệt:</h4>
+                    <h4 className="font-medium mb-2 text-blue-900">Approval History:</h4>
                     <div className="text-sm text-blue-700 space-y-1">
-                      <p>• Người phê duyệt: {item.approvedBy}</p>
-                      <p>• Thời gian: {item.approvedAt ? new Date(item.approvedAt).toLocaleString("vi-VN") : "N/A"}</p>
+                      <p>• Approved By: {item.approvedBy}</p>
+                      <p>• Time: {item.approvedAt ? new Date(item.approvedAt).toLocaleString("en-US") : "N/A"}</p>
                       {item.rejectionReason && (
-                        <p>• Lý do từ chối: {item.rejectionReason}</p>
+                        <p>• Rejection Reason: {item.rejectionReason}</p>
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* Action Buttons - Hiển thị cho nội dung đang chờ phê duyệt hoặc đã được chỉnh sửa */}
+                {/* Action Buttons - Show for content pending approval or modified */}
                 {((item.status === "PENDING") || 
                   (item.status === "REJECTED" && garageInfo?.status === "PENDING_UPDATE")) && (
                   <div className="flex items-end space-x-4">
                     <div className="flex-1">
                       <label className="text-sm font-medium mb-2 block">
-                        {item.status === "REJECTED" ? "Lý do từ chối mới:" : "Lý do từ chối (nếu có):"}
+                        {item.status === "REJECTED" ? "New Rejection Reason:" : "Rejection Reason (if any):"}
                       </label>
                       <Textarea
-                        placeholder={item.status === "REJECTED" ? "Nhập lý do từ chối mới..." : "Nhập lý do từ chối..."}
+                        placeholder={item.status === "REJECTED" ? "Enter new rejection reason..." : "Enter rejection reason..."}
                         value={rejectionReasons[itemKey] || ""}
                         onChange={(e) => setRejectionReasons(prev => ({ 
                           ...prev, 
@@ -679,7 +679,7 @@ export default function GarageApprovalPage() {
                         className="min-h-[80px]"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        Lý do từ chối phải có ít nhất 5 ký tự
+                        Rejection reason must be at least 5 characters
                       </p>
                     </div>
                     <div className="flex space-x-2">
@@ -691,13 +691,13 @@ export default function GarageApprovalPage() {
                         {approvingItem === itemKey ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="ml-2">Đang xử lý...</span>
+                            <span className="ml-2">Processing...</span>
                           </>
                         ) : (
                           <>
                             <CheckCircle className="h-4 w-4" />
                             <span className="ml-2">
-                              {item.status === "REJECTED" ? "Phê duyệt lại" : "Phê duyệt"}
+                              {item.status === "REJECTED" ? "Re-approve" : "Approve"}
                             </span>
                           </>
                         )}
@@ -711,13 +711,13 @@ export default function GarageApprovalPage() {
                         {approvingItem === itemKey ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="ml-2">Đang xử lý...</span>
+                            <span className="ml-2">Processing...</span>
                           </>
                         ) : (
                           <>
                             <XCircle className="h-4 w-4" />
                             <span className="ml-2">
-                              {item.status === "REJECTED" ? "Từ chối lại" : "Từ chối"}
+                              {item.status === "REJECTED" ? "Reject Again" : "Reject"}
                             </span>
                           </>
                         )}
@@ -729,21 +729,21 @@ export default function GarageApprovalPage() {
                 {item.status === "APPROVED" && (
                   <div className="flex items-center space-x-2 text-green-700">
                     <CheckCircle className="h-4 w-4" />
-                    <span className="text-sm">Đã được phê duyệt</span>
+                    <span className="text-sm">Has been approved</span>
                   </div>
                 )}
 
                 {item.status === "REJECTED" && garageInfo?.status !== "PENDING_UPDATE" && (
                   <div className="flex items-center space-x-2 text-red-700">
                     <XCircle className="h-4 w-4" />
-                    <span className="text-sm">Đã bị từ chối</span>
+                    <span className="text-sm">Has been rejected</span>
                   </div>
                 )}
 
                 {item.status === "REJECTED" && garageInfo?.status === "PENDING_UPDATE" && (
                   <div className="flex items-center space-x-2 text-amber-700">
                     <AlertCircle className="h-4 w-4" />
-                    <span className="text-sm">Đã bị từ chối trước đó - Có thể phê duyệt lại</span>
+                    <span className="text-sm">Previously rejected - Can be re-approved</span>
                   </div>
                 )}
               </CardContent>
@@ -759,23 +759,23 @@ export default function GarageApprovalPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Wrench className="h-5 w-5" />
-                      <span>Dịch vụ</span>
-                      <Badge variant="secondary">Chờ duyệt</Badge>
+                      <span>Services</span>
+                      <Badge variant="secondary">Pending</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <h4 className="font-medium mb-2">Nội dung đăng ký:</h4>
                       <div className="text-sm text-slate-600 space-y-1">
-                        <p>• <strong>Dịch vụ cung cấp:</strong></p>
+                        <p>• <strong>Services Provided:</strong></p>
                         {garageInfo.services && garageInfo.services.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.services.map((service, index) => (
-                              <li key={index}>- {service.serviceName || `Dịch vụ ${index + 1}`}</li>
+                              <li key={index}>- {service.serviceName || `Service ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (
-                          <p className="ml-4 text-red-500">Chưa có dịch vụ nào được đăng ký</p>
+                          <p className="ml-4 text-red-500">No services registered</p>
                         )}
                       </div>
                     </div>
@@ -789,23 +789,23 @@ export default function GarageApprovalPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Car className="h-5 w-5" />
-                      <span>Loại xe</span>
-                      <Badge variant="secondary">Chờ duyệt</Badge>
+                      <span>Vehicle Types</span>
+                      <Badge variant="secondary">Pending</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <h4 className="font-medium mb-2">Nội dung đăng ký:</h4>
                       <div className="text-sm text-slate-600 space-y-1">
-                        <p>• <strong>Loại xe phục vụ:</strong></p>
+                        <p>• <strong>Vehicle Types Served:</strong></p>
                         {garageInfo.vehicleTypes && garageInfo.vehicleTypes.length > 0 ? (
                           <ul className="ml-4 space-y-1">
                             {garageInfo.vehicleTypes.map((vehicleType, index) => (
-                              <li key={index}>- {vehicleType.vehicleTypeName || `Loại xe ${index + 1}`}</li>
+                              <li key={index}>- {vehicleType.vehicleTypeName || `Vehicle Type ${index + 1}`}</li>
                             ))}
                           </ul>
                         ) : (
-                          <p className="ml-4 text-red-500">Chưa có loại xe nào được đăng ký</p>
+                          <p className="ml-4 text-red-500">No vehicle types registered</p>
                         )}
                       </div>
                     </div>

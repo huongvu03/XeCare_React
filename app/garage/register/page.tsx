@@ -77,12 +77,12 @@ export default function GarageRegistrationPage() {
         },
         (error) => {
           console.error("Error getting location:", error)
-          setError("Không thể lấy vị trí hiện tại. Vui lòng nhập thủ công.")
+          setError("Cannot get current location. Please enter manually.")
           setLoading(false)
         }
       )
     } else {
-      setError("Trình duyệt không hỗ trợ định vị.")
+      setError("Browser does not support geolocation.")
     }
   }
 
@@ -107,7 +107,7 @@ export default function GarageRegistrationPage() {
         setAddressValidation({
           isValidating: false,
           isTaken: false,
-          message: "Không thể kiểm tra địa chỉ"
+          message: "Cannot check address"
         })
       }
     } else {
@@ -275,23 +275,23 @@ export default function GarageRegistrationPage() {
 
     // Validation
     if (!garageName || !address || !phone || !email || !description) {
-      setError("Vui lòng điền đầy đủ thông tin bắt buộc.")
+      setError("Please fill in all required information.")
       return
     }
 
     if (selectedServices.length === 0) {
-      setError("Vui lòng chọn ít nhất một dịch vụ.")
+      setError("Please select at least one service.")
       return
     }
 
     if (selectedVehicleTypes.length === 0) {
-      setError("Vui lòng chọn ít nhất một loại xe.")
+      setError("Please select at least one vehicle type.")
       return
     }
 
     // Check if address is already taken
     if (addressValidation.isTaken) {
-      setError("Địa chỉ này đã được sử dụng bởi một garage khác. Vui lòng chọn địa chỉ khác.")
+      setError("This address is already used by another garage. Please choose a different address.")
       return
     }
 
@@ -363,20 +363,20 @@ export default function GarageRegistrationPage() {
       
       // Show SweetAlert success notification
       await Swal.fire({
-        title: '🎉 Đăng ký thành công!',
+        title: '🎉 Registration Successful!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Garage <strong>"${garageName}"</strong> đã được đăng ký thành công!</p>
-            <p class="text-sm text-gray-600 mb-4">Vui lòng chờ admin phê duyệt để bắt đầu nhận lịch hẹn từ khách hàng.</p>
+            <p class="text-lg mb-4">Garage <strong>"${garageName}"</strong> has been registered successfully!</p>
+            <p class="text-sm text-gray-600 mb-4">Please wait for admin approval to start receiving appointments from customers.</p>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-blue-700">
-                <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến dashboard garage trong giây lát...
+                <strong>Note:</strong> You will be redirected to the garage dashboard shortly...
               </p>
             </div>
           </div>
         `,
         icon: 'success',
-        confirmButtonText: 'Tuyệt vời!',
+        confirmButtonText: 'Great!',
         confirmButtonColor: '#3b82f6',
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -397,25 +397,25 @@ export default function GarageRegistrationPage() {
     } catch (err: any) {
       console.error("Debug - Error details:", err)
       console.error("Debug - Error response:", err.response)
-      const errorMessage = err.response?.data?.message || "Có lỗi xảy ra khi đăng ký garage. Vui lòng thử lại."
+      const errorMessage = err.response?.data?.message || "An error occurred while registering the garage. Please try again."
       setError(errorMessage)
       
       // Show SweetAlert error notification
       await Swal.fire({
-        title: '❌ Đăng ký thất bại!',
+        title: '❌ Registration Failed!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Không thể đăng ký garage</p>
+            <p class="text-lg mb-4">Cannot register garage</p>
             <p class="text-sm text-gray-600 mb-4">${errorMessage}</p>
             <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-red-700">
-                <strong>Gợi ý:</strong> Vui lòng kiểm tra lại thông tin và thử lại.
+                <strong>Suggestion:</strong> Please check the information again and try again.
               </p>
             </div>
           </div>
         `,
         icon: 'error',
-        confirmButtonText: 'Thử lại',
+        confirmButtonText: 'Try Again',
         confirmButtonColor: '#ef4444',
         allowOutsideClick: true,
         allowEscapeKey: true
@@ -428,15 +428,15 @@ export default function GarageRegistrationPage() {
   return (
     <DashboardLayout
       allowedRoles={["USER", "GARAGE"]}
-      title="Đăng ký Garage"
-      description="Đăng ký garage của bạn để bắt đầu nhận lịch hẹn"
+      title="Register Garage"
+      description="Register your garage to start receiving appointments"
     >
       <div className="max-w-4xl mx-auto">
         <Card className="border-blue-100">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Building2 className="h-5 w-5 text-blue-600" />
-              <span>Thông tin Garage</span>
+              <span>Garage Information</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -451,24 +451,24 @@ export default function GarageRegistrationPage() {
               {/* Basic Information */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Tên garage *</Label>
+                  <Label htmlFor="name">Garage Name *</Label>
                   <Input
                     id="name"
                     value={garageName}
                     onChange={(e) => setGarageName(e.target.value)}
-                    placeholder="Nhập tên garage"
+                    placeholder="Enter garage name"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Số điện thoại *</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <Input
                     id="phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Nhập số điện thoại"
+                    placeholder="Enter phone number"
                     required
                   />
                 </div>
@@ -481,19 +481,19 @@ export default function GarageRegistrationPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Nhập email"
+                  placeholder="Enter email"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Địa chỉ *</Label>
+                <Label htmlFor="address">Address *</Label>
                 <div className="relative">
                   <Input
                     id="address"
                     value={address}
                     onChange={(e) => handleAddressChange(e.target.value)}
-                    placeholder="Nhập địa chỉ đầy đủ (sẽ tự động tìm tọa độ)"
+                    placeholder="Enter full address (coordinates will be found automatically)"
                     required
                   />
                   {geocodingLoading && (
@@ -520,7 +520,7 @@ export default function GarageRegistrationPage() {
                 {geocodingResult && (
                   <div className="flex items-center space-x-2 text-sm text-green-600 mt-1">
                     <CheckCircle className="h-4 w-4" />
-                    <span>Đã tìm thấy và tự động cập nhật: {geocodingResult.display_name}</span>
+                    <span>Found and automatically updated: {geocodingResult.display_name}</span>
                   </div>
                 )}
                 
@@ -528,7 +528,7 @@ export default function GarageRegistrationPage() {
                 {addressValidation.isValidating && (
                   <div className="flex items-center space-x-2 text-sm text-blue-600 mt-1">
                     <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    <span>Đang kiểm tra địa chỉ...</span>
+                    <span>Checking address...</span>
                   </div>
                 )}
                 
@@ -547,12 +547,12 @@ export default function GarageRegistrationPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Mô tả *</Label>
+                <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Mô tả về garage, dịch vụ, kinh nghiệm..."
+                  placeholder="Describe about garage, services, experience..."
                   rows={4}
                   required
                 />
@@ -562,7 +562,7 @@ export default function GarageRegistrationPage() {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Clock className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-lg font-semibold">Giờ làm việc</h3>
+                  <h3 className="text-lg font-semibold">Operating Hours</h3>
                 </div>
                 <OperatingHoursForm
                   value={operatingHours}
@@ -573,7 +573,7 @@ export default function GarageRegistrationPage() {
               {/* Location */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label>Vị trí (GPS)</Label>
+                  <Label>Location (GPS)</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -584,12 +584,12 @@ export default function GarageRegistrationPage() {
                     {loading ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                        <span>Đang lấy vị trí...</span>
+                        <span>Getting location...</span>
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2">
                         <MapPin className="h-4 w-4" />
-                        <span>Lấy vị trí hiện tại</span>
+                        <span>Get Current Location</span>
                       </div>
                     )}
                   </Button>
@@ -597,26 +597,26 @@ export default function GarageRegistrationPage() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="latitude">Vĩ độ</Label>
+                    <Label htmlFor="latitude">Latitude</Label>
                     <Input
                       id="latitude"
                       type="number"
                       step="any"
                       value={latitude || ""}
                       onChange={(e) => setLatitude(e.target.value ? Number(e.target.value) : null)}
-                      placeholder="Ví dụ: 10.8231"
+                      placeholder="e.g., 10.8231"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="longitude">Kinh độ</Label>
+                    <Label htmlFor="longitude">Longitude</Label>
                     <Input
                       id="longitude"
                       type="number"
                       step="any"
                       value={longitude || ""}
                       onChange={(e) => setLongitude(e.target.value ? Number(e.target.value) : null)}
-                      placeholder="Ví dụ: 106.6297"
+                      placeholder="e.g., 106.6297"
                     />
                   </div>
                 </div>
@@ -626,7 +626,7 @@ export default function GarageRegistrationPage() {
                      <div className="flex items-center space-x-2 text-green-700">
                        <CheckCircle className="h-4 w-4" />
                        <span className="text-sm">
-                         Vị trí: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                         Location: {latitude.toFixed(6)}, {longitude.toFixed(6)}
                        </span>
                      </div>
                      {geocodingResult && (
@@ -640,12 +640,12 @@ export default function GarageRegistrationPage() {
 
               {/* Vehicle Types */}
               <div className="space-y-2">
-                <Label>Loại xe phục vụ *</Label>
+                <Label>Vehicle Types Served *</Label>
                 {vehicleTypesLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="text-center">
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                      <p className="text-sm text-slate-600">Đang tải loại xe...</p>
+                      <p className="text-sm text-slate-600">Loading vehicle types...</p>
                     </div>
                   </div>
                 ) : (
@@ -672,12 +672,12 @@ export default function GarageRegistrationPage() {
 
               {/* Services */}
               <div className="space-y-2">
-                <Label>Dịch vụ cung cấp *</Label>
+                <Label>Services Provided *</Label>
                 {servicesLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="text-center">
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                      <p className="text-sm text-slate-600">Đang tải dịch vụ...</p>
+                      <p className="text-sm text-slate-600">Loading services...</p>
                     </div>
                   </div>
                 ) : (
@@ -704,7 +704,7 @@ export default function GarageRegistrationPage() {
 
               {/* Image Upload */}
               <div className="space-y-2">
-                <Label>Hình ảnh garage</Label>
+                <Label>Garage Image</Label>
                 <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
                   {imagePreview ? (
                     <div className="space-y-4">
@@ -721,14 +721,14 @@ export default function GarageRegistrationPage() {
                           setImagePreview("")
                         }}
                       >
-                        Xóa hình ảnh
+                        Remove Image
                       </Button>
                     </div>
                   ) : (
                     <div>
                       <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
                       <p className="text-sm text-slate-600 mb-2">
-                        Tải lên hình ảnh garage để khách hàng dễ nhận biết
+                        Upload garage image for customers to easily identify
                       </p>
                       <input
                         type="file"
@@ -741,7 +741,7 @@ export default function GarageRegistrationPage() {
                         htmlFor="image-upload"
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
                       >
-                        Chọn hình ảnh
+                        Select Image
                       </label>
                     </div>
                   )}
@@ -758,12 +758,12 @@ export default function GarageRegistrationPage() {
                   {submitting ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Đang đăng ký...</span>
+                      <span>Registering...</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
                       <Building2 className="h-4 w-4" />
-                      <span>Đăng ký Garage</span>
+                      <span>Register Garage</span>
                     </div>
                   )}
                 </Button>
@@ -773,14 +773,14 @@ export default function GarageRegistrationPage() {
                   variant="outline"
                   onClick={() => router.back()}
                 >
-                  Hủy
+                  Cancel
                 </Button>
               </div>
 
               {/* Info */}
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertDescription className="text-blue-700">
-                  <strong>Lưu ý:</strong> Sau khi đăng ký, garage của bạn sẽ cần được admin phê duyệt trước khi có thể nhận lịch hẹn từ khách hàng.
+                  <strong>Note:</strong> After registration, your garage will need admin approval before it can receive appointments from customers.
                 </AlertDescription>
               </Alert>
             </form>

@@ -45,10 +45,10 @@ export function EmergencyRescueSlider() {
 
     // Ước tính thời gian phản hồi dựa trên khoảng cách
     const responseTime = garage.distance && garage.distance < 1 
-      ? "2-3 phút" 
+      ? "2-3 min" 
       : garage.distance && garage.distance < 2 
-        ? "3-5 phút" 
-        : "5-10 phút"
+        ? "3-5 min" 
+        : "5-10 min"
 
     return {
       id: garage.id,
@@ -72,26 +72,37 @@ export function EmergencyRescueSlider() {
 
         // Lấy vị trí người dùng
         if (!navigator.geolocation) {
-          throw new Error("Trình duyệt không hỗ trợ định vị")
+          throw new Error("Browser does not support geolocation")
         }
 
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 10000,
-            enableHighAccuracy: true
+        let latitude: number, longitude: number
+        
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 10000,
+              enableHighAccuracy: true
+            })
           })
-        })
+          
+          latitude = position.coords.latitude
+          longitude = position.coords.longitude
+          console.log('📍 User location obtained:', latitude, longitude)
+        } catch (geoError: any) {
+          console.warn('⚠️ Geolocation failed, using default location:', geoError.message)
+          // Use default coordinates (Ho Chi Minh City)
+          latitude = 10.8231
+          longitude = 106.6297
+        }
 
-        const { latitude, longitude } = position.coords
-
-        // Lấy garage cứu hộ gần nhất
+        // Get nearest emergency rescue garages
         const garages = await getEmergencyRescueGarages(latitude, longitude, 15)
         
-        // Chuyển đổi và giới hạn số lượng
+        // Transform and limit quantity
         const transformedGarages = garages.slice(0, 5).map(transformGarage)
         setEmergencyGarages(transformedGarages)
 
-        // Nếu không có garage cứu hộ, sử dụng dữ liệu mẫu
+        // If no emergency garages, use sample data
         if (transformedGarages.length === 0) {
           console.log('⚠️ No emergency garages found, using fallback data')
           const fallbackGarages: EmergencyGarage[] = [
@@ -102,7 +113,7 @@ export function EmergencyRescueSlider() {
               logoColor: "from-green-600 to-emerald-600",
               distance: 0.8,
               rating: 4.9,
-              responseTime: "2 phút",
+              responseTime: "2 min",
               phone: "1900 1234",
               status: "online",
             },
@@ -113,7 +124,7 @@ export function EmergencyRescueSlider() {
               logoColor: "from-blue-600 to-cyan-600",
               distance: 1.2,
               rating: 4.8,
-              responseTime: "3 phút",
+              responseTime: "3 min",
               phone: "1900 5678",
               status: "online",
             }
@@ -121,11 +132,33 @@ export function EmergencyRescueSlider() {
           setEmergencyGarages(fallbackGarages)
         }
 
-      } catch (err) {
-        console.error('Lỗi khi tải garage cứu hộ:', err)
-        setError('Không thể tải danh sách garage cứu hộ')
+      } catch (err: any) {
+        // Improved error logging
+        console.error('Error loading emergency garages:', {
+          message: err?.message || 'Unknown error',
+          status: err?.response?.status || 'No status',
+          statusText: err?.response?.statusText || 'No status text',
+          data: err?.response?.data || 'No response data',
+          code: err?.code || 'No error code',
+          name: err?.name || 'No error name',
+          stack: err?.stack || 'No stack trace'
+        })
         
-        // Sử dụng dữ liệu mẫu khi có lỗi
+        // Set more specific error message
+        let errorMessage = 'Cannot load emergency garage list'
+        if (err?.message) {
+          errorMessage = err.message
+        } else if (err?.response?.status) {
+          errorMessage = `Server error: ${err.response.status} ${err.response.statusText || ''}`
+        } else if (err?.code === 'ERR_NETWORK') {
+          errorMessage = 'Network error: Cannot connect to server'
+        } else if (err?.code === 'ECONNABORTED') {
+          errorMessage = 'Request timeout: Server took too long to respond'
+        }
+        
+        setError(errorMessage)
+        
+        // Use sample data when there's an error
         const fallbackGarages: EmergencyGarage[] = [
           {
             id: 1,
@@ -134,8 +167,19 @@ export function EmergencyRescueSlider() {
             logoColor: "from-green-600 to-emerald-600",
             distance: 0.8,
             rating: 4.9,
-            responseTime: "2 phút",
+            responseTime: "2 min",
             phone: "1900 1234",
+            status: "online",
+          },
+          {
+            id: 2,
+            name: "Garage SOS Auto", 
+            logo: "SOS",
+            logoColor: "from-blue-600 to-cyan-600",
+            distance: 1.2,
+            rating: 4.8,
+            responseTime: "3 min",
+            phone: "1900 5678",
             status: "online",
           }
         ]
@@ -175,26 +219,26 @@ export function EmergencyRescueSlider() {
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <Loader2 className="h-8 w-8 text-white animate-spin mx-auto mb-2" />
-            <p className="text-white text-sm">Đang tìm garage cứu hộ gần bạn...</p>
+            <p className="text-white text-sm">Finding emergency garages near you...</p>
           </div>
         </div>
       </div>
     )
   }
 
-  // Error state hoặc không có garage
+  // Error state or no garages
   if (emergencyGarages.length === 0) {
     return (
       <div className="bg-gradient-to-br from-blue-500 to-green-600 rounded-xl md:rounded-2xl p-2 md:p-3 shadow-md md:shadow-lg border border-blue-200 relative overflow-hidden">
         <div className="flex items-center justify-between mb-2 md:mb-3">
           <div className="flex items-center space-x-1 md:space-x-2">
             <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-white animate-pulse" />
-            <span className="text-white font-bold text-xs md:text-sm">CỨU HỘ KHẨN CẤP</span>
+            <span className="text-white font-bold text-xs md:text-sm">EMERGENCY RESCUE</span>
           </div>
         </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-lg md:rounded-xl p-4 text-center">
-          <p className="text-white/90 text-sm mb-2">Không tìm thấy garage cứu hộ gần bạn</p>
-          <p className="text-white/70 text-xs">Vui lòng gọi hotline khẩn cấp</p>
+          <p className="text-white/90 text-sm mb-2">No emergency garages found near you</p>
+          <p className="text-white/70 text-xs">Please call emergency hotline</p>
         </div>
         <div className="border-t border-white/20 pt-2 md:pt-3 mt-2">
           <Button
@@ -221,7 +265,7 @@ export function EmergencyRescueSlider() {
       <div className="flex items-center justify-between mb-2 md:mb-3">
         <div className="flex items-center space-x-1 md:space-x-2">
           <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-white animate-pulse" />
-          <span className="text-white font-bold text-xs md:text-sm">CỨU HỘ KHẨN CẤP</span>
+          <span className="text-white font-bold text-xs md:text-sm">EMERGENCY RESCUE</span>
         </div>
         {emergencyGarages.length > 1 && (
           <div className="flex space-x-1">
@@ -259,12 +303,12 @@ export function EmergencyRescueSlider() {
           >
             <Link href={`tel:${currentGarage.phone}`}>
               <Phone className="h-3 w-3 mr-1" />
-              <span className="hidden sm:inline">Gọi</span>
+              <span className="hidden sm:inline">Call</span>
             </Link>
           </Button>
         </div>
         <div className="text-white/90 text-xs">
-          <span className="hidden sm:inline">Phản hồi trong </span>
+          <span className="hidden sm:inline">Response in </span>
           <span className="font-semibold">{currentGarage.responseTime}</span>
         </div>
       </div>

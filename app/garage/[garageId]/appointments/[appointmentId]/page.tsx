@@ -54,7 +54,7 @@ export default function AppointmentDetailPage() {
         setLoading(false)
       } catch (err: any) {
         console.error("Error loading appointment detail:", err)
-        setError("Không thể tải chi tiết lịch hẹn")
+        setError("Cannot load appointment details")
         setLoading(false)
       }
     }
@@ -68,7 +68,7 @@ export default function AppointmentDetailPage() {
     if (!appointment) return
 
     if (status === "REJECTED" && !rejectionReason.trim()) {
-      setError("Vui lòng nhập lý do từ chối")
+      setError("Please enter rejection reason")
       return
     }
 
@@ -83,12 +83,12 @@ export default function AppointmentDetailPage() {
 
       const response = await updateAppointmentStatus(appointmentId, updateData)
       setAppointment(response.data)
-      setSuccess(status === "CONFIRMED" ? "Đã xác nhận lịch hẹn thành công!" : "Đã từ chối lịch hẹn!")
+      setSuccess(status === "CONFIRMED" ? "Appointment confirmed successfully!" : "Appointment rejected!")
       setShowRejectionForm(false)
       setRejectionReason("")
     } catch (err: any) {
       console.error("Error updating appointment status:", err)
-      setError("Không thể cập nhật trạng thái lịch hẹn")
+      setError("Cannot update appointment status")
     } finally {
       setUpdating(false)
     }
@@ -109,11 +109,11 @@ export default function AppointmentDetailPage() {
       const response = await startAppointment(appointmentId)
       console.log("Start appointment response:", response.data)
       setAppointment(response.data)
-      setSuccess("Đã bắt đầu thực hiện lịch hẹn!")
+      setSuccess("Appointment started successfully!")
     } catch (err: any) {
       console.error("Error starting appointment:", err)
       console.error("Error details:", err.response?.data)
-      setError(`Không thể bắt đầu lịch hẹn: ${err.response?.data?.message || err.message}`)
+      setError(`Cannot start appointment: ${err.response?.data?.message || err.message}`)
     } finally {
       setUpdating(false)
     }
@@ -128,10 +128,10 @@ export default function AppointmentDetailPage() {
     try {
       const response = await completeAppointment(appointmentId)
       setAppointment(response.data)
-      setSuccess("Đã hoàn thành lịch hẹn!")
+      setSuccess("Appointment completed successfully!")
     } catch (err: any) {
       console.error("Error completing appointment:", err)
-      setError("Không thể hoàn thành lịch hẹn")
+      setError("Cannot complete appointment")
     } finally {
       setUpdating(false)
     }
@@ -150,11 +150,11 @@ export default function AppointmentDetailPage() {
       const response = await cancelAppointmentByGarage(appointmentId)
       console.log("Cancel appointment response:", response.data)
       setAppointment(response.data)
-      setSuccess("Đã hủy lịch hẹn - lịch hẹn được đánh dấu là chưa hoàn thành!")
+      setSuccess("Appointment cancelled - marked as incomplete!")
     } catch (err: any) {
       console.error("Error cancelling appointment:", err)
       console.error("Error details:", err.response?.data)
-      setError(`Không thể hủy lịch hẹn: ${err.response?.data?.message || err.message}`)
+      setError(`Cannot cancel appointment: ${err.response?.data?.message || err.message}`)
     } finally {
       setUpdating(false)
     }
@@ -163,19 +163,19 @@ export default function AppointmentDetailPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-700">Chờ xác nhận</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
       case "CONFIRMED":
-        return <Badge className="bg-blue-100 text-blue-700">Đã xác nhận</Badge>
+        return <Badge className="bg-blue-100 text-blue-700">Confirmed</Badge>
       case "IN_PROGRESS":
-        return <Badge className="bg-orange-100 text-orange-700">Đang thực hiện</Badge>
+        return <Badge className="bg-orange-100 text-orange-700">In Progress</Badge>
       case "COMPLETED":
-        return <Badge className="bg-green-100 text-green-700">Hoàn thành</Badge>
+        return <Badge className="bg-green-100 text-green-700">Completed</Badge>
       case "REJECTED":
-        return <Badge className="bg-red-100 text-red-700">Đã từ chối</Badge>
+        return <Badge className="bg-red-100 text-red-700">Rejected</Badge>
       case "CANCELLED":
-        return <Badge className="bg-gray-100 text-gray-700">Đã hủy</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Cancelled</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>
     }
   }
 
@@ -183,13 +183,13 @@ export default function AppointmentDetailPage() {
     return (
       <DashboardLayout
         allowedRoles={["USER", "GARAGE", "ADMIN"]}
-        title="Chi tiết lịch hẹn"
-        description="Đang tải..."
+        title="Appointment Details"
+        description="Loading..."
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <p className="text-slate-600">Đang tải chi tiết lịch hẹn...</p>
+            <p className="text-slate-600">Loading appointment details...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -200,8 +200,8 @@ export default function AppointmentDetailPage() {
     return (
       <DashboardLayout
         allowedRoles={["USER", "GARAGE", "ADMIN"]}
-        title="Lỗi"
-        description="Không thể tải dữ liệu"
+        title="Error"
+        description="Cannot load data"
       >
         <Alert className="border-red-200 bg-red-50">
           <XCircle className="h-4 w-4" />
@@ -215,12 +215,12 @@ export default function AppointmentDetailPage() {
     return (
       <DashboardLayout
         allowedRoles={["USER", "GARAGE", "ADMIN"]}
-        title="Không tìm thấy"
-        description="Lịch hẹn không tồn tại"
+        title="Not Found"
+        description="Appointment does not exist"
       >
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Không tìm thấy lịch hẹn này.</AlertDescription>
+          <AlertDescription>This appointment was not found.</AlertDescription>
         </Alert>
       </DashboardLayout>
     )
@@ -229,8 +229,8 @@ export default function AppointmentDetailPage() {
   return (
     <DashboardLayout
       allowedRoles={["USER", "GARAGE", "ADMIN"]}
-      title={`Chi tiết lịch hẹn #${appointment.id}`}
-      description="Thông tin chi tiết và quản lý lịch hẹn"
+      title={`Appointment Details #${appointment.id}`}
+      description="Detailed information and appointment management"
     >
       <div className="space-y-6">
         {/* Header */}
@@ -241,7 +241,7 @@ export default function AppointmentDetailPage() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Quay lại danh sách</span>
+            <span>Back to List</span>
           </Button>
           
           {getStatusBadge(appointment.status)}
@@ -271,13 +271,13 @@ export default function AppointmentDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <User className="h-5 w-5 text-blue-600" />
-                  <span>Thông tin khách hàng</span>
+                  <span>Customer Information</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Họ tên</label>
+                    <label className="text-sm font-medium text-slate-600">Full Name</label>
                     <p className="text-slate-900 font-medium">{appointment.userName}</p>
                   </div>
                   <div>
@@ -285,7 +285,7 @@ export default function AppointmentDetailPage() {
                     <p className="text-slate-900">{appointment.userEmail}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Số điện thoại</label>
+                    <label className="text-sm font-medium text-slate-600">Phone Number</label>
                     <p className="text-slate-900">{appointment.userPhone}</p>
                   </div>
                 </div>
@@ -297,27 +297,27 @@ export default function AppointmentDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Calendar className="h-5 w-5 text-blue-600" />
-                  <span>Chi tiết lịch hẹn</span>
+                  <span>Appointment Details</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Ngày hẹn</label>
+                    <label className="text-sm font-medium text-slate-600">Appointment Date</label>
                     <p className="text-slate-900 font-medium">
-                      {new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')}
+                      {new Date(appointment.appointmentDate).toLocaleDateString('en-US')}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Thời gian</label>
-                    <p className="text-slate-900">{appointment.appointmentTime || "Chưa xác định"}</p>
+                    <label className="text-sm font-medium text-slate-600">Time</label>
+                    <p className="text-slate-900">{appointment.appointmentTime || "Not specified"}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Dịch vụ</label>
+                    <label className="text-sm font-medium text-slate-600">Service</label>
                     <p className="text-slate-900 font-medium">{appointment.serviceName}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Loại xe</label>
+                    <label className="text-sm font-medium text-slate-600">Vehicle Type</label>
                     <p className="text-slate-900">{appointment.vehicleTypeName}</p>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export default function AppointmentDetailPage() {
                 {/* Vehicle Info */}
                 {(appointment.vehicleBrand || appointment.vehicleModel || appointment.licensePlate) && (
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Thông tin xe</label>
+                    <label className="text-sm font-medium text-slate-600">Vehicle Information</label>
                     <p className="text-slate-900">
                       {[appointment.vehicleBrand, appointment.vehicleModel, appointment.licensePlate]
                         .filter(Boolean)
@@ -338,7 +338,7 @@ export default function AppointmentDetailPage() {
                 {/* Description */}
                 {appointment.notes && (
                   <div>
-                    <label className="text-sm font-medium text-slate-600">Mô tả yêu cầu</label>
+                    <label className="text-sm font-medium text-slate-600">Request Description</label>
                     <p className="text-slate-900 bg-slate-50 p-3 rounded-md">{appointment.notes}</p>
                   </div>
                 )}
@@ -349,7 +349,7 @@ export default function AppointmentDetailPage() {
                     <label className={`text-sm font-medium ${
                       appointment.status === "REJECTED" ? "text-red-600" : "text-orange-600"
                     }`}>
-                      {appointment.status === "REJECTED" ? "Lý do từ chối" : "Lý do hủy lịch hẹn"}
+                      {appointment.status === "REJECTED" ? "Rejection Reason" : "Cancellation Reason"}
                     </label>
                     <p className={`p-3 rounded-md border ${
                       appointment.status === "REJECTED" 
@@ -371,12 +371,12 @@ export default function AppointmentDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <ClockIcon className="h-5 w-5 text-blue-600" />
-                  <span>Trạng thái & Hành động</span>
+                  <span>Status & Actions</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Trạng thái hiện tại</label>
+                  <label className="text-sm font-medium text-slate-600">Current Status</label>
                   <div className="mt-1">
                     {getStatusBadge(appointment.status)}
                   </div>
@@ -395,7 +395,7 @@ export default function AppointmentDetailPage() {
                       ) : (
                         <CheckCircle className="h-4 w-4 mr-2" />
                       )}
-                      Xác nhận lịch hẹn
+                      Confirm Appointment
                     </Button>
                     
                     <Button 
@@ -405,7 +405,7 @@ export default function AppointmentDetailPage() {
                       onClick={() => setShowRejectionForm(true)}
                     >
                       <XCircle className="h-4 w-4 mr-2" />
-                      Từ chối lịch hẹn
+                      Reject Appointment
                     </Button>
                   </div>
                 )}
@@ -423,7 +423,7 @@ export default function AppointmentDetailPage() {
                       ) : (
                         <Clock className="h-4 w-4 mr-2" />
                       )}
-                      Bắt đầu thực hiện
+                      Start Service
                     </Button>
                     
                     <Button 
@@ -437,7 +437,7 @@ export default function AppointmentDetailPage() {
                       ) : (
                         <XCircle className="h-4 w-4 mr-2" />
                       )}
-                      Hủy lịch hẹn
+                      Cancel Appointment
                     </Button>
                   </div>
                 )}
@@ -455,7 +455,7 @@ export default function AppointmentDetailPage() {
                       ) : (
                         <CheckCircle className="h-4 w-4 mr-2" />
                       )}
-                      Hoàn thành
+                      Complete
                     </Button>
                   </div>
                 )}
@@ -464,9 +464,9 @@ export default function AppointmentDetailPage() {
                 {(appointment.status === "COMPLETED" || appointment.status === "REJECTED" || appointment.status === "CANCELLED") && (
                   <div className="text-center py-4">
                     <p className="text-slate-500 text-sm">
-                      {appointment.status === "COMPLETED" && "Lịch hẹn đã hoàn thành"}
-                      {appointment.status === "REJECTED" && "Lịch hẹn đã bị từ chối"}
-                      {appointment.status === "CANCELLED" && "Lịch hẹn đã bị hủy"}
+                      {appointment.status === "COMPLETED" && "Appointment completed"}
+                      {appointment.status === "REJECTED" && "Appointment rejected"}
+                      {appointment.status === "CANCELLED" && "Appointment cancelled"}
                     </p>
                   </div>
                 )}
@@ -475,12 +475,12 @@ export default function AppointmentDetailPage() {
                 {showRejectionForm && (
                   <div className="space-y-3 p-4 border border-red-200 rounded-md bg-red-50">
                     <label className="text-sm font-medium text-red-700">
-                      Lý do từ chối <span className="text-red-500">*</span>
+                      Rejection Reason <span className="text-red-500">*</span>
                     </label>
                     <Textarea
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
-                      placeholder="Vui lòng nhập lý do từ chối lịch hẹn..."
+                      placeholder="Please enter the reason for rejecting the appointment..."
                       className="border-red-300 focus:border-red-500"
                       rows={3}
                     />
@@ -496,7 +496,7 @@ export default function AppointmentDetailPage() {
                         ) : (
                           <XCircle className="h-4 w-4 mr-2" />
                         )}
-                        Xác nhận từ chối
+                        Confirm Rejection
                       </Button>
                       <Button 
                         variant="outline"
@@ -507,7 +507,7 @@ export default function AppointmentDetailPage() {
                           setError("")
                         }}
                       >
-                        Hủy
+                        Cancel
                       </Button>
                     </div>
                   </div>
@@ -521,23 +521,23 @@ export default function AppointmentDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <DollarSign className="h-5 w-5 text-blue-600" />
-                    <span>Thông tin giá</span>
+                    <span>Pricing Information</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {appointment.estimatedPrice && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Giá ước tính:</span>
+                      <span className="text-slate-600">Estimated Price:</span>
                       <span className="font-medium">
-                        {appointment.estimatedPrice.toLocaleString('vi-VN')} VNĐ
+                        {appointment.estimatedPrice.toLocaleString('en-US')} VND
                       </span>
                     </div>
                   )}
                   {appointment.finalPrice && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Giá cuối:</span>
+                      <span className="text-slate-600">Final Price:</span>
                       <span className="font-semibold text-green-600">
-                        {appointment.finalPrice.toLocaleString('vi-VN')} VNĐ
+                        {appointment.finalPrice.toLocaleString('en-US')} VND
                       </span>
                     </div>
                   )}
@@ -550,19 +550,19 @@ export default function AppointmentDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <FileText className="h-5 w-5 text-blue-600" />
-                  <span>Lịch sử</span>
+                  <span>History</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Tạo lúc:</span>
-                    <span>{new Date(appointment.createdAt).toLocaleString('vi-VN')}</span>
+                    <span className="text-slate-600">Created:</span>
+                    <span>{new Date(appointment.createdAt).toLocaleString('en-US')}</span>
                   </div>
                   {appointment.updatedAt && appointment.updatedAt !== appointment.createdAt && (
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Cập nhật:</span>
-                      <span>{new Date(appointment.updatedAt).toLocaleString('vi-VN')}</span>
+                      <span className="text-slate-600">Updated:</span>
+                      <span>{new Date(appointment.updatedAt).toLocaleString('en-US')}</span>
                     </div>
                   )}
                 </div>

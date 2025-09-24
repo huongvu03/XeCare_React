@@ -1,24 +1,24 @@
 import { OperatingHours, DaySchedule } from "@/lib/api/GarageApi"
 
 export const DAYS_OF_WEEK = [
-  { key: "monday", label: "Thứ 2" },
-  { key: "tuesday", label: "Thứ 3" },
-  { key: "wednesday", label: "Thứ 4" },
-  { key: "thursday", label: "Thứ 5" },
-  { key: "friday", label: "Thứ 6" },
-  { key: "saturday", label: "Thứ 7" },
-  { key: "sunday", label: "Chủ nhật" }
+  { key: "monday", label: "Monday" },
+  { key: "tuesday", label: "Tuesday" },
+  { key: "wednesday", label: "Wednesday" },
+  { key: "thursday", label: "Thursday" },
+  { key: "friday", label: "Friday" },
+  { key: "saturday", label: "Saturday" },
+  { key: "sunday", label: "Sunday" }
 ] as const
 
 export type DayKey = typeof DAYS_OF_WEEK[number]["key"]
 
 /**
- * Tạo operating hours mặc định
+ * Create default operating hours
  */
 export const createDefaultOperatingHours = (): OperatingHours => {
   const customSchedule: { [key: string]: DaySchedule } = {}
   
-  // Thứ 2-6: 08:00 - 18:00
+  // Monday-Friday: 08:00 - 18:00
   for (const day of ["monday", "tuesday", "wednesday", "thursday", "friday"] as const) {
     customSchedule[day] = {
       isOpen: true,
@@ -27,14 +27,14 @@ export const createDefaultOperatingHours = (): OperatingHours => {
     }
   }
   
-  // Thứ 7: 08:00 - 16:00
+  // Saturday: 08:00 - 16:00
   customSchedule.saturday = {
     isOpen: true,
     openTime: "08:00",
     closeTime: "16:00"
   }
   
-  // Chủ nhật: Nghỉ
+  // Sunday: Closed
   customSchedule.sunday = {
     isOpen: false,
     openTime: "08:00",
@@ -50,7 +50,7 @@ export const createDefaultOperatingHours = (): OperatingHours => {
 }
 
 /**
- * Tạo operating hours đồng nhất cho tất cả ngày
+ * Create uniform operating hours for all days
  */
 export const createUniformOperatingHours = (openTime: string, closeTime: string): OperatingHours => {
   const customSchedule: { [key: string]: DaySchedule } = {}
@@ -72,12 +72,12 @@ export const createUniformOperatingHours = (openTime: string, closeTime: string)
 }
 
 /**
- * Tạo operating hours chỉ làm việc thứ 2-6
+ * Create operating hours for weekdays only (Mon-Fri)
  */
 export const createWeekdaysOnlyOperatingHours = (openTime: string, closeTime: string): OperatingHours => {
   const customSchedule: { [key: string]: DaySchedule } = {}
   
-  // Thứ 2-6: Mở cửa
+  // Monday-Friday: Open
   for (const day of ["monday", "tuesday", "wednesday", "thursday", "friday"] as const) {
     customSchedule[day] = {
       isOpen: true,
@@ -86,7 +86,7 @@ export const createWeekdaysOnlyOperatingHours = (openTime: string, closeTime: st
     }
   }
   
-  // Thứ 7, Chủ nhật: Nghỉ
+  // Saturday, Sunday: Closed
   for (const day of ["saturday", "sunday"] as const) {
     customSchedule[day] = {
       isOpen: false,
@@ -104,7 +104,7 @@ export const createWeekdaysOnlyOperatingHours = (openTime: string, closeTime: st
 }
 
 /**
- * Áp dụng giờ mặc định cho tất cả ngày
+ * Apply default hours to all days
  */
 export const applyDefaultToAllDays = (operatingHours: OperatingHours): OperatingHours => {
   if (!operatingHours.customSchedule) return operatingHours
@@ -128,7 +128,7 @@ export const applyDefaultToAllDays = (operatingHours: OperatingHours): Operating
 }
 
 /**
- * Kiểm tra xem có ít nhất 1 ngày mở cửa không
+ * Check if there is at least 1 open day
  */
 export const hasAtLeastOneOpenDay = (operatingHours: OperatingHours): boolean => {
   if (!operatingHours.customSchedule) return true
@@ -137,7 +137,7 @@ export const hasAtLeastOneOpenDay = (operatingHours: OperatingHours): boolean =>
 }
 
 /**
- * Lấy số ngày mở cửa
+ * Get number of open days
  */
 export const getOpenDaysCount = (operatingHours: OperatingHours): number => {
   if (!operatingHours.customSchedule) return 7
@@ -146,11 +146,11 @@ export const getOpenDaysCount = (operatingHours: OperatingHours): number => {
 }
 
 /**
- * Format operating hours để hiển thị
+ * Format operating hours for display
  */
 export const formatOperatingHours = (operatingHours: OperatingHours): string => {
   if (!operatingHours.useCustomSchedule) {
-    return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (Tất cả các ngày)`
+    return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (All days)`
   }
   
   const openDays = DAYS_OF_WEEK.filter(day => 
@@ -158,13 +158,13 @@ export const formatOperatingHours = (operatingHours: OperatingHours): string => 
   )
   
   if (openDays.length === 7) {
-    return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (Tất cả các ngày)`
+    return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (All days)`
   }
   
   if (openDays.length === 5 && 
       openDays.every(day => ["monday", "tuesday", "wednesday", "thursday", "friday"].includes(day.key))) {
-    return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (Thứ 2 - Thứ 6)`
+    return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (Mon - Fri)`
   }
   
-  return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (${openDays.length} ngày/tuần)`
+  return `${operatingHours.defaultOpenTime} - ${operatingHours.defaultCloseTime} (${openDays.length} days/week)`
 }

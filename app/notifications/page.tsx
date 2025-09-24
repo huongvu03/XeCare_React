@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Bell, CheckCircle, Clock, Trash2, CheckCheck, Search, RefreshCw, AlertTriangle, Filter } from "lucide-react";
+import { Bell, Clock, Trash2, CheckCheck, Search, RefreshCw, AlertTriangle, Filter, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,8 +49,8 @@ export default function NotificationsPage() {
       setFilteredNotifications(response.data);
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể tải danh sách thông báo",
+        title: "Error",
+        description: "Cannot load notifications list",
         variant: "destructive",
       });
     } finally {
@@ -119,8 +119,8 @@ export default function NotificationsPage() {
       window.dispatchEvent(new Event('refreshNotifications'));
       
       toast({
-        title: "Thành công",
-        description: "Đã đánh dấu thông báo là đã đọc",
+        title: "Success",
+        description: "Notification marked as read",
       });
       
       // Gọi API ở background
@@ -135,8 +135,8 @@ export default function NotificationsPage() {
     } catch (error: any) {
       console.error('❌ [NotificationsPage] Error in handleMarkAsRead:', error);
       toast({
-        title: "Lỗi",
-        description: "Không thể đánh dấu thông báo. Vui lòng thử lại.",
+        title: "Error",
+        description: "Cannot mark notification. Please try again.",
         variant: "destructive",
       });
     }
@@ -176,8 +176,8 @@ export default function NotificationsPage() {
       
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể đánh dấu tất cả thông báo. Vui lòng thử lại.",
+        title: "Error",
+        description: "Cannot mark all notifications. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -191,13 +191,13 @@ export default function NotificationsPage() {
       await cleanupOldNotifications();
       await loadNotifications();
       toast({
-        title: "Thành công",
-        description: "Đã dọn dẹp thông báo cũ",
+        title: "Success",
+        description: "Old notifications cleaned up",
       });
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể dọn dẹp thông báo cũ",
+        title: "Error",
+        description: "Cannot cleanup old notifications",
         variant: "destructive",
       });
     } finally {
@@ -228,7 +228,7 @@ export default function NotificationsPage() {
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6" suppressHydrationWarning></div>
               <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-600 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} suppressHydrationWarning></div>
             </div>
-            <p className="text-gray-600 text-lg font-medium">Đang tải thông báo...</p>
+            <p className="text-gray-600 text-lg font-medium">Loading notifications...</p>
           </div>
         </div>
       </div>
@@ -250,9 +250,9 @@ export default function NotificationsPage() {
                 <Bell className="h-12 w-12 text-white" />
               </div>
               <div>
-                <h1 className="text-5xl font-bold tracking-tight mb-4">Thông Báo</h1>
+                <h1 className="text-5xl font-bold tracking-tight mb-4">Notifications</h1>
                 <p className="text-indigo-100 text-xl max-w-2xl leading-relaxed">
-                  Quản lý tất cả thông báo của bạn với giao diện hiện đại và trực quan
+                  Manage all your notifications with modern and intuitive interface
                 </p>
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function NotificationsPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"></div>
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Tổng cộng</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total</p>
                   <p className="text-3xl font-bold text-indigo-600">
                     {notifications.length}
                   </p>
@@ -283,13 +283,13 @@ export default function NotificationsPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5"></div>
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Chưa đọc</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Unread</p>
                   <p className="text-3xl font-bold text-red-600">
                     {unreadCount}
                   </p>
                 </div>
                 <div className="w-14 h-14 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <CheckCircle className="w-7 h-7 text-white" />
+                  <Eye className="w-7 h-7 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -300,7 +300,7 @@ export default function NotificationsPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5"></div>
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Ưu tiên cao</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">High Priority</p>
                   <p className="text-3xl font-bold text-orange-600">
                     {notifications.filter(n => n.priority === 'HIGH').length}
                   </p>
@@ -317,7 +317,7 @@ export default function NotificationsPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Hôm nay</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Today</p>
                   <p className="text-3xl font-bold text-green-600">
                     {notifications.filter(n => {
                       const today = new Date();
@@ -344,7 +344,7 @@ export default function NotificationsPage() {
                 className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-3"
               >
                 <CheckCheck className="h-5 w-5 mr-2" />
-                {isMarkingAll ? "Đang xử lý..." : "Đánh dấu tất cả đã đọc"}
+                {isMarkingAll ? "Processing..." : "Mark All as Read"}
               </Button>
             )}
             <Button
@@ -354,7 +354,7 @@ export default function NotificationsPage() {
               className="bg-white/90 border-gray-200 hover:bg-white hover:border-indigo-300 text-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6 py-3"
             >
               <RefreshCw className={`h-5 w-5 mr-2 ${isCleaning ? 'animate-spin' : ''}`} />
-              {isCleaning ? "Đang dọn dẹp..." : "Dọn dẹp cũ"}
+              {isCleaning ? "Cleaning..." : "Cleanup Old"}
             </Button>
           </div>
         </div>
@@ -365,7 +365,7 @@ export default function NotificationsPage() {
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-indigo-400 h-5 w-5" />
               <Input
-                placeholder="🔍 Tìm kiếm thông báo..."
+                placeholder="🔍 Search notifications..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 className="pl-12 py-4 bg-white/80 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl text-lg shadow-sm"
@@ -387,13 +387,13 @@ export default function NotificationsPage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">
                 {searchKeyword 
-                  ? "Không có thông báo nào phù hợp với từ khóa tìm kiếm" 
-                  : "Không có thông báo nào"}
+                  ? "No notifications match your search" 
+                  : "No notifications"}
               </h3>
               <p className="text-gray-600 text-lg max-w-md mx-auto">
                 {searchKeyword
-                  ? "Hãy thử thay đổi từ khóa tìm kiếm"
-                  : "Bạn chưa có thông báo nào. Hãy thực hiện các hoạt động để nhận thông báo!"
+                  ? "Try changing your search keywords"
+                  : "You don't have any notifications yet. Perform activities to receive notifications!"
                 }
               </p>
             </CardContent>
@@ -434,7 +434,7 @@ export default function NotificationsPage() {
                             </h3>
                             {!notification.isRead && (
                               <Badge className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 shadow-lg px-3 py-1 rounded-full text-sm font-semibold">
-                                ✨ Mới
+                                ✨ New
                               </Badge>
                             )}
                           </div>
@@ -477,21 +477,6 @@ export default function NotificationsPage() {
                           )}
                         </div>
                         
-                        <div className="flex items-center gap-3">
-                          {!notification.isRead && (
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkAsRead(notification.id);
-                              }}
-                              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-4 py-2"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Đã đọc
-                            </Button>
-                          )}
-                        </div>
                       </div>
                     </div>
                   </div>

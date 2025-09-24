@@ -125,7 +125,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Settings className="h-5 w-5" />
-            <span>Chọn loại lịch làm việc</span>
+            <span>Choose Work Schedule Type</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -140,8 +140,8 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                 className="w-4 h-4 text-blue-600"
               />
               <div>
-                <div className="font-medium">Giờ làm việc đồng nhất</div>
-                <div className="text-sm text-gray-600">Tất cả các ngày có cùng giờ mở cửa</div>
+                <div className="font-medium">Uniform Working Hours</div>
+                <div className="text-sm text-gray-600">All days have the same opening hours</div>
               </div>
             </label>
             
@@ -155,8 +155,8 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                 className="w-4 h-4 text-blue-600"
               />
               <div>
-                <div className="font-medium">Giờ làm việc theo từng ngày</div>
-                <div className="text-sm text-gray-600">Có thể set giờ khác nhau cho từng ngày</div>
+                <div className="font-medium">Working Hours by Day</div>
+                <div className="text-sm text-gray-600">Can set different hours for each day</div>
               </div>
             </label>
           </div>
@@ -169,13 +169,13 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Clock className="h-5 w-5" />
-              <span>Giờ làm việc</span>
+              <span>Working Hours</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="defaultOpenTime">Giờ mở cửa</Label>
+                <Label htmlFor="defaultOpenTime">Opening Time</Label>
                 <Input
                   id="defaultOpenTime"
                   type="time"
@@ -185,7 +185,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                 />
               </div>
               <div>
-                <Label htmlFor="defaultCloseTime">Giờ đóng cửa</Label>
+                <Label htmlFor="defaultCloseTime">Closing Time</Label>
                 <Input
                   id="defaultCloseTime"
                   type="time"
@@ -207,13 +207,13 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Clock className="h-5 w-5" />
-                <span>Giờ mặc định</span>
+                <span>Default Hours</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="defaultOpenTime">Giờ mở cửa</Label>
+                  <Label htmlFor="defaultOpenTime">Opening Time</Label>
                   <Input
                     id="defaultOpenTime"
                     type="time"
@@ -223,7 +223,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                   />
                 </div>
                 <div>
-                  <Label htmlFor="defaultCloseTime">Giờ đóng cửa</Label>
+                  <Label htmlFor="defaultCloseTime">Closing Time</Label>
                   <Input
                     id="defaultCloseTime"
                     type="time"
@@ -240,7 +240,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                 onClick={applyDefaultToAll}
                 className="mt-3"
               >
-                Áp dụng cho tất cả ngày
+                Apply to All Days
               </Button>
             </CardContent>
           </Card>
@@ -250,7 +250,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5" />
-                <span>Lịch làm việc theo ngày</span>
+                <span>Daily Work Schedule</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -272,7 +272,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                           }
                         />
                         <Label htmlFor={`${day.key}-open`} className="text-sm">
-                          Mở cửa
+                          Open
                         </Label>
                       </div>
                       
@@ -307,7 +307,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
           {/* Quick actions */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Thao tác nhanh</CardTitle>
+              <CardTitle className="text-base">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
@@ -317,7 +317,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                   size="sm"
                   onClick={applyWeekdaysOnly}
                 >
-                  Chỉ làm việc thứ 2-6
+                  Weekdays Only (Mon-Fri)
                 </Button>
                 <Button
                   type="button"
@@ -325,7 +325,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                   size="sm"
                   onClick={applyWeekendOff}
                 >
-                  Nghỉ cuối tuần
+                  Weekend Off
                 </Button>
                 <Button
                   type="button"
@@ -333,7 +333,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
                   size="sm"
                   onClick={applyAllDays}
                 >
-                  Làm việc tất cả ngày
+                  All Days Open
                 </Button>
               </div>
             </CardContent>
@@ -345,7 +345,7 @@ export function OperatingHoursForm({ value, onChange, className }: OperatingHour
       {scheduleType === 'custom' && !hasAtLeastOneOpenDay(value) && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-700">
-            ⚠️ Cần có ít nhất 1 ngày mở cửa trong tuần
+            ⚠️ Need at least 1 open day per week
           </p>
         </div>
       )}

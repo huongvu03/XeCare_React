@@ -34,8 +34,8 @@ export default function AuthPage() {
             {!forgotMode ? (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login">Đăng nhập</TabsTrigger>
-                  <TabsTrigger value="register">Đăng ký</TabsTrigger>
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="register">Register</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login" className="space-y-4">

@@ -81,7 +81,7 @@ export default function PublicGarageDetailPage() {
         await loadReviews()
       } catch (err: any) {
         console.error("Error loading garage:", err)
-        setError("Không thể tải thông tin garage")
+        setError("Cannot load garage information")
       } finally {
         setLoading(false)
       }
@@ -220,12 +220,12 @@ export default function PublicGarageDetailPage() {
   // Handle review form submission
   const handleReviewSubmit = async () => {
     if (reviewFormData.rating === 0) {
-      alert("Vui lòng chọn số sao đánh giá!")
+      alert("Please select a rating!")
       return
     }
 
     if (!reviewFormData.comment.trim()) {
-      alert("Vui lòng nhập nhận xét!")
+      alert("Please enter a comment!")
       return
     }
 
@@ -247,7 +247,7 @@ export default function PublicGarageDetailPage() {
       if (response.ok) {
         // Success response - backend returns plain text
         const successMessage = await response.text()
-        alert(successMessage || "Đánh giá của bạn đã được gửi thành công!")
+        alert(successMessage || "Your review has been submitted successfully!")
         setShowReviewForm(false)
         setReviewFormData({ rating: 0, comment: '' })
         
@@ -258,7 +258,7 @@ export default function PublicGarageDetailPage() {
         setSelectedRating(0)
       } else {
         // Handle error response safely
-        let errorMessage = 'Không thể gửi đánh giá'
+        let errorMessage = 'Cannot submit review'
         try {
           const contentType = response.headers.get('content-type')
           if (contentType && contentType.includes('application/json')) {
@@ -277,7 +277,7 @@ export default function PublicGarageDetailPage() {
       }
     } catch (error) {
       console.error('Error submitting review:', error)
-      alert("Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!")
+      alert("An error occurred while submitting the review. Please try again!")
     } finally {
       setSubmitLoading(false)
     }
@@ -324,13 +324,13 @@ export default function PublicGarageDetailPage() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return { label: "Đang hoạt động", className: "bg-green-100 text-green-700 border-green-200" }
+        return { label: "Active", className: "bg-green-100 text-green-700 border-green-200" }
       case "PENDING":
-        return { label: "Chờ phê duyệt", className: "bg-yellow-100 text-yellow-700 border-yellow-200" }
+        return { label: "Pending Approval", className: "bg-yellow-100 text-yellow-700 border-yellow-200" }
       case "INACTIVE":
-        return { label: "Tạm đóng cửa", className: "bg-red-100 text-red-700 border-red-200" }
+        return { label: "Temporarily Closed", className: "bg-red-100 text-red-700 border-red-200" }
       default:
-        return { label: "Không xác định", className: "bg-gray-100 text-gray-700 border-gray-200" }
+        return { label: "Unknown", className: "bg-gray-100 text-gray-700 border-gray-200" }
     }
   }
 
@@ -340,7 +340,7 @@ export default function PublicGarageDetailPage() {
         <div className="flex items-center justify-center py-24">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
-            <p className="text-lg text-slate-600">Đang tải thông tin garage...</p>
+            <p className="text-lg text-slate-600">Loading garage information...</p>
           </div>
         </div>
       </div>
@@ -354,7 +354,7 @@ export default function PublicGarageDetailPage() {
           <Alert className="border-red-200 bg-red-50">
             <XCircle className="h-4 w-4" />
             <AlertDescription className="text-red-700">
-              {error || "Không tìm thấy garage"}
+              {error || "Garage not found"}
             </AlertDescription>
           </Alert>
         </div>
@@ -375,7 +375,7 @@ export default function PublicGarageDetailPage() {
           className="mb-6 hover:bg-white hover:shadow-md transition-all duration-200"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Quay lại
+          Back
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -424,7 +424,7 @@ export default function PublicGarageDetailPage() {
                           {garage.averageRating.toFixed(1)}
                         </span>
                         <span className="text-sm text-gray-600">
-                          ({garage.totalReviews} đánh giá)
+                          ({garage.totalReviews} reviews)
                         </span>
                       </div>
                     </div>
@@ -439,7 +439,7 @@ export default function PublicGarageDetailPage() {
                       <div className="flex items-center gap-3">
                         {renderStars(garage.averageRating)}
                         <span className="text-gray-600">
-                          {garage.averageRating.toFixed(1)} sao • {garage.totalReviews} đánh giá
+                          {garage.averageRating.toFixed(1)} stars • {garage.totalReviews} reviews
                         </span>
                       </div>
                     </div>
@@ -459,7 +459,7 @@ export default function PublicGarageDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-xl">
                   <Wrench className="h-6 w-6 text-orange-600" />
-                  <span>Dịch vụ</span>
+                  <span>Services</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -481,7 +481,7 @@ export default function PublicGarageDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-xl">
                   <Car className="h-6 w-6 text-green-600" />
-                  <span>Loại xe phục vụ</span>
+                  <span>Vehicle Types Served</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -506,8 +506,8 @@ export default function PublicGarageDetailPage() {
               <CardContent className="p-6">
                 <div className="text-center mb-4">
                   <CalendarDays className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <h3 className="text-xl font-bold text-gray-900">Đặt lịch hẹn</h3>
-                  <p className="text-sm text-gray-600 mt-1">Bảo dưỡng xe chuyên nghiệp</p>
+                  <h3 className="text-xl font-bold text-gray-900">Book Appointment</h3>
+                  <p className="text-sm text-gray-600 mt-1">Professional car maintenance</p>
                 </div>
                 
                 <Button
@@ -515,7 +515,7 @@ export default function PublicGarageDetailPage() {
                   onClick={() => router.push(`/booking/${garage.id}`)}
                 >
                   <CalendarDays className="h-5 w-5 mr-2" />
-                  Đặt lịch ngay
+                  Book Now
                 </Button>
                 
                 <Button
@@ -524,7 +524,7 @@ export default function PublicGarageDetailPage() {
                   onClick={() => window.open(`https://maps.google.com?q=${encodeURIComponent(garage.address)}`)}
                 >
                   <Navigation className="h-4 w-4 mr-2" />
-                  Chỉ đường
+                  Get Directions
                 </Button>
               </CardContent>
             </Card>
@@ -534,14 +534,14 @@ export default function PublicGarageDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-xl">
                   <Phone className="h-6 w-6 text-blue-600" />
-                  <span>Thông tin liên hệ</span>
+                  <span>Contact Information</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
                   <MapPin className="h-5 w-5 text-blue-600" />
                   <div>
-                    <p className="font-medium text-gray-900">Địa chỉ</p>
+                    <p className="font-medium text-gray-900">Address</p>
                     <p className="text-gray-600">{garage.address}</p>
                   </div>
                 </div>
@@ -549,7 +549,7 @@ export default function PublicGarageDetailPage() {
                 <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
                   <Phone className="h-5 w-5 text-green-600" />
                   <div>
-                    <p className="font-medium text-gray-900">Số điện thoại</p>
+                    <p className="font-medium text-gray-900">Phone Number</p>
                     <p className="text-gray-600">{garage.phone}</p>
                   </div>
                 </div>
@@ -568,13 +568,13 @@ export default function PublicGarageDetailPage() {
             {/* Statistics */}
             <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white">
               <CardContent className="p-6">
-                <h3 className="text-lg font-bold mb-4">Thống kê</h3>
+                <h3 className="text-lg font-bold mb-4">Statistics</h3>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Star className="h-5 w-5" />
-                      <span className="text-sm">Đánh giá trung bình</span>
+                      <span className="text-sm">Average Rating</span>
                     </div>
                     <span className="font-bold text-lg">
                       {garage.averageRating.toFixed(1)}/5
@@ -584,7 +584,7 @@ export default function PublicGarageDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <MessageCircle className="h-5 w-5" />
-                      <span className="text-sm">Tổng đánh giá</span>
+                      <span className="text-sm">Total Reviews</span>
                     </div>
                     <span className="font-bold text-lg">{garage.totalReviews}</span>
                   </div>
@@ -592,10 +592,10 @@ export default function PublicGarageDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="h-5 w-5 text-green-300" />
-                      <span className="text-sm">Trạng thái</span>
+                      <span className="text-sm">Status</span>
                     </div>
                     <span className="font-bold text-lg">
-                      {garage.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đóng cửa'}
+                      {garage.status === 'ACTIVE' ? 'Active' : 'Closed'}
                     </span>
                   </div>
                 </div>
@@ -608,7 +608,7 @@ export default function PublicGarageDetailPage() {
                 <CardTitle className="flex items-center justify-between text-xl">
                   <div className="flex items-center space-x-2">
                     <MessageCircle className="h-6 w-6 text-purple-600" />
-                    <span>Đánh giá từ khách hàng</span>
+                    <span>Customer Reviews</span>
                   </div>
                   {reviewStats && (
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -616,7 +616,7 @@ export default function PublicGarageDetailPage() {
                       <span className="font-semibold text-gray-900">
                         {reviewStats.averageRating.toFixed(1)}
                       </span>
-                      <span>({reviewStats.totalReviews} đánh giá)</span>
+                      <span>({reviewStats.totalReviews} reviews)</span>
                     </div>
                   )}
                 </CardTitle>
@@ -626,7 +626,7 @@ export default function PublicGarageDetailPage() {
                 {reviewStats && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-gray-900">Thống kê đánh giá</h4>
+                      <h4 className="font-semibold text-gray-900">Rating Statistics</h4>
                       <Button
                         variant="outline"
                         size="sm"
@@ -638,7 +638,7 @@ export default function PublicGarageDetailPage() {
                         className={selectedRating === 0 ? "bg-blue-50 border-blue-300" : ""}
                       >
                         <Filter className="h-4 w-4 mr-1" />
-                        Tất cả
+                        All
                       </Button>
                     </div>
                     
@@ -687,8 +687,8 @@ export default function PublicGarageDetailPage() {
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-gray-900">
                       {selectedRating 
-                        ? `Đánh giá ${selectedRating} sao` 
-                        : "Đánh giá gần đây"
+                        ? `${selectedRating} Star Reviews` 
+                        : "Recent Reviews"
                       }
                     </h4>
                     <div className="flex items-center space-x-2">
@@ -701,12 +701,12 @@ export default function PublicGarageDetailPage() {
                           {showAllReviews ? (
                             <>
                               <ChevronUp className="h-4 w-4 mr-1" />
-                              Thu gọn
+                              Collapse
                             </>
                           ) : (
                             <>
                               <ChevronDown className="h-4 w-4 mr-1" />
-                              Xem tất cả ({reviews.length})
+                              View All ({reviews.length})
                             </>
                           )}
                         </Button>
@@ -717,7 +717,7 @@ export default function PublicGarageDetailPage() {
                         onClick={() => setShowReviewForm(!showReviewForm)}
                       >
                         <Edit3 className="h-4 w-4 mr-1" />
-                        {showReviewForm ? 'Hủy' : 'Viết đánh giá'}
+                        {showReviewForm ? 'Cancel' : 'Write Review'}
                       </Button>
                     </div>
                   </div>
@@ -726,12 +726,12 @@ export default function PublicGarageDetailPage() {
                   {showReviewForm && (
                     <Card className="border-indigo-200 bg-indigo-50">
                       <CardContent className="p-4">
-                        <h5 className="font-semibold text-gray-900 mb-4">Chia sẻ trải nghiệm của bạn</h5>
+                        <h5 className="font-semibold text-gray-900 mb-4">Share Your Experience</h5>
                         
                         {/* Rating Stars */}
                         <div className="mb-4">
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Đánh giá của bạn *
+                            Your Rating *
                           </label>
                           <div className="flex items-center space-x-1">
                             {[1, 2, 3, 4, 5].map((star) => (
@@ -749,7 +749,7 @@ export default function PublicGarageDetailPage() {
                               </button>
                             ))}
                             <span className="ml-2 text-sm text-gray-600">
-                              {reviewFormData.rating > 0 && `${reviewFormData.rating} sao`}
+                              {reviewFormData.rating > 0 && `${reviewFormData.rating} stars`}
                             </span>
                           </div>
                         </div>
@@ -757,17 +757,17 @@ export default function PublicGarageDetailPage() {
                         {/* Comment */}
                         <div className="mb-4">
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Nhận xét của bạn *
+                            Your Comment *
                           </label>
                           <Textarea
                             value={reviewFormData.comment}
                             onChange={handleCommentChange}
-                            placeholder="Chia sẻ trải nghiệm của bạn về garage này..."
+                            placeholder="Share your experience about this garage..."
                             rows={4}
                             className="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            {reviewFormData.comment.length}/500 ký tự
+                            {reviewFormData.comment.length}/500 characters
                           </p>
                         </div>
 
@@ -783,7 +783,7 @@ export default function PublicGarageDetailPage() {
                             disabled={submitLoading}
                           >
                             <X className="h-4 w-4 mr-1" />
-                            Hủy
+                            Cancel
                           </Button>
                           <Button
                             className="bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -792,7 +792,7 @@ export default function PublicGarageDetailPage() {
                             disabled={submitLoading || reviewFormData.rating === 0 || !reviewFormData.comment.trim()}
                           >
                             <Send className="h-4 w-4 mr-1" />
-                            {submitLoading ? 'Đang gửi...' : 'Gửi đánh giá'}
+                            {submitLoading ? 'Sending...' : 'Submit Review'}
                           </Button>
                         </div>
                       </CardContent>
@@ -803,7 +803,7 @@ export default function PublicGarageDetailPage() {
                   {reviewsLoading && reviews.length === 0 ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-3" />
-                      <span className="text-gray-600">Đang tải đánh giá...</span>
+                      <span className="text-gray-600">Loading reviews...</span>
                     </div>
                   ) : (
                     /* Reviews Content */
@@ -813,8 +813,8 @@ export default function PublicGarageDetailPage() {
                           <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                           <p className="text-gray-600">
                             {selectedRating 
-                              ? `Chưa có đánh giá ${selectedRating} sao nào` 
-                              : 'Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!'}
+                              ? `No ${selectedRating} star reviews yet` 
+                              : 'No reviews yet. Be the first to review!'}
                           </p>
                         </div>
                       ) : (
@@ -870,12 +870,12 @@ export default function PublicGarageDetailPage() {
                           {selectedRating === 0 && totalPages > 1 && (
                             <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                               <div className="text-sm text-gray-600">
-                                Hiển thị {reviews.length} / {totalElements} đánh giá
+                                Showing {reviews.length} / {totalElements} reviews
                               </div>
                               <div className="flex items-center space-x-2">
                                 {/* Page Info */}
                                 <span className="text-sm text-gray-600">
-                                  Trang {currentPage + 1} / {totalPages}
+                                  Page {currentPage + 1} / {totalPages}
                                 </span>
                                 
                                 {/* Load More Button */}
@@ -890,10 +890,10 @@ export default function PublicGarageDetailPage() {
                                     {reviewsLoading ? (
                                       <>
                                         <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2" />
-                                        Đang tải...
+                                        Loading...
                                       </>
                                     ) : (
-                                      'Tải thêm'
+                                      'Load More'
                                     )}
                                   </Button>
                                 )}
@@ -905,7 +905,7 @@ export default function PublicGarageDetailPage() {
                           {reviewsLoading && reviews.length > 0 && (
                             <div className="flex items-center justify-center py-4">
                               <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2" />
-                              <span className="text-sm text-gray-600">Đang tải thêm...</span>
+                              <span className="text-sm text-gray-600">Loading more...</span>
                             </div>
                           )}
                         </>

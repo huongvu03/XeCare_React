@@ -41,15 +41,15 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       if (step === "register") {
         // Validate
         if (formData.password !== formData.confirmPassword) {
-          setError("Mật khẩu xác nhận không khớp")
+          setError("Password confirmation does not match")
           return
         }
         if (formData.password.length < 6) {
-          setError("Mật khẩu phải có ít nhất 6 ký tự")
+          setError("Password must be at least 6 characters")
           return
         }
         if (!agreeTerms) {
-          setError("Vui lòng đồng ý với điều khoản sử dụng")
+          setError("Please agree to the terms of service")
           return
         }
 
@@ -61,7 +61,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           password: formData.password,
         })
 
-        setSuccess("Đăng ký thành công! Vui lòng nhập OTP được gửi về email.")
+        setSuccess("Registration successful! Please enter the OTP sent to your email.")
         setStep("otp") // chuyển sang bước nhập OTP
       } else if (step === "otp") {
         // Gọi API verify OTP
@@ -69,11 +69,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           email: formData.email,
           otp: otp,
         })
-        setSuccess("Xác thực OTP thành công! Bạn có thể đăng nhập.")
+        setSuccess("OTP verification successful! You can now login.")
         setTimeout(() => onSuccess(), 1500)
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.")
+      setError(err?.response?.data?.message || "An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -84,9 +84,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       setIsLoading(true)
       setError("")
       await resendOtpApi({ email: formData.email })
-      setSuccess("OTP mới đã được gửi đến email của bạn.")
+      setSuccess("New OTP has been sent to your email.")
     } catch (err: any) {
-      setError("Không thể gửi lại OTP. Vui lòng thử lại.")
+      setError("Cannot resend OTP. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -131,7 +131,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span>Đăng ký với Google</span>
+            <span>Register with Google</span>
           </div>
         </Button>
 
@@ -149,7 +149,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                 d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
               />
             </svg>
-            <span>Đăng ký với Facebook</span>
+            <span>Register with Facebook</span>
           </div>
         </Button>
       </div>
@@ -160,7 +160,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <span className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-2 text-slate-500">Hoặc</span>
+          <span className="bg-white px-2 text-slate-500">OR</span>
         </div>
       </div>
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -180,13 +180,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         <>
           {/* Họ tên */}
           <div className="space-y-2">
-            <Label htmlFor="name">Họ và tên</Label>
+            <Label htmlFor="name">Full Name</Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="name"
                 type="text"
-                placeholder="Nhập họ và tên"
+                placeholder="Enter full name"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
                 className="pl-10"
@@ -203,7 +203,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
               <Input
                 id="email"
                 type="email"
-                placeholder="Nhập email"
+                placeholder="Enter email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 className="pl-10"
@@ -214,13 +214,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
           {/* Phone */}
           <div className="space-y-2">
-            <Label htmlFor="phone">Số điện thoại</Label>
+            <Label htmlFor="phone">Phone Number</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="phone"
                 type="tel"
-                placeholder="Nhập số điện thoại"
+                placeholder="Enter phone number"
                 value={formData.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
                 className="pl-10"
@@ -230,13 +230,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
           {/* Password */}
           <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu</Label>
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                placeholder="Enter password (at least 6 characters)"
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 className="pl-10 pr-10"
@@ -254,13 +254,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Nhập lại mật khẩu"
+                placeholder="Re-enter password"
                 value={formData.confirmPassword}
                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                 className="pl-10 pr-10"
@@ -280,13 +280,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <div className="flex items-center space-x-2">
             <Checkbox id="terms" checked={agreeTerms} onCheckedChange={(checked) => setAgreeTerms(checked as boolean)} />
             <Label htmlFor="terms" className="text-sm text-slate-600">
-              Tôi đồng ý với{" "}
+              I agree to{" "}
               <a href="#" className="text-blue-600 hover:text-blue-700">
-                điều khoản sử dụng
+                terms of service
               </a>{" "}
-              và{" "}
+              and{" "}
               <a href="#" className="text-blue-600 hover:text-blue-700">
-                chính sách bảo mật
+                privacy policy
               </a>
             </Label>
           </div>
@@ -294,13 +294,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       ) : (
         <>
           <div className="space-y-2">
-            <Label htmlFor="otp">Nhập mã OTP</Label>
+            <Label htmlFor="otp">Enter OTP Code</Label>
             <div className="relative">
               <ShieldCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="otp"
                 type="text"
-                placeholder="Nhập OTP"
+                placeholder="Enter OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 className="pl-10"
@@ -309,7 +309,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             </div>
           </div>
           <Button type="button" variant="outline" className="w-full" onClick={handleResendOtp} disabled={isLoading}>
-            Gửi lại mã OTP
+            Resend OTP Code
           </Button>
         </>
       )}
@@ -319,7 +319,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
         disabled={isLoading}
       >
-        {isLoading ? "Đang xử lý..." : step === "register" ? "Đăng ký" : "Xác thực OTP"}
+        {isLoading ? "Processing..." : step === "register" ? "Register" : "Verify OTP"}
       </Button>
     </form>
     </>

@@ -51,7 +51,7 @@ export default function AdminGaragesPage() {
       
     } catch (err: any) {
       console.error("Error fetching garages:", err)
-      setError("Không thể tải danh sách garage. Vui lòng thử lại.")
+      setError("Cannot load garage list. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -74,15 +74,15 @@ export default function AdminGaragesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return <Badge className="bg-green-100 text-green-700">Hoạt động</Badge>
+        return <Badge className="bg-green-100 text-green-700">Active</Badge>
       case "INACTIVE":
-        return <Badge className="bg-red-100 text-red-700">Bị khóa</Badge>
+        return <Badge className="bg-red-100 text-red-700">Inactive</Badge>
       case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-700">Chờ duyệt</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
       case "PENDING_UPDATE":
-        return <Badge className="bg-orange-100 text-orange-700">Chờ cập nhật</Badge>
+        return <Badge className="bg-orange-100 text-orange-700">Pending Update</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>
     }
   }
 
@@ -96,20 +96,20 @@ export default function AdminGaragesPage() {
       
       await approveGarage(garageId, approvalData)
       
-      toast.success("Phê duyệt garage thành công!")
+      toast.success("Garage approved successfully!")
       
       // Refresh the garage list
       fetchGarages()
     } catch (err: any) {
       console.error("Error approving garage:", err)
-      toast.error("Có lỗi xảy ra khi phê duyệt garage. Vui lòng thử lại.")
+      toast.error("An error occurred while approving garage. Please try again.")
     } finally {
       setApprovingGarage(null)
     }
   }
 
   const handleReject = async (garageId: number) => {
-    const rejectionReason = prompt("Lý do từ chối (tùy chọn):")
+    const rejectionReason = prompt("Rejection reason (optional):")
     
     if (rejectionReason === null) return // User cancelled
     
@@ -123,13 +123,13 @@ export default function AdminGaragesPage() {
       
       await approveGarage(garageId, approvalData)
       
-      toast.success("Từ chối garage thành công!")
+      toast.success("Garage rejected successfully!")
       
       // Refresh the garage list
       fetchGarages()
     } catch (err: any) {
       console.error("Error rejecting garage:", err)
-      toast.error("Có lỗi xảy ra khi từ chối garage. Vui lòng thử lại.")
+      toast.error("An error occurred while rejecting garage. Please try again.")
     } finally {
       setApprovingGarage(null)
     }
@@ -143,7 +143,7 @@ export default function AdminGaragesPage() {
 
   const confirmInactiveGarage = async () => {
     if (!selectedGarage || !inactiveReason.trim()) {
-      toast.error("Vui lòng nhập lý do tạm ngưng")
+      toast.error("Please enter suspension reason")
       return
     }
 
@@ -155,7 +155,7 @@ export default function AdminGaragesPage() {
         rejectionReason: inactiveReason.trim()
       })
       
-      toast.success(`Đã tạm ngưng garage "${selectedGarage.name}" thành công!`)
+      toast.success(`Garage "${selectedGarage.name}" suspended successfully!`)
       
       // Refresh the garage list
       fetchGarages()
@@ -166,7 +166,7 @@ export default function AdminGaragesPage() {
       setInactiveReason("")
     } catch (err: any) {
       console.error("Error inactivating garage:", err)
-      toast.error("Có lỗi xảy ra khi tạm ngưng garage. Vui lòng thử lại.")
+      toast.error("An error occurred while suspending garage. Please try again.")
     } finally {
       setInactivatingGarage(null)
     }
@@ -181,13 +181,13 @@ export default function AdminGaragesPage() {
         rejectionReason: undefined
       })
       
-      toast.success(`Đã kích hoạt lại garage "${garage.name}" thành công!`)
+      toast.success(`Garage "${garage.name}" reactivated successfully!`)
       
       // Refresh the garage list
       fetchGarages()
     } catch (err: any) {
       console.error("Error activating garage:", err)
-      toast.error("Có lỗi xảy ra khi kích hoạt garage. Vui lòng thử lại.")
+      toast.error("An error occurred while activating garage. Please try again.")
     } finally {
       setActivatingGarage(null)
     }
@@ -205,12 +205,12 @@ export default function AdminGaragesPage() {
     return (
       <DashboardLayout
         allowedRoles={["ADMIN"]}
-        title="Quản lý garage"
-        description="Duyệt và quản lý các garage trong hệ thống"
+        title="Manage Garages"
+        description="Review and manage garages in the system"
       >
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-slate-600">Đang tải danh sách garage...</span>
+          <span className="ml-2 text-slate-600">Loading garage list...</span>
         </div>
       </DashboardLayout>
     )
@@ -230,7 +230,7 @@ export default function AdminGaragesPage() {
           className="flex items-center space-x-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Quay lại</span>
+          <span>Back</span>
         </Button>
       </div>
 
@@ -247,7 +247,7 @@ export default function AdminGaragesPage() {
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
-              <p className="text-sm text-slate-600">Tổng garage</p>
+              <p className="text-sm text-slate-600">Total Garages</p>
             </div>
           </CardContent>
         </Card>
@@ -255,7 +255,7 @@ export default function AdminGaragesPage() {
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">{stats.active}</p>
-              <p className="text-sm text-slate-600">Đang hoạt động</p>
+              <p className="text-sm text-slate-600">Active</p>
             </div>
           </CardContent>
         </Card>
@@ -263,7 +263,7 @@ export default function AdminGaragesPage() {
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-              <p className="text-sm text-slate-600">Chờ duyệt</p>
+              <p className="text-sm text-slate-600">Pending</p>
             </div>
           </CardContent>
         </Card>
@@ -271,7 +271,7 @@ export default function AdminGaragesPage() {
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-orange-600">{stats.pendingUpdate}</p>
-              <p className="text-sm text-slate-600">Chờ cập nhật</p>
+              <p className="text-sm text-slate-600">Pending Update</p>
             </div>
           </CardContent>
         </Card>
@@ -279,7 +279,7 @@ export default function AdminGaragesPage() {
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
-              <p className="text-sm text-slate-600">Bị khóa</p>
+              <p className="text-sm text-slate-600">Inactive</p>
             </div>
           </CardContent>
         </Card>
@@ -290,7 +290,7 @@ export default function AdminGaragesPage() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Building className="h-5 w-5 text-blue-600" />
-            <span>Danh sách garage</span>
+            <span>Garage List</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -299,7 +299,7 @@ export default function AdminGaragesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Tìm kiếm theo tên, địa chỉ hoặc chủ sở hữu..."
+                placeholder="Search by name, address or owner..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -309,14 +309,14 @@ export default function AdminGaragesPage() {
             {/* Status Filter */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Lọc theo trạng thái" />
+                <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="active">Hoạt động</SelectItem>
-                <SelectItem value="pending">Chờ duyệt</SelectItem>
-                <SelectItem value="pending_update">Chờ cập nhật</SelectItem>
-                <SelectItem value="inactive">Bị khóa</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="pending_update">Pending Update</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
 
@@ -330,7 +330,7 @@ export default function AdminGaragesPage() {
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "Làm mới"
+                "Refresh"
               )}
             </Button>
           </div>
@@ -341,12 +341,12 @@ export default function AdminGaragesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Garage</TableHead>
-                  <TableHead>Chủ sở hữu</TableHead>
-                  <TableHead>Địa chỉ</TableHead>
-                  <TableHead>Dịch vụ</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Ngày tạo</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
+                  <TableHead>Owner</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Services</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -390,14 +390,14 @@ export default function AdminGaragesPage() {
                         {getStatusBadge(garage.status)}
                         {garage.status === "INACTIVE" && garage.rejectionReason && (
                           <div className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border">
-                            <strong>Lý do:</strong> {garage.rejectionReason}
+                            <strong>Reason:</strong> {garage.rejectionReason}
                           </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-slate-600">
-                        {new Date(garage.createdAt).toLocaleDateString("vi-VN")}
+                        {new Date(garage.createdAt).toLocaleDateString("en-US")}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -410,7 +410,7 @@ export default function AdminGaragesPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => router.push(`/admin/garages/${garage.id}/approval`)}>
                             <Eye className="h-4 w-4 mr-2" />
-                            Phê duyệt
+                            Approve
                           </DropdownMenuItem>
                           {garage.status === "ACTIVE" && (
                             <DropdownMenuItem 
@@ -418,7 +418,7 @@ export default function AdminGaragesPage() {
                               className="text-red-600 focus:text-red-600"
                             >
                               <Pause className="h-4 w-4 mr-2" />
-                              Tạm ngưng hoạt động
+                              Suspend
                             </DropdownMenuItem>
                           )}
                           {garage.status === "INACTIVE" && (
@@ -432,7 +432,7 @@ export default function AdminGaragesPage() {
                               ) : (
                                 <Play className="h-4 w-4 mr-2" />
                               )}
-                              Kích hoạt lại
+                              Reactivate
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
@@ -446,7 +446,7 @@ export default function AdminGaragesPage() {
 
           {filteredGarages.length === 0 && !loading && (
             <div className="text-center py-8">
-              <p className="text-slate-500">Không tìm thấy garage nào</p>
+              <p className="text-slate-500">No garages found</p>
             </div>
           )}
 
@@ -454,7 +454,7 @@ export default function AdminGaragesPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-6">
               <p className="text-sm text-slate-600">
-                Hiển thị {garages.length} trong tổng số {totalElements} garage
+                Showing {garages.length} of {totalElements} garages
               </p>
               <div className="flex space-x-2">
                 <Button
@@ -463,10 +463,10 @@ export default function AdminGaragesPage() {
                   onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                   disabled={currentPage === 0}
                 >
-                  Trước
+                  Previous
                 </Button>
                 <span className="flex items-center px-3 text-sm">
-                  Trang {currentPage + 1} / {totalPages}
+                  Page {currentPage + 1} / {totalPages}
                 </span>
                 <Button
                   variant="outline"
@@ -474,7 +474,7 @@ export default function AdminGaragesPage() {
                   onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                   disabled={currentPage === totalPages - 1}
                 >
-                  Sau
+                  Next
                 </Button>
               </div>
             </div>
@@ -488,22 +488,22 @@ export default function AdminGaragesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Pause className="h-5 w-5 text-red-600" />
-              Tạm ngưng hoạt động garage
+              Suspend Garage
             </DialogTitle>
             <DialogDescription>
-              Bạn sắp tạm ngưng hoạt động garage <strong>"{selectedGarage?.name}"</strong>. 
-              Vui lòng nhập lý do để thông báo cho chủ garage.
+              You are about to suspend garage <strong>"{selectedGarage?.name}"</strong>. 
+              Please enter a reason to notify the garage owner.
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <label htmlFor="inactive-reason" className="text-sm font-medium">
-                Lý do tạm ngưng <span className="text-red-500">*</span>
+                Suspension Reason <span className="text-red-500">*</span>
               </label>
               <Textarea
                 id="inactive-reason"
-                placeholder="Nhập lý do tạm ngưng hoạt động garage..."
+                placeholder="Enter reason for suspending garage..."
                 value={inactiveReason}
                 onChange={(e) => setInactiveReason(e.target.value)}
                 className="min-h-[100px]"
@@ -517,7 +517,7 @@ export default function AdminGaragesPage() {
               onClick={() => setShowInactiveModal(false)}
               disabled={inactivatingGarage !== null}
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"
@@ -527,12 +527,12 @@ export default function AdminGaragesPage() {
               {inactivatingGarage !== null ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Đang xử lý...
+                  Processing...
                 </>
               ) : (
                 <>
                   <Pause className="h-4 w-4 mr-2" />
-                  Tạm ngưng
+                  Suspend
                 </>
               )}
             </Button>

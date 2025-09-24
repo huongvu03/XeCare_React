@@ -268,8 +268,33 @@ export const getEmergencyRescueGarages = async (latitude: number, longitude: num
     })
 
     return sortedGarages
-  } catch (error) {
-    console.error('Lỗi khi lấy garage cứu hộ:', error)
-    throw error
+  } catch (error: any) {
+    // Improved error logging
+    console.error('Lỗi khi lấy garage cứu hộ:', {
+      message: error?.message || 'Unknown error',
+      status: error?.response?.status || 'No status',
+      statusText: error?.response?.statusText || 'No status text',
+      data: error?.response?.data || 'No response data',
+      code: error?.code || 'No error code',
+      name: error?.name || 'No error name',
+      url: error?.config?.url || 'No URL',
+      method: error?.config?.method || 'No method'
+    })
+    
+    // Create a more descriptive error
+    let errorMessage = 'Không thể lấy danh sách garage từ server'
+    if (error?.message) {
+      errorMessage = error.message
+    } else if (error?.response?.status) {
+      errorMessage = `Server error: ${error.response.status} ${error.response.statusText || ''}`
+    } else if (error?.code === 'ERR_NETWORK') {
+      errorMessage = 'Network error: Cannot connect to server'
+    } else if (error?.code === 'ECONNABORTED') {
+      errorMessage = 'Request timeout: Server took too long to respond'
+    }
+    
+    const enhancedError = new Error(errorMessage)
+    enhancedError.cause = error
+    throw enhancedError
   }
 }

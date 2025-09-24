@@ -154,7 +154,7 @@ export function FeaturedGarageCarousel() {
         setGarages(sortedGarages)
       } catch (err) {
         console.error('❌ Error loading featured garages:', err)
-        setError('Không thể tải danh sách garage')
+        setError('Cannot load garage list')
         
         // Fallback to empty array
         setGarages([])
@@ -205,7 +205,7 @@ export function FeaturedGarageCarousel() {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-                <p className="text-slate-600">Đang tải danh sách garage...</p>
+                <p className="text-slate-600">Loading garage list...</p>
               </div>
             </div>
           </div>
@@ -223,7 +223,7 @@ export function FeaturedGarageCarousel() {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="text-red-400 text-6xl mb-4">⚠️</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Có lỗi xảy ra</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">An error occurred</h3>
                 <p className="text-gray-600">{error}</p>
               </div>
             </div>
@@ -242,8 +242,8 @@ export function FeaturedGarageCarousel() {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="text-gray-400 text-6xl mb-4">🏪</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có garage nào</h3>
-                <p className="text-gray-600">Hiện tại chưa có garage nào được hiển thị</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No garages available</h3>
+                <p className="text-gray-600">Currently no garages are displayed</p>
               </div>
             </div>
           </div>
@@ -282,7 +282,7 @@ export function FeaturedGarageCarousel() {
                       <div className="flex items-center space-x-1">
                         <Star className="h-4 w-4 text-yellow-400 fill-current" />
                         <span className="text-sm text-slate-600">
-                          {garage.averageRating ? garage.averageRating.toFixed(1) : 'Chưa có đánh giá'} ({garage.totalReviews || 0} đánh giá)
+                          {garage.averageRating ? garage.averageRating.toFixed(1) : 'No rating'} ({garage.totalReviews || 0} reviews)
                         </span>
                       </div>
                     </div>
@@ -292,11 +292,11 @@ export function FeaturedGarageCarousel() {
                       {garage.isFavorite && (
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs flex items-center">
                           <Star className="h-3 w-3 mr-1 fill-current" />
-                          Yêu thích
+                          Favorite
                         </span>
                       )}
                       {garage.isPopular && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">Phổ biến</span>
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">Popular</span>
                       )}
                     </div>
                   </div>
@@ -314,7 +314,7 @@ export function FeaturedGarageCarousel() {
                   >
                     <Clock className="h-4 w-4" />
                     <span>
-                      Mở cửa: {garage.openHours} • {garage.isOpen ? "Đang mở" : "Đã đóng"}
+                      Open: {garage.openHours} • {garage.isOpen ? "Open now" : "Closed"}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-slate-600">
@@ -336,10 +336,10 @@ export function FeaturedGarageCarousel() {
 
                 <div className="flex space-x-2">
                   <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700" asChild>
-                    <Link href={`/booking/${garage.id}`}>{isAuthenticated ? "Đặt lịch ngay" : "Đặt lịch"}</Link>
+                    <Link href={`/booking/${garage.id}`}>{isAuthenticated ? "Book Now" : "Book"}</Link>
                   </Button>
                   <Button size="sm" variant="outline" className="flex-1" asChild>
-                    <Link href={`/garage-detail/${garage.id}`}>Xem chi tiết</Link>
+                    <Link href={`/garage-detail/${garage.id}`}>View Details</Link>
                   </Button>
                 </div>
               </div>

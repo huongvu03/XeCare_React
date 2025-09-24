@@ -212,7 +212,7 @@ export default function GarageSearchPage() {
       if (!isNaN(serviceId) && serviceId > 0) {
         const serviceName = getServiceNameById(serviceId);
         if (serviceName) {
-          return `Dịch vụ: ${serviceName}`;
+          return `Service: ${serviceName}`;
         }
       }
     }
@@ -228,12 +228,12 @@ export default function GarageSearchPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {searchContext ? searchContext : 'Tìm kiếm Garage'}
+              {searchContext ? searchContext : 'Search Garage'}
             </h1>
             <p className="text-gray-600 mt-1">
               {searchContext 
-                ? `Tìm garage cung cấp dịch vụ ${searchContext.toLowerCase()} gần bạn`
-                : 'Tìm garage uy tín, chất lượng gần bạn'
+                ? `Find garages providing ${searchContext.toLowerCase()} near you`
+                : 'Find reliable, quality garages near you'
               }
             </p>
           </div>
@@ -260,12 +260,12 @@ export default function GarageSearchPage() {
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
-              Kết quả tìm kiếm
+              Search Results
             </h2>
             <div className="text-sm text-gray-600 mt-1">
-              Tìm thấy {displayGarages.length} garage
+              Found {displayGarages.length} garages
               {userLocation && averageDistance > 0 && (
-                <span className="ml-2">• Khoảng cách trung bình: {averageDistance}km</span>
+                <span className="ml-2">• Average distance: {averageDistance}km</span>
               )}
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function GarageSearchPage() {
                   ) : (
                     <MapPin className="w-4 h-4" />
                   )}
-                  {isLocating ? 'Đang tìm...' : 'Tìm vị trí của tôi'}
+                  {isLocating ? 'Locating...' : 'Find My Location'}
                 </Button>
               ) : (
                 <div className="flex items-center gap-2">
@@ -297,7 +297,7 @@ export default function GarageSearchPage() {
                     className="flex items-center gap-2"
                   >
                     <MapPin className="w-4 h-4 text-green-600" />
-                    Vị trí đã xác định
+                    Location Detected
                   </Button>
                   
                   <Button
@@ -307,7 +307,7 @@ export default function GarageSearchPage() {
                     className="flex items-center gap-2"
                   >
                     <Navigation className="w-4 h-4" />
-                    {sortByDistance ? 'Đang sắp xếp gần nhất' : 'Sắp xếp theo khoảng cách'}
+                    {sortByDistance ? 'Sorting by nearest' : 'Sort by distance'}
                   </Button>
                 </div>
               )}
@@ -346,7 +346,7 @@ export default function GarageSearchPage() {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2 text-red-700">
               <MapPin className="w-4 h-4" />
-              <span className="text-sm font-medium">Lỗi định vị</span>
+              <span className="text-sm font-medium">Location Error</span>
             </div>
             <p className="text-sm text-red-600 mt-1">{locationError.message}</p>
           </div>
@@ -381,7 +381,7 @@ export default function GarageSearchPage() {
               disabled={isLoading}
               className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Đang tải...' : 'Tải thêm'}
+              {isLoading ? 'Loading...' : 'Load More'}
             </Button>
           </div>
         )}
@@ -390,8 +390,8 @@ export default function GarageSearchPage() {
         {!isLoading && displayGarages.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">🔍</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy garage nào</h3>
-            <p className="text-gray-600">Thử thay đổi bộ lọc tìm kiếm của bạn</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No garages found</h3>
+            <p className="text-gray-600">Try changing your search filters</p>
           </div>
         )}
 
@@ -399,7 +399,7 @@ export default function GarageSearchPage() {
         {error && (
           <div className="text-center py-12">
             <div className="text-red-400 text-6xl mb-4">⚠️</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Có lỗi xảy ra</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">An error occurred</h3>
             <p className="text-gray-600">{error}</p>
           </div>
         )}
@@ -410,7 +410,7 @@ export default function GarageSearchPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            <span className="text-gray-700">Đang tải dữ liệu...</span>
+            <span className="text-gray-700">Loading data...</span>
           </div>
         </div>
       )}
