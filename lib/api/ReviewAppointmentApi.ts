@@ -44,6 +44,13 @@ export interface CanReviewResponse {
   hasReviewed: boolean
 }
 
+export interface CanReviewApiResponse {
+  success: boolean
+  canReview: boolean
+  hasReviewed: boolean
+  message?: string
+}
+
 // Tạo đánh giá cho appointment
 export const createReviewAppointment = (data: CreateReviewAppointmentRequest) =>
   axiosClient.post(`/apis/review-appointment/${data.appointmentId}`, {
@@ -79,7 +86,7 @@ export const getReviewsByRating = (garageId: number, rating: number) =>
 
 // Kiểm tra user có thể đánh giá appointment không
 export const canUserReviewAppointment = (appointmentId: number) =>
-  axiosClient.get<CanReviewResponse>(`/apis/review-appointment/can-review/${appointmentId}`)
+  axiosClient.get<CanReviewApiResponse>(`/apis/review-appointment/can-review/${appointmentId}`)
 
 // Lấy lịch sử đánh giá của user hiện tại
 export const getMyReviews = (params?: {

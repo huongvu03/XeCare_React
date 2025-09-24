@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { getUserAppointments, cancelAppointment, type Appointment } from "@/lib/api/AppointmentApi"
 import { getGarageById, type Garage } from "@/lib/api/GarageApi"
-import { canUserReviewAppointment, type CanReviewResponse } from "@/lib/api/ReviewAppointmentApi"
+import { canUserReviewAppointment, type CanReviewResponse, type CanReviewApiResponse } from "@/lib/api/ReviewAppointmentApi"
 import { ReviewAppointmentModal } from "@/components/review/ReviewAppointmentModal"
 import { useAuth } from "@/hooks/use-auth"
 
@@ -52,47 +52,33 @@ export default function AppointmentsPage() {
 
     try {
       setLoading(true)
-      console.log("✅ Loading appointments for user:", user.email)
-      console.log("🔍 User ID:", user.id)
     
+      // For REVIEW_PENDING and REVIEWED filters, load all appointments first
+      const shouldLoadAllAppointments = filterStatus === "REVIEW_PENDING" || filterStatus === "REVIEWED"
+      
       const params = {
         page: currentPage,
         size: 10,
-        status: filterStatus || undefined
+        status: shouldLoadAllAppointments ? undefined : (filterStatus || undefined)
       }
-      console.log("🔍 Filter parameters:", params)
-      console.log("🔍 API URL will be called with:", params)
       
       const response = await getUserAppointments({
         page: currentPage,
         size: 10,
-        status: filterStatus || undefined
+        status: params.status
       })
-      
-      console.log("🔍 Full API response:", response)
-      console.log("🔍 Response status:", response.status)
-      console.log("🔍 Response headers:", response.headers)
-      console.log("🔍 Response data:", response.data)
-      console.log("🔍 Response data content:", response.data?.content)
       
       // Ensure response.data.content is an array
       const appointmentsData = response.data?.content || []
       let filteredAppointments = appointmentsData
       
-      console.log("🔍 Appointments data:", appointmentsData)
-      console.log("🔍 Appointments data length:", appointmentsData.length)
-      
       // Client-side filtering if backend doesn't handle it properly
-      if (filterStatus && filterStatus !== "REVIEW_PENDING" && appointmentsData.length > 0) {
+      if (filterStatus && filterStatus !== "REVIEW_PENDING" && filterStatus !== "REVIEWED" && appointmentsData.length > 0) {
         filteredAppointments = appointmentsData.filter(apt => apt.status === filterStatus)
-        console.log("🔍 Client-side filtering applied:", filterStatus)
-        console.log("🔍 Before filter:", appointmentsData.length, "After filter:", filteredAppointments.length)
       }
       
       setAllAppointments(filteredAppointments)
       setTotalPages(response.data?.totalPages || 0)
-      console.log("Appointments loaded successfully:", filteredAppointments?.length || 0)
-      console.log("🔍 Final appointments statuses:", filteredAppointments?.map(apt => apt.status) || [])
 
       // Load garage details for each appointment
       await loadGarageDetails(filteredAppointments)
@@ -124,17 +110,12 @@ export default function AppointmentsPage() {
     const uniqueGarageIds = [...new Set(appointmentList.map(apt => apt.garageId))]
     const newGarageDetails: Record<number, Garage> = {}
 
-    console.log("🏢 Loading garage details for IDs:", uniqueGarageIds)
 
     for (const garageId of uniqueGarageIds) {
       try {
         if (!garageDetails[garageId]) { // Only load if not already cached
-          console.log("🏢 Loading garage details for ID:", garageId)
           const garageResponse = await getGarageById(garageId)
-          console.log("✅ Garage details loaded:", garageResponse.data)
           newGarageDetails[garageId] = garageResponse.data
-        } else {
-          console.log("📋 Using cached garage details for ID:", garageId)
         }
       } catch (err) {
         console.error("❌ Error loading garage details for ID", garageId, err)
@@ -142,14 +123,11 @@ export default function AppointmentsPage() {
     }
 
     if (Object.keys(newGarageDetails).length > 0) {
-      console.log("🔄 Updating garage details state:", newGarageDetails)
       setGarageDetails(prev => ({ ...prev, ...newGarageDetails }))
     }
   }
 
   useEffect(() => {
-    console.log("🔍 useEffect triggered")
-    console.log("🔍 Dependencies - currentPage:", currentPage, "filterStatus:", filterStatus, "user:", user)
     loadAppointments()
   }, [currentPage, filterStatus, user])
 
@@ -193,12 +171,19 @@ export default function AppointmentsPage() {
       for (const appointment of completedAppointments) {
         try {
           const response = await canUserReviewAppointment(appointment.id)
+          
+          // Handle backend response structure
+          const reviewData = response.data?.success ? {
+            canReview: response.data.canReview,
+            hasReviewed: response.data.hasReviewed
+          } : response.data
+          
           setAppointmentReviewStatus(prev => ({
             ...prev,
-            [appointment.id]: response.data
+            [appointment.id]: reviewData
           }))
         } catch (error) {
-          console.error(`Error loading review status for appointment ${appointment.id}:`, error)
+          console.error(`❌ Error loading review status for appointment ${appointment.id}:`, error)
         }
       }
     }
@@ -291,10 +276,8 @@ export default function AppointmentsPage() {
 
     try {
       setIsCancelling(true)
-      console.log("🗑️ Cancelling appointment:", appointmentToCancel.id, "with reason:", cancelReason)
       
       await cancelAppointment(appointmentToCancel.id, cancelReason.trim())
-      console.log("✅ Appointment cancelled successfully")
       
       // Update local state immediately for better UX
       setAppointments(prev => prev.map(apt => 
@@ -341,19 +324,16 @@ export default function AppointmentsPage() {
 
   // Format working hours
   const formatWorkingHours = (garage: Garage) => {
-    console.log("🕐 Full garage object:", garage)
     
     // Try multiple approaches to get working hours
     let result = "Not updated"
     
     // Approach 1: Check operatingHours object
     if (garage.operatingHours) {
-      console.log("🕐 Found operatingHours:", garage.operatingHours)
       const oh = garage.operatingHours
       
       if (oh.defaultOpenTime && oh.defaultCloseTime) {
         result = `${oh.defaultOpenTime} - ${oh.defaultCloseTime}`
-        console.log("🕐 Using default times:", result)
         return result
       }
     }
@@ -362,27 +342,22 @@ export default function AppointmentsPage() {
     if (typeof garage.operatingHours === 'string') {
       try {
         const parsed = JSON.parse(garage.operatingHours)
-        console.log("🕐 Parsed operating hours from string:", parsed)
         if (parsed.defaultOpenTime && parsed.defaultCloseTime) {
           result = `${parsed.defaultOpenTime} - ${parsed.defaultCloseTime}`
-          console.log("🕐 Using parsed default times:", result)
           return result
         }
       } catch (e) {
-        console.log("🕐 Failed to parse operating hours string")
+        // Failed to parse operating hours string
       }
     }
     
     // Approach 3: Check direct openTime/closeTime properties
     if (garage.openTime && garage.closeTime) {
       result = `${garage.openTime} - ${garage.closeTime}`
-      console.log("🕐 Using direct garage times:", result)
       return result
     }
     
     // Approach 4: Fallback based on your database structure
-    console.log("🕐 All approaches failed, using fallback")
-    console.log("🕐 This means API response structure differs from expected interface")
     return "08:00 - 18:00" // Based on your actual database data
   }
 
@@ -402,60 +377,42 @@ export default function AppointmentsPage() {
             <Button
               variant={filterStatus === "" ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                console.log("🔍 Setting filter to: ALL")
-                setFilterStatus("")
-              }}
+              onClick={() => setFilterStatus("")}
             >
               All
             </Button>
             <Button
               variant={filterStatus === "PENDING" ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                console.log("🔍 Setting filter to: PENDING")
-                setFilterStatus("PENDING")
-              }}
+              onClick={() => setFilterStatus("PENDING")}
             >
               Pending
             </Button>
             <Button
               variant={filterStatus === "CONFIRMED" ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                console.log("🔍 Setting filter to: CONFIRMED")
-                setFilterStatus("CONFIRMED")
-              }}
+              onClick={() => setFilterStatus("CONFIRMED")}
             >
               Confirmed
             </Button>
             <Button
               variant={filterStatus === "COMPLETED" ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                console.log("🔍 Setting filter to: COMPLETED")
-                setFilterStatus("COMPLETED")
-              }}
+              onClick={() => setFilterStatus("COMPLETED")}
             >
               Completed
             </Button>
             <Button
               variant={filterStatus === "CANCELLED" ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                console.log("🔍 Setting filter to: CANCELLED")
-                setFilterStatus("CANCELLED")
-              }}
+              onClick={() => setFilterStatus("CANCELLED")}
             >
               Cancelled
             </Button>
             <Button
               variant={filterStatus === "REVIEW_PENDING" ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                console.log("🔍 Setting filter to: REVIEW_PENDING")
-                setFilterStatus("REVIEW_PENDING")
-              }}
+              onClick={() => setFilterStatus("REVIEW_PENDING")}
               className="bg-yellow-600 hover:bg-yellow-700 text-white"
             >
               <Star className="h-4 w-4 mr-1" />
@@ -464,10 +421,7 @@ export default function AppointmentsPage() {
             <Button
               variant={filterStatus === "REVIEWED" ? "default" : "outline"}
               size="sm"
-              onClick={() => {
-                console.log("🔍 Setting filter to: REVIEWED")
-                setFilterStatus("REVIEWED")
-              }}
+              onClick={() => setFilterStatus("REVIEWED")}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               <Star className="h-4 w-4 mr-1 fill-current" />
@@ -484,7 +438,6 @@ export default function AppointmentsPage() {
         </Alert>
       )}
 
-      {/* Debug Info */}
     
 
       {/* Appointments List */}
@@ -520,7 +473,6 @@ export default function AppointmentsPage() {
             const StatusIcon = statusInfo.icon
             const garage = garageDetails[appointment.garageId]
             
-            console.log(`🔍 Appointment ${appointment.id} - Garage ID: ${appointment.garageId}, Garage object:`, garage)
 
             return (
               <Card key={appointment.id} className="border-blue-100 hover:shadow-lg transition-shadow">
