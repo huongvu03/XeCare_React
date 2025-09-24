@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Vehicle Service History Review Feature</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .mock-appointment {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .review-section {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        .star { color: #ffc107; }
+        .review-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .review-button:hover { background: #0056b3; }
+        .reviewed { color: #28a745; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Vehicle Service History Review Feature</h1>
+    <p>This page demonstrates the new review functionality added to the Vehicle Service History component.</p>
+
+    <div class="test-section info">
+        <h2>📋 Feature Overview</h2>
+        <p><strong>New Functionality:</strong> Users can now review garage services after completing appointments.</p>
+        <ul>
+            <li>✅ Review button appears for "COMPLETED" appointments</li>
+            <li>✅ Star rating system (1-5 stars)</li>
+            <li>✅ Comment field with validation</li>
+            <li>✅ Shows "Đã đánh giá" status after review</li>
+            <li>✅ Modal popup for review form</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Test Scenarios</h2>
+        <button onclick="testCompletedAppointment()">Test Completed Appointment</button>
+        <button onclick="testPendingAppointment()">Test Pending Appointment</button>
+        <button onclick="testReviewedAppointment()">Test Already Reviewed</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Mock UI Components</h2>
+        <div id="mock-components"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 API Endpoints Test</h2>
+        <button onclick="testAPIEndpoints()">Test Review API Endpoints</button>
+        <div id="api-results"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080';
+
+        function testCompletedAppointment() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="success">
+                    <h3>✅ Test: Completed Appointment</h3>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Review section should be visible</li>
+                        <li>"Đánh giá" button should be clickable</li>
+                        <li>Modal should open when button is clicked</li>
+                        <li>User can submit rating and comment</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function testPendingAppointment() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="error">
+                    <h3>❌ Test: Pending Appointment</h3>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Review section should NOT be visible</li>
+                        <li>Only status badge should show "Chờ xác nhận"</li>
+                        <li>No review functionality available</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function testReviewedAppointment() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="info">
+                    <h3>ℹ️ Test: Already Reviewed Appointment</h3>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Review section should be visible</li>
+                        <li>Should show "Đã đánh giá" with star icon</li>
+                        <li>No "Đánh giá" button should be present</li>
+                        <li>User cannot review again</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function createMockAppointmentCard(appointment, reviewStatus) {
+            return `
+                <div class="mock-appointment">
+                    <h4>${appointment.serviceName}</h4>
+                    <p><strong>Garage:</strong> ${appointment.garageName}</p>
+                    <p><strong>Date:</strong> ${appointment.date}</p>
+                    <p><strong>Vehicle:</strong> ${appointment.vehicle}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${appointment.status.toLowerCase()}">${appointment.statusText}</span></p>
+                    
+                    ${appointment.status === 'COMPLETED' ? `
+                        <div class="review-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="star">⭐</span>
+                                    <span><strong>Đánh giá dịch vụ</strong></span>
+                                </div>
+                                ${reviewStatus.canReview ? `
+                                    <button class="review-button" onclick="openReviewModal(${appointment.id})">
+                                        ⭐ Đánh giá
+                                    </button>
+                                ` : reviewStatus.hasReviewed ? `
+                                    <div class="reviewed">
+                                        <span class="star">⭐</span> Đã đánh giá
+                                    </div>
+                                ` : `
+                                    <div style="color: #6c757d;">
+                                        Không thể đánh giá
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function loadMockComponents() {
+            const mockData = [
+                {
+                    id: 1,
+                    serviceName: "Thay dầu động cơ",
+                    garageName: "Garage Lê Lợi",
+                    date: "22 tháng 9, 2025",
+                    vehicle: "Toyota Fortuner 51A-12345",
+                    status: "COMPLETED",
+                    statusText: "Hoàn thành",
+                    reviewStatus: { canReview: true, hasReviewed: false }
+                },
+                {
+                    id: 2,
+                    serviceName: "Sửa chữa lốp xe",
+                    garageName: "Garage Lê Lợi",
+                    date: "21 tháng 9, 2025",
+                    vehicle: "Toyota Fortuner 51A-12345",
+                    status: "CANCELLED",
+                    statusText: "Đã hủy",
+                    reviewStatus: { canReview: false, hasReviewed: false }
+                },
+                {
+                    id: 3,
+                    serviceName: "Bảo dưỡng định kỳ",
+                    garageName: "Garage Minh Châu",
+                    date: "15 tháng 9, 2025",
+                    vehicle: "Toyota Fortuner 51A-12345",
+                    status: "COMPLETED",
+                    statusText: "Hoàn thành",
+                    reviewStatus: { canReview: false, hasReviewed: true }
+                }
+            ];
+
+            const componentsDiv = document.getElementById('mock-components');
+            componentsDiv.innerHTML = `
+                <h3>Mock Vehicle Service History Cards:</h3>
+                ${mockData.map(appointment => createMockAppointmentCard(appointment, appointment.reviewStatus)).join('')}
+            `;
+        }
+
+        function openReviewModal(appointmentId) {
+            alert(`Opening review modal for appointment ${appointmentId}\n\nIn the real application, this would open the ReviewAppointmentModal component with:\n- Star rating selector\n- Comment textarea\n- Submit button\n- Form validation`);
+        }
+
+        async function testAPIEndpoints() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<p>Testing API endpoints...</p>';
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ No authentication token found. Please login first.</p>
+                            <p>Expected endpoints to test:</p>
+                            <ul>
+                                <li>GET /apis/review-appointment/can-review/{appointmentId}</li>
+                                <li>POST /apis/review-appointment</li>
+                                <li>GET /apis/review-appointment/garage/{garageId}/stats</li>
+                            </ul>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Test can review endpoint
+                const testAppointmentId = 1;
+                const canReviewResponse = await fetch(`${BASE_URL}/apis/review-appointment/can-review/${testAppointmentId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const canReviewData = await canReviewResponse.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ API Endpoint Tests</h3>
+                        <p><strong>Can Review Endpoint:</strong></p>
+                        <pre>GET /apis/review-appointment/can-review/${testAppointmentId}</pre>
+                        <p><strong>Response:</strong></p>
+                        <pre>${JSON.stringify(canReviewData, null, 2)}</pre>
+                        
+                        <p><strong>Other endpoints to test:</strong></p>
+                        <ul>
+                            <li>POST /apis/review-appointment - Create review</li>
+                            <li>GET /apis/review-appointment/garage/{garageId}/stats - Get rating stats</li>
+                            <li>GET /apis/review-appointment/my-reviews - Get user's reviews</li>
+                        </ul>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Error testing API endpoints:</p>
+                        <p>${error.message}</p>
+                        <p><strong>Make sure:</strong></p>
+                        <ul>
+                            <li>Backend server is running on localhost:8080</li>
+                            <li>Database migration has been applied</li>
+                            <li>User is authenticated with valid token</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // Load mock components on page load
+        window.onload = function() {
+            loadMockComponents();
+        };
+    </script>
+</body>
+</html>

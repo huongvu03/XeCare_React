@@ -6,16 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Calendar, Clock, MapPin, Phone, Car, X, CheckCircle, AlertCircle, Clock4 } from "lucide-react"
+import { Calendar, Clock, MapPin, Phone, Car, X, CheckCircle, AlertCircle, Clock4, Star } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { getUserAppointments, cancelAppointment, type Appointment } from "@/lib/api/AppointmentApi"
 import { getGarageById, type Garage } from "@/lib/api/GarageApi"
+import { canUserReviewAppointment, type CanReviewResponse } from "@/lib/api/ReviewAppointmentApi"
+import { ReviewAppointmentModal } from "@/components/review/ReviewAppointmentModal"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function AppointmentsPage() {
   const { user, isLoading: authLoading } = useAuth()
+  const [allAppointments, setAllAppointments] = useState<Appointment[]>([])
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -29,6 +32,11 @@ export default function AppointmentsPage() {
   const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null)
   const [cancelReason, setCancelReason] = useState("")
   const [isCancelling, setIsCancelling] = useState(false)
+
+  // Review modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
+  const [appointmentReviewStatus, setAppointmentReviewStatus] = useState<Record<number, CanReviewResponse>>({})
 
   // Load appointments
   const loadAppointments = async () => {
@@ -75,13 +83,13 @@ export default function AppointmentsPage() {
       console.log("🔍 Appointments data length:", appointmentsData.length)
       
       // Client-side filtering if backend doesn't handle it properly
-      if (filterStatus && appointmentsData.length > 0) {
+      if (filterStatus && filterStatus !== "REVIEW_PENDING" && appointmentsData.length > 0) {
         filteredAppointments = appointmentsData.filter(apt => apt.status === filterStatus)
         console.log("🔍 Client-side filtering applied:", filterStatus)
         console.log("🔍 Before filter:", appointmentsData.length, "After filter:", filteredAppointments.length)
       }
       
-      setAppointments(filteredAppointments)
+      setAllAppointments(filteredAppointments)
       setTotalPages(response.data?.totalPages || 0)
       console.log("Appointments loaded successfully:", filteredAppointments?.length || 0)
       console.log("🔍 Final appointments statuses:", filteredAppointments?.map(apt => apt.status) || [])
@@ -144,6 +152,78 @@ export default function AppointmentsPage() {
     console.log("🔍 Dependencies - currentPage:", currentPage, "filterStatus:", filterStatus, "user:", user)
     loadAppointments()
   }, [currentPage, filterStatus, user])
+
+  // Function to filter appointments based on current filter
+  const applyFilter = (appointmentsList: Appointment[]) => {
+    if (!filterStatus) {
+      setAppointments(appointmentsList)
+      return
+    }
+
+    if (filterStatus === "REVIEW_PENDING") {
+      // Filter for completed appointments that can be reviewed
+      const filtered = appointmentsList.filter(apt => {
+        return apt.status === "COMPLETED" && 
+               appointmentReviewStatus[apt.id] && 
+               appointmentReviewStatus[apt.id].canReview
+      })
+      setAppointments(filtered)
+    } else {
+      // Regular status filtering
+      const filtered = appointmentsList.filter(apt => apt.status === filterStatus)
+      setAppointments(filtered)
+    }
+  }
+
+  // Load review status for completed appointments
+  useEffect(() => {
+    const loadReviewStatus = async () => {
+      if (!allAppointments) return
+      
+      const completedAppointments = allAppointments.filter(app => app.status === "COMPLETED")
+      
+      for (const appointment of completedAppointments) {
+        try {
+          const response = await canUserReviewAppointment(appointment.id)
+          setAppointmentReviewStatus(prev => ({
+            ...prev,
+            [appointment.id]: response.data
+          }))
+        } catch (error) {
+          console.error(`Error loading review status for appointment ${appointment.id}:`, error)
+        }
+      }
+    }
+
+    loadReviewStatus()
+  }, [allAppointments])
+
+  // Apply filter when appointments or filter status changes
+  useEffect(() => {
+    applyFilter(allAppointments)
+  }, [allAppointments, filterStatus, appointmentReviewStatus])
+
+  // Handle review functions
+  const handleReviewClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment)
+    setReviewModalOpen(true)
+  }
+
+  const handleReviewSubmitted = () => {
+    // Update review status for this appointment
+    if (selectedAppointment) {
+      setAppointmentReviewStatus(prev => ({
+        ...prev,
+        [selectedAppointment.id]: {
+          canReview: false,
+          hasReviewed: true
+        }
+      }))
+    }
+    
+    // Refresh appointments to get updated data
+    setTimeout(() => loadAppointments(), 500)
+  }
 
   // Show loading while auth is being checked
   if (authLoading) {
@@ -361,6 +441,18 @@ export default function AppointmentsPage() {
             >
               Đã hủy
             </Button>
+            <Button
+              variant={filterStatus === "REVIEW_PENDING" ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                console.log("🔍 Setting filter to: REVIEW_PENDING")
+                setFilterStatus("REVIEW_PENDING")
+              }}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+            >
+              <Star className="h-4 w-4 mr-1" />
+              Chờ đánh giá
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -506,6 +598,39 @@ export default function AppointmentsPage() {
                           </AlertDescription>
                         </Alert>
                       )}
+
+                      {/* Review Section for Completed Appointments */}
+                      {appointment.status === "COMPLETED" && appointmentReviewStatus[appointment.id] && (
+                        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Star className="h-5 w-5 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-900">
+                                Đánh giá dịch vụ
+                              </span>
+                            </div>
+                            {appointmentReviewStatus[appointment.id].canReview ? (
+                              <Button
+                                size="sm"
+                                onClick={() => handleReviewClick(appointment)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                <Star className="h-4 w-4 mr-1" />
+                                Đánh giá ngay
+                              </Button>
+                            ) : appointmentReviewStatus[appointment.id].hasReviewed ? (
+                              <div className="flex items-center text-green-600 text-sm">
+                                <Star className="h-4 w-4 mr-1 fill-current" />
+                                <span>Đã đánh giá</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center text-gray-500 text-sm">
+                                <span>Không thể đánh giá</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Action Buttons */}
@@ -605,6 +730,19 @@ export default function AppointmentsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Review Modal */}
+      {selectedAppointment && (
+        <ReviewAppointmentModal
+          isOpen={reviewModalOpen}
+          onClose={() => setReviewModalOpen(false)}
+          appointmentId={selectedAppointment.id}
+          garageName={selectedAppointment.garageName}
+          serviceName={selectedAppointment.serviceName}
+          appointmentDate={selectedAppointment.appointmentDate}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      )}
     </DashboardLayout>
   )
 }

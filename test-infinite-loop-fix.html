@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Infinite Loop Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        .warning { border-left: 4px solid #ffc107; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .test-button {
+            background-color: #28a745;
+        }
+        .test-button:hover { background-color: #218838; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .fix-list {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Infinite Loop Fix</h1>
+    <p>This page tests the fix for the "Maximum update depth exceeded" error in the User Appointments page.</p>
+
+    <div class="test-section error">
+        <h2>❌ Original Problem</h2>
+        <div class="fix-list">
+            <p><strong>Error:</strong></p>
+            <div class="code-block">
+Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, 
+but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
+
+at loadAppointments (app\user\appointments\page.tsx:101:7)
+            </div>
+            
+            <p><strong>Root Cause:</strong></p>
+            <ul>
+                <li>❌ <code>appointmentReviewStatus</code> was in useEffect dependency array</li>
+                <li>❌ <code>appointmentReviewStatus</code> was updated inside another useEffect</li>
+                <li>❌ This created an infinite re-render loop</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section success">
+        <h2>✅ Solution Applied</h2>
+        <div class="fix-list">
+            <p><strong>Changes Made:</strong></p>
+            <ul>
+                <li>✅ Removed <code>appointmentReviewStatus</code> from useEffect dependency array</li>
+                <li>✅ Added <code>allAppointments</code> state to store unfiltered appointments</li>
+                <li>✅ Created separate <code>applyFilter</code> function for filtering logic</li>
+                <li>✅ Split filtering logic from data loading logic</li>
+                <li>✅ Used separate useEffect for applying filters</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section info">
+        <h2>🔧 Technical Details</h2>
+        <div class="fix-list">
+            <p><strong>Before (Problematic):</strong></p>
+            <div class="code-block">
+useEffect(() => {
+  loadAppointments()
+}, [currentPage, filterStatus, user, appointmentReviewStatus]) // ❌ appointmentReviewStatus causes loop
+
+useEffect(() => {
+  // Update appointmentReviewStatus
+  setAppointmentReviewStatus(...)
+}, [appointments]) // ❌ This triggers the first useEffect again
+            </div>
+
+            <p><strong>After (Fixed):</strong></p>
+            <div class="code-block">
+useEffect(() => {
+  loadAppointments()
+}, [currentPage, filterStatus, user]) // ✅ No appointmentReviewStatus dependency
+
+useEffect(() => {
+  // Update appointmentReviewStatus
+  setAppointmentReviewStatus(...)
+}, [allAppointments]) // ✅ Only depends on appointments data
+
+useEffect(() => {
+  applyFilter(allAppointments)
+}, [allAppointments, filterStatus, appointmentReviewStatus]) // ✅ Separate filtering logic
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Manual Testing</h2>
+        <button class="test-button" onclick="testUserAppointmentsPage()">Test User Appointments Page</button>
+        <button class="test-button" onclick="testFilterSwitching()">Test Filter Switching</button>
+        <button class="test-button" onclick="testReviewFlow()">Test Review Flow</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Expected Behavior</h2>
+        <div class="fix-list">
+            <p><strong>After the fix, the following should work without infinite loops:</strong></p>
+            <ul>
+                <li>✅ Page loads without "Maximum update depth exceeded" error</li>
+                <li>✅ Filter buttons work without causing re-render loops</li>
+                <li>✅ "Chờ đánh giá" filter shows correct appointments</li>
+                <li>✅ Review status loads properly</li>
+                <li>✅ Review submission works without breaking the page</li>
+                <li>✅ No console errors about infinite updates</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section warning">
+        <h2>⚠️ Testing Checklist</h2>
+        <div class="fix-list">
+            <p><strong>When testing, check for:</strong></p>
+            <ul>
+                <li>🔍 Browser console shows no "Maximum update depth exceeded" errors</li>
+                <li>🔍 Network tab shows reasonable number of API calls (not hundreds)</li>
+                <li>🔍 Page performance is smooth (no freezing)</li>
+                <li>🔍 Filter buttons respond immediately</li>
+                <li>🔍 Review functionality works end-to-end</li>
+                <li>🔍 No memory leaks or excessive re-renders</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 Frontend Integration</h2>
+        <div class="fix-list">
+            <p><strong>Files Modified:</strong></p>
+            <ul>
+                <li>✅ <code>app/user/appointments/page.tsx</code> - Main appointments page</li>
+                <li>✅ State management restructured</li>
+                <li>✅ useEffect dependencies optimized</li>
+                <li>✅ Filtering logic separated</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const FRONTEND_URL = 'http://localhost:3000';
+
+        function testUserAppointmentsPage() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="status info">
+                    ℹ️ Manual Test Instructions
+                </div>
+                <p><strong>To test the infinite loop fix:</strong></p>
+                <ol>
+                    <li>Open <a href="${FRONTEND_URL}/user/appointments" target="_blank">${FRONTEND_URL}/user/appointments</a></li>
+                    <li>Open browser Developer Tools (F12)</li>
+                    <li>Go to Console tab</li>
+                    <li>Look for any "Maximum update depth exceeded" errors</li>
+                    <li>Try clicking different filter buttons multiple times</li>
+                    <li>Check Network tab for excessive API calls</li>
+                </ol>
+                <p><strong>Expected Results:</strong></p>
+                <ul>
+                    <li>✅ No console errors about infinite updates</li>
+                    <li>✅ Reasonable number of API calls</li>
+                    <li>✅ Smooth page performance</li>
+                    <li>✅ Filter buttons work correctly</li>
+                </ul>
+            `;
+        }
+
+        function testFilterSwitching() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="status info">
+                    ℹ️ Filter Switching Test
+                </div>
+                <p><strong>Test Procedure:</strong></p>
+                <ol>
+                    <li>Go to User Appointments page</li>
+                    <li>Click "Tất cả" filter</li>
+                    <li>Click "Chờ đánh giá" filter</li>
+                    <li>Click "Hoàn thành" filter</li>
+                    <li>Click "Chờ xác nhận" filter</li>
+                    <li>Repeat this sequence 5-10 times quickly</li>
+                </ol>
+                <p><strong>What to Check:</strong></p>
+                <ul>
+                    <li>✅ Page doesn't freeze or become unresponsive</li>
+                    <li>✅ No console errors</li>
+                    <li>✅ Filters work correctly each time</li>
+                    <li>✅ Appointments list updates properly</li>
+                </ul>
+            `;
+        }
+
+        function testReviewFlow() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="status info">
+                    ℹ️ Review Flow Test
+                </div>
+                <p><strong>Test Procedure:</strong></p>
+                <ol>
+                    <li>Go to User Appointments page</li>
+                    <li>Click "Chờ đánh giá" filter</li>
+                    <li>Find an appointment with "Đánh giá ngay" button</li>
+                    <li>Click "Đánh giá ngay" to open modal</li>
+                    <li>Fill out the review form</li>
+                    <li>Submit the review</li>
+                    <li>Verify the appointment disappears from "Chờ đánh giá" filter</li>
+                </ol>
+                <p><strong>What to Check:</strong></p>
+                <ul>
+                    <li>✅ Review modal opens without errors</li>
+                    <li>✅ Review submission works</li>
+                    <li>✅ Page updates correctly after review</li>
+                    <li>✅ No infinite loops triggered</li>
+                    <li>✅ Filter updates properly</li>
+                </ul>
+            `;
+        }
+
+        // Auto-load instructions on page load
+        window.onload = function() {
+            testUserAppointmentsPage();
+        };
+    </script>
+</body>
+</html>

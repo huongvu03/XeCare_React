@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Review API Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        .warning { border-left: 4px solid #ffc107; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .test-button {
+            background-color: #28a745;
+        }
+        .test-button:hover { background-color: #218838; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Review API Fix</h1>
+    <p>This page tests the fixed Review API endpoints after resolving the parameter name issues.</p>
+
+    <div class="test-section info">
+        <h2>📋 Issues Fixed</h2>
+        <ul>
+            <li>✅ Added explicit parameter names to all @PathVariable annotations</li>
+            <li>✅ Fixed createReview method signature</li>
+            <li>✅ Updated service interface to match implementation</li>
+            <li>✅ Added proper imports (@Valid annotation)</li>
+        </ul>
+        <p><strong>Fixed Methods:</strong></p>
+        <ul>
+            <li>POST /apis/review-appointment/{appointmentId} - createReview</li>
+            <li>GET /apis/review-appointment/can-review/{appointmentId} - canUserReviewAppointment</li>
+            <li>GET /apis/review-appointment/garage/{garageId} - getGarageReviews</li>
+            <li>GET /apis/review-appointment/user/{userId} - getUserReviews</li>
+            <li>GET /apis/review-appointment/garage/{garageId}/stats - getGarageRatingStats</li>
+            <li>GET /apis/review-appointment/garage/{garageId}/rating/{rating} - getReviewsByRating</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 API Endpoint Tests</h2>
+        <button class="test-button" onclick="testCanReviewEndpoint()">Test Can Review Endpoint</button>
+        <button class="test-button" onclick="testCreateReviewEndpoint()">Test Create Review Endpoint</button>
+        <button class="test-button" onclick="testGarageReviewsEndpoint()">Test Garage Reviews Endpoint</button>
+        <button class="test-button" onclick="testGarageStatsEndpoint()">Test Garage Stats Endpoint</button>
+        <button class="test-button" onclick="testUserReviewHistoryEndpoint()">Test User Review History</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Authentication Status</h2>
+        <button onclick="checkAuthStatus()">Check Authentication</button>
+        <div id="auth-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Data</h2>
+        <div id="test-data">
+            <p><strong>Test Appointment ID:</strong> 4</p>
+            <p><strong>Test Garage ID:</strong> 1</p>
+            <p><strong>Test User ID:</strong> 1</p>
+            <p><strong>Base URL:</strong> http://localhost:8080</p>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080';
+
+        function getAuthToken() {
+            return localStorage.getItem('token');
+        }
+
+        function checkAuthStatus() {
+            const token = getAuthToken();
+            const statusDiv = document.getElementById('auth-status');
+            
+            if (!token) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ No authentication token found. Please login first.
+                    </div>
+                    <p>To get a token:</p>
+                    <ol>
+                        <li>Go to http://localhost:3000/auth</li>
+                        <li>Login with your credentials</li>
+                        <li>Check browser localStorage for 'token'</li>
+                    </ol>
+                `;
+                return false;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Authentication token found
+                    </div>
+                    <p><strong>Token:</strong> ${token.substring(0, 20)}...</p>
+                `;
+                return true;
+            }
+        }
+
+        async function testCanReviewEndpoint() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing can-review endpoint...</p>';
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                    return;
+                }
+
+                const appointmentId = 4;
+                const response = await fetch(`${BASE_URL}/apis/review-appointment/can-review/${appointmentId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅' : '❌'} Can Review Endpoint Test
+                    </div>
+                    <p><strong>URL:</strong> GET /apis/review-appointment/can-review/${appointmentId}</p>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error testing can-review endpoint
+                    </div>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testCreateReviewEndpoint() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing create review endpoint...</p>';
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                    return;
+                }
+
+                const appointmentId = 4;
+                const reviewData = {
+                    rating: 5,
+                    comment: "Dịch vụ rất tốt, nhân viên thân thiện và chuyên nghiệp. Tôi rất hài lòng với chất lượng sửa chữa."
+                };
+
+                const response = await fetch(`${BASE_URL}/apis/review-appointment/${appointmentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅' : '❌'} Create Review Endpoint Test
+                    </div>
+                    <p><strong>URL:</strong> POST /apis/review-appointment/${appointmentId}</p>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Request Data:</strong></p>
+                    <pre>${JSON.stringify(reviewData, null, 2)}</pre>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error testing create review endpoint
+                    </div>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testGarageReviewsEndpoint() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing garage reviews endpoint...</p>';
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                    return;
+                }
+
+                const garageId = 1;
+                const response = await fetch(`${BASE_URL}/apis/review-appointment/garage/${garageId}?page=0&size=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅' : '❌'} Garage Reviews Endpoint Test
+                    </div>
+                    <p><strong>URL:</strong> GET /apis/review-appointment/garage/${garageId}</p>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error testing garage reviews endpoint
+                    </div>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testGarageStatsEndpoint() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing garage stats endpoint...</p>';
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                    return;
+                }
+
+                const garageId = 1;
+                const response = await fetch(`${BASE_URL}/apis/review-appointment/garage/${garageId}/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅' : '❌'} Garage Stats Endpoint Test
+                    </div>
+                    <p><strong>URL:</strong> GET /apis/review-appointment/garage/${garageId}/stats</p>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error testing garage stats endpoint
+                    </div>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testUserReviewHistoryEndpoint() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p>Testing user review history endpoint...</p>';
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                    return;
+                }
+
+                const response = await fetch(`${BASE_URL}/apis/review-appointment/my-reviews?page=0&size=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅' : '❌'} User Review History Endpoint Test
+                    </div>
+                    <p><strong>URL:</strong> GET /apis/review-appointment/my-reviews</p>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error testing user review history endpoint
+                    </div>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        // Check auth status on page load
+        window.onload = function() {
+            checkAuthStatus();
+        };
+    </script>
+</body>
+</html>

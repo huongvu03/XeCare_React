@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Favorites Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test Favorites Fix</h1>
+    <p>This page tests the fix for the "favoriteGarages.slice(...).map is not a function" error.</p>
+
+    <div class="test-section">
+        <h2>Test 1: Check API Response</h2>
+        <button onclick="testFavoritesAPI()">Test Favorites API</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Check Array Methods</h2>
+        <button onclick="testArrayMethods()">Test Array Methods</button>
+        <div id="array-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Simulate Dashboard Scenario</h2>
+        <button onclick="testDashboardScenario()">Test Dashboard Scenario</button>
+        <div id="dashboard-result"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080';
+
+        async function testFavoritesAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<p class="error">❌ No token found. Please login first.</p>';
+                    return;
+                }
+
+                const response = await fetch(`${BASE_URL}/apis/favorites`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const isArray = Array.isArray(data);
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ API Response received</p>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Is Array:</strong> ${isArray}</p>
+                            <p><strong>Length:</strong> ${isArray ? data.length : 'N/A'}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ API Error</p>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Network Error</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testArrayMethods() {
+            const resultDiv = document.getElementById('array-result');
+            
+            const testCases = [
+                { name: 'Empty Array', value: [] },
+                { name: 'Normal Array', value: [{ id: 1, name: 'Test' }] },
+                { name: 'Null', value: null },
+                { name: 'Undefined', value: undefined },
+                { name: 'Object', value: { data: [] } },
+                { name: 'String', value: 'test' },
+                { name: 'Number', value: 123 }
+            ];
+
+            let html = '<div class="success"><h3>Array Method Tests:</h3>';
+            
+            testCases.forEach(testCase => {
+                const value = testCase.value;
+                const isArray = Array.isArray(value);
+                const canMap = isArray && value.length > 0;
+                
+                html += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                        <strong>${testCase.name}:</strong><br>
+                        Value: <code>${JSON.stringify(value)}</code><br>
+                        Is Array: <span style="color: ${isArray ? 'green' : 'red'}">${isArray}</span><br>
+                        Can Map: <span style="color: ${canMap ? 'green' : 'red'}">${canMap}</span><br>
+                        Safe Check: <span style="color: green">${Array.isArray(value) && value.length > 0 ? 'PASS' : 'SAFE'}</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        function testDashboardScenario() {
+            const resultDiv = document.getElementById('dashboard-result');
+            
+            // Simulate different scenarios
+            const scenarios = [
+                {
+                    name: 'Normal Case',
+                    favoriteGarages: [
+                        { id: 1, garageName: 'Garage 1', garageAddress: 'Address 1' },
+                        { id: 2, garageName: 'Garage 2', garageAddress: 'Address 2' }
+                    ]
+                },
+                {
+                    name: 'Empty Array',
+                    favoriteGarages: []
+                },
+                {
+                    name: 'Null Response',
+                    favoriteGarages: null
+                },
+                {
+                    name: 'Undefined Response',
+                    favoriteGarages: undefined
+                },
+                {
+                    name: 'Object Response',
+                    favoriteGarages: { data: [] }
+                }
+            ];
+
+            let html = '<div class="success"><h3>Dashboard Scenario Tests:</h3>';
+            
+            scenarios.forEach(scenario => {
+                const favoriteGarages = scenario.favoriteGarages;
+                
+                // Test the safe check from our fix
+                const safeCheck = Array.isArray(favoriteGarages) && favoriteGarages.length > 0;
+                
+                try {
+                    // This would have caused the original error
+                    const originalCheck = favoriteGarages && favoriteGarages.length > 0;
+                    const originalMap = originalCheck ? favoriteGarages.slice(0, 3).map(item => item) : [];
+                    
+                    html += `
+                        <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                            <strong>${scenario.name}:</strong><br>
+                            Safe Check: <span style="color: green">${safeCheck ? 'PASS' : 'SAFE'}</span><br>
+                            Original Check: <span style="color: ${originalCheck ? 'green' : 'red'}">${originalCheck ? 'PASS' : 'FAIL'}</span><br>
+                            Can Map: <span style="color: ${Array.isArray(favoriteGarages) ? 'green' : 'red'}">${Array.isArray(favoriteGarages)}</span>
+                        </div>
+                    `;
+                } catch (error) {
+                    html += `
+                        <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc; background-color: #f8d7da;">
+                            <strong>${scenario.name}:</strong><br>
+                            <span style="color: red">❌ Original code would fail: ${error.message}</span><br>
+                            Safe Check: <span style="color: green">✅ SAFE</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

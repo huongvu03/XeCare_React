@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Review Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        .warning { border-left: 4px solid #ffc107; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .test-button {
+            background-color: #28a745;
+        }
+        .test-button:hover { background-color: #218838; }
+        .danger-button {
+            background-color: #dc3545;
+        }
+        .danger-button:hover { background-color: #c82333; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .validation-test {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Review Submission</h1>
+    <p>This page tests the review submission functionality with comprehensive validation.</p>
+
+    <div class="test-section info">
+        <h2>📋 Backend Improvements</h2>
+        <ul>
+            <li>✅ Fixed compilation errors in ReviewAppointmentServiceImpl</li>
+            <li>✅ Updated DTO validation (removed appointmentId, improved messages)</li>
+            <li>✅ Enhanced controller validation with @Min annotation</li>
+            <li>✅ Improved error handling with specific HTTP status codes</li>
+            <li>✅ Added comprehensive validation in service layer</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Manual Review Submission Test</h2>
+        <div class="form-group">
+            <label for="appointmentId">Appointment ID:</label>
+            <input type="number" id="appointmentId" value="4" min="1">
+        </div>
+        <div class="form-group">
+            <label for="rating">Rating (1-5 stars):</label>
+            <select id="rating">
+                <option value="1">1 star</option>
+                <option value="2">2 stars</option>
+                <option value="3">3 stars</option>
+                <option value="4">4 stars</option>
+                <option value="5" selected>5 stars</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="comment">Comment (10-500 characters):</label>
+            <textarea id="comment" placeholder="Nhập nhận xét của bạn...">Dịch vụ rất tốt! Nhân viên chuyên nghiệp và thân thiện. Tôi rất hài lòng với chất lượng sửa chữa và thái độ phục vụ của garage.</textarea>
+        </div>
+        <button class="test-button" onclick="submitReview()">Submit Review</button>
+        <button class="danger-button" onclick="testInvalidData()">Test Invalid Data</button>
+        <div id="submission-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Validation Tests</h2>
+        <button class="test-button" onclick="testRatingValidation()">Test Rating Validation</button>
+        <button class="test-button" onclick="testCommentValidation()">Test Comment Validation</button>
+        <button class="test-button" onclick="testAuthenticationValidation()">Test Authentication</button>
+        <button class="test-button" onclick="testAppointmentValidation()">Test Appointment Validation</button>
+        <div id="validation-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Database Check</h2>
+        <button class="test-button" onclick="checkReviewInDatabase()">Check Reviews in Database</button>
+        <div id="database-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 Frontend Integration Test</h2>
+        <button class="test-button" onclick="testFrontendIntegration()">Test Frontend Integration</button>
+        <div id="frontend-results"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080';
+        const FRONTEND_URL = 'http://localhost:3000';
+
+        function getAuthToken() {
+            return localStorage.getItem('token');
+        }
+
+        async function submitReview() {
+            const resultsDiv = document.getElementById('submission-results');
+            const appointmentId = document.getElementById('appointmentId').value;
+            const rating = parseInt(document.getElementById('rating').value);
+            const comment = document.getElementById('comment').value;
+
+            resultsDiv.innerHTML = '<p>Submitting review...</p>';
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                    return;
+                }
+
+                const reviewData = {
+                    rating: rating,
+                    comment: comment
+                };
+
+                const response = await fetch(`${BASE_URL}/apis/review-appointment/${appointmentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅' : '❌'} Review Submission Test
+                    </div>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Request Data:</strong></p>
+                    <pre>${JSON.stringify(reviewData, null, 2)}</pre>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error submitting review
+                    </div>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testInvalidData() {
+            const resultsDiv = document.getElementById('validation-results');
+            resultsDiv.innerHTML = '<p>Testing invalid data scenarios...</p>';
+
+            const token = getAuthToken();
+            if (!token) {
+                resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                return;
+            }
+
+            const testCases = [
+                {
+                    name: "Invalid Rating (0)",
+                    data: { rating: 0, comment: "Valid comment with enough characters" },
+                    expectedError: "Rating phải từ 1 đến 5 sao"
+                },
+                {
+                    name: "Invalid Rating (6)",
+                    data: { rating: 6, comment: "Valid comment with enough characters" },
+                    expectedError: "Rating phải từ 1 đến 5 sao"
+                },
+                {
+                    name: "Empty Comment",
+                    data: { rating: 5, comment: "" },
+                    expectedError: "Nhận xét không được để trống"
+                },
+                {
+                    name: "Comment Too Short",
+                    data: { rating: 5, comment: "Short" },
+                    expectedError: "Nhận xét phải từ 10 đến 500 ký tự"
+                },
+                {
+                    name: "Comment Too Long",
+                    data: { rating: 5, comment: "a".repeat(501) },
+                    expectedError: "Nhận xét phải từ 10 đến 500 ký tự"
+                }
+            ];
+
+            let results = '<h3>Validation Test Results:</h3>';
+
+            for (const testCase of testCases) {
+                try {
+                    const response = await fetch(`${BASE_URL}/apis/review-appointment/4`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testCase.data)
+                    });
+
+                    const data = await response.json();
+
+                    const passed = !response.ok && data.message && data.message.includes(testCase.expectedError);
+                    
+                    results += `
+                        <div class="validation-test">
+                            <strong>${testCase.name}:</strong>
+                            <span class="status ${passed ? 'success' : 'error'}">
+                                ${passed ? '✅ PASS' : '❌ FAIL'}
+                            </span>
+                            <p><strong>Expected:</strong> ${testCase.expectedError}</p>
+                            <p><strong>Got:</strong> ${data.message || 'No message'}</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div class="validation-test">
+                            <strong>${testCase.name}:</strong>
+                            <span class="status error">❌ ERROR</span>
+                            <p><strong>Error:</strong> ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        async function testRatingValidation() {
+            const resultsDiv = document.getElementById('validation-results');
+            resultsDiv.innerHTML = '<p>Testing rating validation...</p>';
+
+            // Test cases for rating validation
+            const testCases = [
+                { rating: 0, shouldFail: true },
+                { rating: 1, shouldFail: false },
+                { rating: 3, shouldFail: false },
+                { rating: 5, shouldFail: false },
+                { rating: 6, shouldFail: true },
+                { rating: -1, shouldFail: true }
+            ];
+
+            let results = '<h3>Rating Validation Tests:</h3>';
+
+            for (const testCase of testCases) {
+                const testData = {
+                    rating: testCase.rating,
+                    comment: "This is a valid comment with enough characters for testing purposes."
+                };
+
+                try {
+                    const token = getAuthToken();
+                    const response = await fetch(`${BASE_URL}/apis/review-appointment/4`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    const data = await response.json();
+                    const passed = testCase.shouldFail ? !response.ok : response.ok;
+
+                    results += `
+                        <div class="validation-test">
+                            <strong>Rating ${testCase.rating}:</strong>
+                            <span class="status ${passed ? 'success' : 'error'}">
+                                ${passed ? '✅ PASS' : '❌ FAIL'}
+                            </span>
+                            <p><strong>Expected:</strong> ${testCase.shouldFail ? 'Should fail' : 'Should pass'}</p>
+                            <p><strong>Result:</strong> ${response.ok ? 'Success' : 'Failed'}</p>
+                            <p><strong>Message:</strong> ${data.message || 'No message'}</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div class="validation-test">
+                            <strong>Rating ${testCase.rating}:</strong>
+                            <span class="status error">❌ ERROR</span>
+                            <p><strong>Error:</strong> ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        async function testCommentValidation() {
+            const resultsDiv = document.getElementById('validation-results');
+            resultsDiv.innerHTML = '<p>Testing comment validation...</p>';
+
+            const testCases = [
+                { comment: "", shouldFail: true, description: "Empty comment" },
+                { comment: "Short", shouldFail: true, description: "Comment too short" },
+                { comment: "This is exactly ten characters", shouldFail: false, description: "Minimum length comment" },
+                { comment: "A".repeat(500), shouldFail: false, description: "Maximum length comment" },
+                { comment: "A".repeat(501), shouldFail: true, description: "Comment too long" }
+            ];
+
+            let results = '<h3>Comment Validation Tests:</h3>';
+
+            for (const testCase of testCases) {
+                const testData = {
+                    rating: 5,
+                    comment: testCase.comment
+                };
+
+                try {
+                    const token = getAuthToken();
+                    const response = await fetch(`${BASE_URL}/apis/review-appointment/4`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    const data = await response.json();
+                    const passed = testCase.shouldFail ? !response.ok : response.ok;
+
+                    results += `
+                        <div class="validation-test">
+                            <strong>${testCase.description}:</strong>
+                            <span class="status ${passed ? 'success' : 'error'}">
+                                ${passed ? '✅ PASS' : '❌ FAIL'}
+                            </span>
+                            <p><strong>Comment Length:</strong> ${testCase.comment.length}</p>
+                            <p><strong>Expected:</strong> ${testCase.shouldFail ? 'Should fail' : 'Should pass'}</p>
+                            <p><strong>Result:</strong> ${response.ok ? 'Success' : 'Failed'}</p>
+                            <p><strong>Message:</strong> ${data.message || 'No message'}</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div class="validation-test">
+                            <strong>${testCase.description}:</strong>
+                            <span class="status error">❌ ERROR</span>
+                            <p><strong>Error:</strong> ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        async function testAuthenticationValidation() {
+            const resultsDiv = document.getElementById('validation-results');
+            resultsDiv.innerHTML = '<p>Testing authentication validation...</p>';
+
+            const testData = {
+                rating: 5,
+                comment: "This is a valid comment for testing authentication."
+            };
+
+            try {
+                // Test without token
+                const responseWithoutToken = await fetch(`${BASE_URL}/apis/review-appointment/4`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const dataWithoutToken = await responseWithoutToken.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="validation-test">
+                        <strong>Authentication Test:</strong>
+                        <span class="status ${!responseWithoutToken.ok ? 'success' : 'error'}">
+                            ${!responseWithoutToken.ok ? '✅ PASS' : '❌ FAIL'}
+                        </span>
+                        <p><strong>Expected:</strong> Should fail without authentication</p>
+                        <p><strong>Result:</strong> ${responseWithoutToken.ok ? 'Success (unexpected)' : 'Failed (expected)'}</p>
+                        <p><strong>Status:</strong> ${responseWithoutToken.status}</p>
+                        <p><strong>Message:</strong> ${dataWithoutToken.message || 'No message'}</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="validation-test">
+                        <strong>Authentication Test:</strong>
+                        <span class="status error">❌ ERROR</span>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAppointmentValidation() {
+            const resultsDiv = document.getElementById('validation-results');
+            resultsDiv.innerHTML = '<p>Testing appointment validation...</p>';
+
+            const testCases = [
+                { appointmentId: 0, shouldFail: true, description: "Invalid appointment ID (0)" },
+                { appointmentId: -1, shouldFail: true, description: "Negative appointment ID" },
+                { appointmentId: 99999, shouldFail: true, description: "Non-existent appointment ID" }
+            ];
+
+            let results = '<h3>Appointment Validation Tests:</h3>';
+
+            for (const testCase of testCases) {
+                const testData = {
+                    rating: 5,
+                    comment: "This is a valid comment for testing appointment validation."
+                };
+
+                try {
+                    const token = getAuthToken();
+                    const response = await fetch(`${BASE_URL}/apis/review-appointment/${testCase.appointmentId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    const data = await response.json();
+                    const passed = testCase.shouldFail ? !response.ok : response.ok;
+
+                    results += `
+                        <div class="validation-test">
+                            <strong>${testCase.description}:</strong>
+                            <span class="status ${passed ? 'success' : 'error'}">
+                                ${passed ? '✅ PASS' : '❌ FAIL'}
+                            </span>
+                            <p><strong>Appointment ID:</strong> ${testCase.appointmentId}</p>
+                            <p><strong>Expected:</strong> ${testCase.shouldFail ? 'Should fail' : 'Should pass'}</p>
+                            <p><strong>Result:</strong> ${response.ok ? 'Success' : 'Failed'}</p>
+                            <p><strong>Message:</strong> ${data.message || 'No message'}</p>
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div class="validation-test">
+                            <strong>${testCase.description}:</strong>
+                            <span class="status error">❌ ERROR</span>
+                            <p><strong>Error:</strong> ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        async function checkReviewInDatabase() {
+            const resultsDiv = document.getElementById('database-results');
+            resultsDiv.innerHTML = '<p>Checking reviews in database...</p>';
+
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="status error">❌ No authentication token found</div>';
+                    return;
+                }
+
+                // Get user's review history
+                const response = await fetch(`${BASE_URL}/apis/review-appointment/my-reviews?page=0&size=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        ${response.ok ? '✅' : '❌'} Database Check
+                    </div>
+                    <p><strong>Total Reviews:</strong> ${data.data?.totalElements || 0}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Error checking database
+                    </div>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        function testFrontendIntegration() {
+            const resultsDiv = document.getElementById('frontend-results');
+            
+            resultsDiv.innerHTML = `
+                <div class="status info">
+                    ℹ️ Frontend Integration Test
+                </div>
+                <p><strong>To test frontend integration:</strong></p>
+                <ol>
+                    <li>Go to <a href="${FRONTEND_URL}/user/appointments" target="_blank">${FRONTEND_URL}/user/appointments</a></li>
+                    <li>Click "Chờ đánh giá" filter</li>
+                    <li>Find an appointment with "Đánh giá ngay" button</li>
+                    <li>Click "Đánh giá ngay" to open modal</li>
+                    <li>Test validation by:
+                        <ul>
+                            <li>Leaving rating unselected</li>
+                            <li>Entering comment less than 10 characters</li>
+                            <li>Entering comment more than 500 characters</li>
+                        </ul>
+                    </li>
+                    <li>Submit a valid review</li>
+                    <li>Verify the appointment disappears from "Chờ đánh giá" filter</li>
+                </ol>
+                <p><strong>Expected Behavior:</strong></p>
+                <ul>
+                    <li>✅ Validation errors show for invalid data</li>
+                    <li>✅ Valid reviews submit successfully</li>
+                    <li>✅ UI updates after successful submission</li>
+                    <li>✅ No console errors</li>
+                </ul>
+            `;
+        }
+
+        // Check auth status on page load
+        window.onload = function() {
+            const token = getAuthToken();
+            if (!token) {
+                document.body.insertAdjacentHTML('afterbegin', `
+                    <div style="background: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border-radius: 4px;">
+                        ⚠️ No authentication token found. Please login first at <a href="${FRONTEND_URL}/auth">${FRONTEND_URL}/auth</a>
+                    </div>
+                `);
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Appointments Review Feature</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        .warning { border-left: 4px solid #ffc107; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .filter-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
+            font-size: 14px;
+        }
+        .filter-button.active {
+            background-color: #007bff;
+        }
+        .filter-button.review-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .filter-button.review-pending.active {
+            background-color: #fd7e14;
+            color: white;
+        }
+        .mock-appointment {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            background: white;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d1ecf1; color: #0c5460; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .review-section {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .star { color: #ffc107; }
+        .review-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .review-button:hover { background: #0056b3; }
+        .reviewed { color: #28a745; }
+        .garage-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .filter-demo {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Appointments Review Feature</h1>
+    <p>This page demonstrates the new review functionality added to the User Appointments page.</p>
+
+    <div class="test-section info">
+        <h2>📋 Feature Overview</h2>
+        <p><strong>New Functionality:</strong></p>
+        <ul>
+            <li>✅ New "Chờ đánh giá" filter button</li>
+            <li>✅ Review section for completed appointments</li>
+            <li>✅ "Đánh giá ngay" button for pending reviews</li>
+            <li>✅ "Đã đánh giá" status display</li>
+            <li>✅ Filter logic for appointments completed but not reviewed</li>
+            <li>✅ Integration with ReviewAppointmentModal</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Filter Buttons Demo</h2>
+        <div class="filter-demo">
+            <p><strong>Filter Options:</strong></p>
+            <button class="filter-button active">Tất cả</button>
+            <button class="filter-button">Chờ xác nhận</button>
+            <button class="filter-button">Đã xác nhận</button>
+            <button class="filter-button">Hoàn thành</button>
+            <button class="filter-button">Đã hủy</button>
+            <button class="filter-button review-pending active">⭐ Chờ đánh giá</button>
+        </div>
+        <p><strong>Special Filter:</strong> "Chờ đánh giá" shows only completed appointments that haven't been reviewed yet.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Mock Appointment Cards</h2>
+        <div id="mock-appointments"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Test Scenarios</h2>
+        <button onclick="testReviewPendingFilter()">Test Review Pending Filter</button>
+        <button onclick="testCompletedAppointment()">Test Completed Appointment</button>
+        <button onclick="testReviewedAppointment()">Test Already Reviewed</button>
+        <button onclick="testFilterLogic()">Test Filter Logic</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 API Integration Test</h2>
+        <button onclick="testAPIEndpoints()">Test Review API Endpoints</button>
+        <div id="api-results"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8080';
+
+        function createMockAppointmentCard(appointment, reviewStatus) {
+            return `
+                <div class="mock-appointment">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="margin: 0; color: #333;">Lịch hẹn #${appointment.id}</h3>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                                🚗 ${appointment.vehicleType} - ${appointment.licensePlate}
+                            </p>
+                        </div>
+                        <span class="status-badge status-${appointment.status.toLowerCase()}">${appointment.statusText}</span>
+                    </div>
+                    
+                    <div class="garage-info">
+                        <strong>🏢 ${appointment.garageName}</strong><br>
+                        📍 ${appointment.garageAddress}<br>
+                        📞 ${appointment.garagePhone}
+                    </div>
+                    
+                    <div style="margin: 10px 0;">
+                        <strong>📅 Ngày:</strong> ${appointment.date}<br>
+                        <strong>🔧 Dịch vụ:</strong> ${appointment.serviceName}<br>
+                        <strong>💰 Giá:</strong> ${appointment.price} VNĐ
+                    </div>
+                    
+                    ${appointment.status === 'COMPLETED' ? `
+                        <div class="review-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="star">⭐</span>
+                                    <span><strong>Đánh giá dịch vụ</strong></span>
+                                </div>
+                                ${reviewStatus.canReview ? `
+                                    <button class="review-button" onclick="openReviewModal(${appointment.id})">
+                                        ⭐ Đánh giá ngay
+                                    </button>
+                                ` : reviewStatus.hasReviewed ? `
+                                    <div class="reviewed">
+                                        <span class="star">⭐</span> Đã đánh giá
+                                    </div>
+                                ` : `
+                                    <div style="color: #6c757d;">
+                                        Không thể đánh giá
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function loadMockAppointments() {
+            const mockData = [
+                {
+                    id: 1,
+                    vehicleType: "Toyota Fortuner",
+                    licensePlate: "51A-12345",
+                    garageName: "Garage Lê Lợi",
+                    garageAddress: "123 Đường ABC, Quận 1, TP.HCM",
+                    garagePhone: "0901234567",
+                    date: "22 tháng 9, 2025",
+                    serviceName: "Thay dầu động cơ",
+                    price: "500,000",
+                    status: "COMPLETED",
+                    statusText: "Hoàn thành",
+                    reviewStatus: { canReview: true, hasReviewed: false }
+                },
+                {
+                    id: 2,
+                    vehicleType: "Honda CR-V",
+                    licensePlate: "30A-67890",
+                    garageName: "Garage Minh Châu",
+                    garageAddress: "456 Đường XYZ, Quận 2, TP.HCM",
+                    garagePhone: "0987654321",
+                    date: "20 tháng 9, 2025",
+                    serviceName: "Bảo dưỡng định kỳ",
+                    price: "800,000",
+                    status: "COMPLETED",
+                    statusText: "Hoàn thành",
+                    reviewStatus: { canReview: false, hasReviewed: true }
+                },
+                {
+                    id: 3,
+                    vehicleType: "Ford Ranger",
+                    licensePlate: "43B-11111",
+                    garageName: "Garage Đức Anh",
+                    garageAddress: "789 Đường DEF, Quận 3, TP.HCM",
+                    garagePhone: "0912345678",
+                    date: "18 tháng 9, 2025",
+                    serviceName: "Sửa phanh",
+                    price: "1,200,000",
+                    status: "PENDING",
+                    statusText: "Chờ xác nhận",
+                    reviewStatus: { canReview: false, hasReviewed: false }
+                },
+                {
+                    id: 4,
+                    vehicleType: "Mazda CX-5",
+                    licensePlate: "29C-22222",
+                    garageName: "Garage Thành Công",
+                    garageAddress: "321 Đường GHI, Quận 4, TP.HCM",
+                    garagePhone: "0923456789",
+                    date: "15 tháng 9, 2025",
+                    serviceName: "Thay lốp",
+                    price: "2,000,000",
+                    status: "COMPLETED",
+                    statusText: "Hoàn thành",
+                    reviewStatus: { canReview: true, hasReviewed: false }
+                }
+            ];
+
+            const appointmentsDiv = document.getElementById('mock-appointments');
+            appointmentsDiv.innerHTML = `
+                <h3>Mock Appointment Cards:</h3>
+                ${mockData.map(appointment => createMockAppointmentCard(appointment, appointment.reviewStatus)).join('')}
+            `;
+        }
+
+        function openReviewModal(appointmentId) {
+            alert(`Opening review modal for appointment ${appointmentId}\n\nIn the real application, this would:\n1. Open ReviewAppointmentModal component\n2. Show star rating selector (1-5 stars)\n3. Show comment textarea\n4. Validate form input\n5. Submit review via API\n6. Update appointment status to "reviewed"`);
+        }
+
+        function testReviewPendingFilter() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="warning">
+                    <h3>🔍 Test: Review Pending Filter</h3>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Filter should show only appointments with status = "COMPLETED"</li>
+                        <li>AND appointmentReviewStatus[appointmentId].canReview = true</li>
+                        <li>Should hide appointments that are already reviewed</li>
+                        <li>Should hide appointments with other statuses</li>
+                    </ul>
+                    <p><strong>Filter Logic:</strong></p>
+                    <pre>appointments.filter(apt => {
+  return apt.status === "COMPLETED" && 
+         appointmentReviewStatus[apt.id] && 
+         appointmentReviewStatus[apt.id].canReview
+})</pre>
+                </div>
+            `;
+        }
+
+        function testCompletedAppointment() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="success">
+                    <h3>✅ Test: Completed Appointment</h3>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Review section should be visible</li>
+                        <li>"Đánh giá ngay" button should be clickable</li>
+                        <li>Modal should open when button is clicked</li>
+                        <li>User can submit rating and comment</li>
+                        <li>After submission, button should change to "Đã đánh giá"</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function testReviewedAppointment() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="info">
+                    <h3>ℹ️ Test: Already Reviewed Appointment</h3>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Review section should be visible</li>
+                        <li>Should show "Đã đánh giá" with filled star icon</li>
+                        <li>No "Đánh giá ngay" button should be present</li>
+                        <li>Should NOT appear in "Chờ đánh giá" filter</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function testFilterLogic() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="info">
+                    <h3>🔍 Test: Filter Logic</h3>
+                    <p><strong>Filter Scenarios:</strong></p>
+                    <ul>
+                        <li><strong>Tất cả:</strong> Show all appointments</li>
+                        <li><strong>Hoàn thành:</strong> Show only COMPLETED appointments</li>
+                        <li><strong>Chờ đánh giá:</strong> Show COMPLETED + canReview=true</li>
+                        <li><strong>Other filters:</strong> Show appointments by specific status</li>
+                    </ul>
+                    <p><strong>Key Logic:</strong></p>
+                    <pre>if (filterStatus === "REVIEW_PENDING") {
+  filteredAppointments = appointmentsData.filter(apt => {
+    return apt.status === "COMPLETED" && 
+           appointmentReviewStatus[apt.id] && 
+           appointmentReviewStatus[apt.id].canReview
+  })
+}</pre>
+                </div>
+            `;
+        }
+
+        async function testAPIEndpoints() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<p>Testing API endpoints...</p>';
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ No authentication token found. Please login first.</p>
+                            <p><strong>Endpoints to test:</strong></p>
+                            <ul>
+                                <li>GET /apis/user/appointments/my - Get user appointments</li>
+                                <li>GET /apis/review-appointment/can-review/{appointmentId} - Check review status</li>
+                                <li>POST /apis/review-appointment - Create review</li>
+                            </ul>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Test appointments endpoint
+                const appointmentsResponse = await fetch(`${BASE_URL}/apis/user/appointments/my?page=0&size=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const appointmentsData = await appointmentsResponse.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ API Endpoint Tests</h3>
+                        <p><strong>Appointments Endpoint:</strong></p>
+                        <pre>GET /apis/user/appointments/my</pre>
+                        <p><strong>Response:</strong></p>
+                        <pre>${JSON.stringify(appointmentsData, null, 2)}</pre>
+                        
+                        <p><strong>Review Endpoints:</strong></p>
+                        <ul>
+                            <li>GET /apis/review-appointment/can-review/{appointmentId}</li>
+                            <li>POST /apis/review-appointment</li>
+                            <li>GET /apis/review-appointment/my-reviews</li>
+                        </ul>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Error testing API endpoints:</p>
+                        <p>${error.message}</p>
+                        <p><strong>Make sure:</strong></p>
+                        <ul>
+                            <li>Backend server is running on localhost:8080</li>
+                            <li>Database migration has been applied</li>
+                            <li>User is authenticated with valid token</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // Load mock appointments on page load
+        window.onload = function() {
+            loadMockAppointments();
+        };
+    </script>
+</body>
+</html>

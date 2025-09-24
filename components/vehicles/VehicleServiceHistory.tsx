@@ -4,10 +4,12 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Loader2, Calendar, MapPin, Wrench, Clock, DollarSign } from "lucide-react"
+import { Loader2, Calendar, MapPin, Wrench, Clock, DollarSign, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getUserAppointments, type Appointment } from "@/lib/api/AppointmentApi"
 import { getSystemServices, type SystemService } from "@/lib/api/GarageServiceApi"
+import { canUserReviewAppointment, type CanReviewResponse } from "@/lib/api/ReviewAppointmentApi"
+import { ReviewAppointmentModal } from "@/components/review/ReviewAppointmentModal"
 
 interface VehicleServiceHistoryProps {
   vehicleId?: number
@@ -26,6 +28,11 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
   const [services, setServices] = useState<SystemService[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+
+  // Review Modal State
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
+  const [appointmentReviewStatus, setAppointmentReviewStatus] = useState<Record<number, CanReviewResponse>>({})
 
   useEffect(() => {
     const loadData = async () => {
@@ -91,6 +98,51 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
 
     loadData()
   }, [vehicleId, vehicle, limit, toast])
+
+  // Load review status for completed appointments
+  useEffect(() => {
+    const loadReviewStatus = async () => {
+      if (!appointments) return
+      
+      const completedAppointments = appointments.filter(app => app.status === "COMPLETED")
+      
+      for (const appointment of completedAppointments) {
+        try {
+          const response = await canUserReviewAppointment(appointment.id)
+          setAppointmentReviewStatus(prev => ({
+            ...prev,
+            [appointment.id]: response.data
+          }))
+        } catch (error) {
+          console.error(`Error loading review status for appointment ${appointment.id}:`, error)
+        }
+      }
+    }
+
+    loadReviewStatus()
+  }, [appointments])
+
+  // Handle review functions
+  const handleReviewClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment)
+    setReviewModalOpen(true)
+  }
+
+  const handleReviewSubmitted = () => {
+    // Refresh appointments to get updated data
+    window.location.reload()
+    
+    // Update review status for this appointment
+    if (selectedAppointment) {
+      setAppointmentReviewStatus(prev => ({
+        ...prev,
+        [selectedAppointment.id]: {
+          canReview: false,
+          hasReviewed: true
+        }
+      }))
+    }
+  }
 
   const getServiceDescription = (serviceName: string) => {
     // Try exact match first
@@ -203,6 +255,39 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
                   )}
                 </div>
               </div>
+
+              {/* Review Button for Completed Appointments */}
+              {appointment.status === "COMPLETED" && appointmentReviewStatus[appointment.id] && (
+                <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Star className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900">
+                        Đánh giá dịch vụ
+                      </span>
+                    </div>
+                    {appointmentReviewStatus[appointment.id].canReview ? (
+                      <Button
+                        size="sm"
+                        onClick={() => handleReviewClick(appointment)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Star className="h-4 w-4 mr-1" />
+                        Đánh giá
+                      </Button>
+                    ) : appointmentReviewStatus[appointment.id].hasReviewed ? (
+                      <div className="flex items-center text-green-600 text-sm">
+                        <Star className="h-4 w-4 mr-1 fill-current" />
+                        <span>Đã đánh giá</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-gray-500 text-sm">
+                        <span>Không thể đánh giá</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center text-slate-600">
@@ -257,6 +342,19 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
           </Card>
         ))}
       </div>
+
+      {/* Review Modal */}
+      {selectedAppointment && (
+        <ReviewAppointmentModal
+          isOpen={reviewModalOpen}
+          onClose={() => setReviewModalOpen(false)}
+          appointmentId={selectedAppointment.id}
+          garageName={selectedAppointment.garageName}
+          serviceName={selectedAppointment.serviceName}
+          appointmentDate={selectedAppointment.appointmentDate}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      )}
     </div>
   )
 }
