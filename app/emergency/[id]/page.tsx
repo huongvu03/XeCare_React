@@ -924,7 +924,7 @@ export default function EmergencyDetailPage() {
                           <p className="text-sm font-medium text-gray-700">Latitude</p>
                         </div>
                         <p className="text-xl font-mono font-bold text-blue-800 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                          {request.latitude.toFixed(6)}
+                          {request.latitude ? request.latitude.toFixed(6) : 'N/A'}
                         </p>
                       </div>
                       
