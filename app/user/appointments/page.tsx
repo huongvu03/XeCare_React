@@ -106,13 +106,13 @@ export default function AppointmentsPage() {
       
       // Specific error handling
       if (err.response?.status === 401) {
-        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
+        setError("Your session has expired. Please log in again.")
       } else if (err.response?.status === 403) {
-        setError("Bạn không có quyền truy cập. Vui lòng kiểm tra tài khoản.")
+        setError("You don't have permission to access. Please check your account.")
       } else if (err.response?.status === 500) {
-        setError("Lỗi server. Vui lòng thử lại sau.")
+        setError("Server error. Please try again later.")
       } else {
-        setError("Không thể tải danh sách lịch hẹn. Vui lòng thử lại.")
+        setError("Cannot load appointments list. Please try again.")
       }
     } finally {
       setLoading(false)
@@ -166,6 +166,14 @@ export default function AppointmentsPage() {
         return apt.status === "COMPLETED" && 
                appointmentReviewStatus[apt.id] && 
                appointmentReviewStatus[apt.id].canReview
+      })
+      setAppointments(filtered)
+    } else if (filterStatus === "REVIEWED") {
+      // Filter for completed appointments that have been reviewed
+      const filtered = appointmentsList.filter(apt => {
+        return apt.status === "COMPLETED" && 
+               appointmentReviewStatus[apt.id] && 
+               appointmentReviewStatus[apt.id].hasReviewed
       })
       setAppointments(filtered)
     } else {
@@ -228,11 +236,11 @@ export default function AppointmentsPage() {
   // Show loading while auth is being checked
   if (authLoading) {
     return (
-      <DashboardLayout allowedRoles={["USER", "GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+      <DashboardLayout allowedRoles={["USER", "GARAGE"]} title="Appointments" description="Manage your appointments">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">Đang tải...</p>
+            <p className="text-gray-500">Loading...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -242,14 +250,14 @@ export default function AppointmentsPage() {
   // Show message if user not authenticated
   if (!user) {
     return (
-      <DashboardLayout allowedRoles={["USER", "GARAGE"]} title="Lịch hẹn" description="Quản lý lịch hẹn của bạn">
+      <DashboardLayout allowedRoles={["USER", "GARAGE"]} title="Appointments" description="Manage your appointments">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Cần đăng nhập</h3>
-            <p className="text-gray-500 mb-4">Vui lòng đăng nhập để xem lịch hẹn của bạn</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Login Required</h3>
+            <p className="text-gray-500 mb-4">Please log in to view your appointments</p>
             <Button onClick={() => window.location.href = '/auth'}>
-              Đăng nhập
+              Login
             </Button>
           </div>
         </div>
@@ -277,7 +285,7 @@ export default function AppointmentsPage() {
     if (!appointmentToCancel) return
     
     if (!cancelReason.trim()) {
-      alert("Vui lòng nhập lý do hủy lịch hẹn")
+      alert("Please enter the cancellation reason")
       return
     }
 
@@ -300,15 +308,15 @@ export default function AppointmentsPage() {
       
       // Clear any previous errors
       setError("")
-      alert("Hủy lịch hẹn thành công!")
+      alert("Appointment cancelled successfully!")
       
       // Reload appointments to get fresh data from server
       setTimeout(() => loadAppointments(), 1000)
       
     } catch (err: any) {
       console.error("❌ Error cancelling appointment:", err)
-      const errorMessage = err.response?.data?.message || err.message || "Lỗi không xác định"
-      setError(`Không thể hủy lịch hẹn: ${errorMessage}`)
+      const errorMessage = err.response?.data?.message || err.message || "Unknown error"
+      setError(`Cannot cancel appointment: ${errorMessage}`)
       setIsCancelling(false)
     }
   }
@@ -317,15 +325,15 @@ export default function AppointmentsPage() {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case "PENDING":
-        return { color: "bg-yellow-100 text-yellow-700", text: "Chờ xác nhận", icon: AlertCircle }
+        return { color: "bg-yellow-100 text-yellow-700", text: "Pending", icon: AlertCircle }
       case "CONFIRMED":
-        return { color: "bg-blue-100 text-blue-700", text: "Đã xác nhận", icon: CheckCircle }
+        return { color: "bg-blue-100 text-blue-700", text: "Confirmed", icon: CheckCircle }
       case "COMPLETED":
-        return { color: "bg-green-100 text-green-700", text: "Hoàn thành", icon: CheckCircle }
+        return { color: "bg-green-100 text-green-700", text: "Completed", icon: CheckCircle }
       case "CANCELLED":
-        return { color: "bg-gray-100 text-gray-700", text: "Đã hủy", icon: X }
+        return { color: "bg-gray-100 text-gray-700", text: "Cancelled", icon: X }
       case "REJECTED":
-        return { color: "bg-red-100 text-red-700", text: "Bị từ chối", icon: X }
+        return { color: "bg-red-100 text-red-700", text: "Rejected", icon: X }
       default:
         return { color: "bg-gray-100 text-gray-700", text: status, icon: AlertCircle }
     }
@@ -336,7 +344,7 @@ export default function AppointmentsPage() {
     console.log("🕐 Full garage object:", garage)
     
     // Try multiple approaches to get working hours
-    let result = "Chưa cập nhật"
+    let result = "Not updated"
     
     // Approach 1: Check operatingHours object
     if (garage.operatingHours) {
@@ -381,8 +389,8 @@ export default function AppointmentsPage() {
   return (
     <DashboardLayout
       allowedRoles={["USER", "GARAGE" ]}
-      title="Lịch hẹn của tôi"
-      description="Quản lý các lịch hẹn sửa xe"
+      title="My Appointments"
+      description="Manage your vehicle service appointments"
     >
       {/* Filter */}
       <Card className="border-blue-100 mb-6">
@@ -399,7 +407,7 @@ export default function AppointmentsPage() {
                 setFilterStatus("")
               }}
             >
-              Tất cả
+              All
             </Button>
             <Button
               variant={filterStatus === "PENDING" ? "default" : "outline"}
@@ -409,7 +417,7 @@ export default function AppointmentsPage() {
                 setFilterStatus("PENDING")
               }}
             >
-              Chờ xác nhận
+              Pending
             </Button>
             <Button
               variant={filterStatus === "CONFIRMED" ? "default" : "outline"}
@@ -419,7 +427,7 @@ export default function AppointmentsPage() {
                 setFilterStatus("CONFIRMED")
               }}
             >
-              Đã xác nhận
+              Confirmed
             </Button>
             <Button
               variant={filterStatus === "COMPLETED" ? "default" : "outline"}
@@ -429,7 +437,7 @@ export default function AppointmentsPage() {
                 setFilterStatus("COMPLETED")
               }}
             >
-              Hoàn thành
+              Completed
             </Button>
             <Button
               variant={filterStatus === "CANCELLED" ? "default" : "outline"}
@@ -439,7 +447,7 @@ export default function AppointmentsPage() {
                 setFilterStatus("CANCELLED")
               }}
             >
-              Đã hủy
+              Cancelled
             </Button>
             <Button
               variant={filterStatus === "REVIEW_PENDING" ? "default" : "outline"}
@@ -451,7 +459,19 @@ export default function AppointmentsPage() {
               className="bg-yellow-600 hover:bg-yellow-700 text-white"
             >
               <Star className="h-4 w-4 mr-1" />
-              Chờ đánh giá
+              Pending Review
+            </Button>
+            <Button
+              variant={filterStatus === "REVIEWED" ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                console.log("🔍 Setting filter to: REVIEWED")
+                setFilterStatus("REVIEWED")
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Star className="h-4 w-4 mr-1 fill-current" />
+              Reviewed
             </Button>
           </div>
         </CardContent>
@@ -473,7 +493,7 @@ export default function AppointmentsPage() {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-slate-600">Đang tải lịch hẹn...</p>
+              <p className="text-slate-600">Loading appointments...</p>
             </div>
           </div>
         ) : (appointments?.length || 0) === 0 ? (
@@ -481,16 +501,16 @@ export default function AppointmentsPage() {
             <CardContent className="p-8 text-center">
               <Calendar className="h-12 w-12 text-slate-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-slate-900 mb-2">
-                Chưa có lịch hẹn nào
+                No appointments yet
               </h3>
               <p className="text-slate-600 mb-4">
-                Bạn chưa có lịch hẹn nào. Hãy tìm garage và đặt lịch hẹn ngay!
+                You don't have any appointments yet. Find a garage and book an appointment now!
               </p>
               <Button 
                 className="bg-gradient-to-r from-blue-600 to-cyan-600"
                 onClick={() => window.location.href = "/search"}
               >
-                Tìm garage ngay
+                Find Garage Now
               </Button>
             </CardContent>
           </Card>
@@ -511,12 +531,12 @@ export default function AppointmentsPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="text-lg font-semibold text-slate-900">
-                            Lịch hẹn #{appointment.id}
+                            Appointment #{appointment.id}
                           </h3>
                           <div className="flex items-center space-x-2 mt-1">
                             <Car className="h-4 w-4 text-slate-400" />
                             <span className="text-sm text-slate-600">
-                              {appointment.vehicleTypeName || "Chưa xác định"}
+                              {appointment.vehicleTypeName || "Not specified"}
                               {appointment.vehicleBrand && ` - ${appointment.vehicleBrand}`}
                               {appointment.vehicleModel && ` ${appointment.vehicleModel}`}
                               {appointment.licensePlate && ` (${appointment.licensePlate})`}
@@ -541,7 +561,7 @@ export default function AppointmentsPage() {
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-slate-600">
                           <Clock4 className="h-4 w-4" />
-                          <span>Giờ mở cửa: {garage ? formatWorkingHours(garage) : "Đang tải..."}</span>
+                          <span>Opening hours: {garage ? formatWorkingHours(garage) : "Loading..."}</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-slate-600">
                           <Calendar className="h-4 w-4" />
@@ -555,7 +575,7 @@ export default function AppointmentsPage() {
 
                       {appointment.description && (
                         <div>
-                          <h4 className="text-sm font-medium text-slate-700 mb-1">Mô tả:</h4>
+                          <h4 className="text-sm font-medium text-slate-700 mb-1">Description:</h4>
                           <p className="text-sm text-slate-600">{appointment.description}</p>
                         </div>
                       )}
@@ -563,7 +583,7 @@ export default function AppointmentsPage() {
                       {/* Service */}
                       {appointment.serviceName && (
                         <div>
-                          <h4 className="text-sm font-medium text-slate-700 mb-2">Dịch vụ:</h4>
+                          <h4 className="text-sm font-medium text-slate-700 mb-2">Service:</h4>
                           <Badge variant="outline" className="text-xs">
                             {appointment.serviceName}
                             {appointment.estimatedPrice && ` - ${appointment.estimatedPrice.toLocaleString()}đ`}
@@ -584,7 +604,7 @@ export default function AppointmentsPage() {
                               : "text-red-700"
                           }`}>
                             <strong>
-                              {appointment.status === "CANCELLED" ? "Lý do hủy:" : "Lý do từ chối:"}
+                              {appointment.status === "CANCELLED" ? "Cancellation reason:" : "Rejection reason:"}
                             </strong> {appointment.rejectionReason}
                           </AlertDescription>
                         </Alert>
@@ -594,7 +614,7 @@ export default function AppointmentsPage() {
                       {appointment.notes && (
                         <Alert className="border-blue-200 bg-blue-50">
                           <AlertDescription className="text-blue-700">
-                            <strong>Ghi chú:</strong> {appointment.notes}
+                            <strong>Notes:</strong> {appointment.notes}
                           </AlertDescription>
                         </Alert>
                       )}
@@ -606,7 +626,7 @@ export default function AppointmentsPage() {
                             <div className="flex items-center space-x-2">
                               <Star className="h-5 w-5 text-blue-600" />
                               <span className="text-sm font-medium text-blue-900">
-                                Đánh giá dịch vụ
+                                Service Review
                               </span>
                             </div>
                             {appointmentReviewStatus[appointment.id].canReview ? (
@@ -616,16 +636,16 @@ export default function AppointmentsPage() {
                                 className="bg-blue-600 hover:bg-blue-700 text-white"
                               >
                                 <Star className="h-4 w-4 mr-1" />
-                                Đánh giá ngay
+                                Review Now
                               </Button>
                             ) : appointmentReviewStatus[appointment.id].hasReviewed ? (
                               <div className="flex items-center text-green-600 text-sm">
                                 <Star className="h-4 w-4 mr-1 fill-current" />
-                                <span>Đã đánh giá</span>
+                                <span>Reviewed</span>
                               </div>
                             ) : (
                               <div className="flex items-center text-gray-500 text-sm">
-                                <span>Không thể đánh giá</span>
+                                <span>Cannot review</span>
                               </div>
                             )}
                           </div>
@@ -643,7 +663,7 @@ export default function AppointmentsPage() {
                           onClick={() => handleOpenCancelModal(appointment)}
                         >
                           <X className="h-4 w-4 mr-2" />
-                          Hủy lịch
+                          Cancel
                         </Button>
                       )}
                     </div>
@@ -663,17 +683,17 @@ export default function AppointmentsPage() {
             onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
             disabled={currentPage === 0}
           >
-            Trước
+            Previous
           </Button>
           <span className="text-sm text-slate-600">
-            Trang {currentPage + 1} / {totalPages}
+            Page {currentPage + 1} / {totalPages}
           </span>
           <Button
             variant="outline"
             onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
             disabled={currentPage === totalPages - 1}
           >
-            Sau
+            Next
           </Button>
         </div>
       )}
@@ -682,13 +702,13 @@ export default function AppointmentsPage() {
       <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Hủy lịch hẹn</DialogTitle>
+            <DialogTitle>Cancel Appointment</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
             {appointmentToCancel && (
               <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm font-medium">Lịch hẹn #{appointmentToCancel.id}</p>
+                <p className="text-sm font-medium">Appointment #{appointmentToCancel.id}</p>
                 <p className="text-sm text-gray-600">{appointmentToCancel.garageName}</p>
                 <p className="text-sm text-gray-600">
                   {new Date(appointmentToCancel.appointmentDate).toLocaleDateString('vi-VN')}
@@ -697,17 +717,17 @@ export default function AppointmentsPage() {
             )}
             
             <div>
-              <Label htmlFor="cancelReason">Lý do hủy lịch hẹn *</Label>
+              <Label htmlFor="cancelReason">Cancellation reason *</Label>
               <Textarea
                 id="cancelReason"
-                placeholder="Vui lòng nhập lý do hủy lịch hẹn..."
+                placeholder="Please enter the reason for cancellation..."
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
                 rows={3}
                 className="mt-1"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Garage sẽ nhận được thông báo và lý do hủy này.
+                The garage will receive a notification and this cancellation reason.
               </p>
             </div>
           </div>
@@ -718,14 +738,14 @@ export default function AppointmentsPage() {
               onClick={handleCloseCancelModal}
               disabled={isCancelling}
             >
-              Không hủy
+              Don't Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleCancelAppointment}
               disabled={isCancelling || !cancelReason.trim()}
             >
-              {isCancelling ? "Đang hủy..." : "Hủy lịch hẹn"}
+              {isCancelling ? "Cancelling..." : "Cancel Appointment"}
             </Button>
           </DialogFooter>
         </DialogContent>
