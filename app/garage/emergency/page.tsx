@@ -33,7 +33,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Building,
-  MoreVertical
+  MoreVertical,
+  Trash2
 } from 'lucide-react'
 import EmergencyApi from '@/lib/api/EmergencyApi'
 import { useToast } from '@/hooks/use-toast'
@@ -122,10 +123,10 @@ export default function GarageEmergencyPage() {
         console.log('📋 Garage emergency requests data:', dataArray)
         
         toast({
-          title: "Thành công", 
+          title: "Success", 
           description: dataArray.length > 0 
-            ? `Đã tải ${dataArray.length} yêu cầu cứu hộ của garage từ database`
-            : "Đã kết nối database - chưa có yêu cầu cứu hộ nào cho garage này",
+            ? `Loaded ${dataArray.length} garage emergency requests from database`
+            : "Connected to database - no emergency requests found for this garage",
         })
         
         // Successfully connected to API, exit function (even if no data)
@@ -141,15 +142,15 @@ export default function GarageEmergencyPage() {
       // Set empty data when API fails
       setRequests([])
       
-      let errorMessage = 'Không thể tải dữ liệu từ database'
-      let errorTitle = 'Lỗi kết nối'
+      let errorMessage = 'Cannot load data from database'
+      let errorTitle = 'Connection Error'
       
       if (error.response?.status === 500) {
-        errorTitle = 'Lỗi server'
-        errorMessage = 'Server đang gặp sự cố, vui lòng thử lại sau'
+        errorTitle = 'Server Error'
+        errorMessage = 'Server is experiencing issues, please try again later'
       } else if (error.code === 'ERR_NETWORK') {
-        errorTitle = 'Không kết nối được'
-        errorMessage = 'Không thể kết nối tới server backend'
+        errorTitle = 'Connection Failed'
+        errorMessage = 'Cannot connect to backend server'
       }
       
       toast({
@@ -175,8 +176,8 @@ export default function GarageEmergencyPage() {
     if (!isGarageOwner()) {
       // User doesn't have GARAGE role, show access denied
       toast({
-        title: "Không có quyền truy cập",
-        description: "Chỉ garage mới có thể truy cập trang này",
+        title: "Access Denied",
+        description: "Only garage owners can access this page",
         variant: "destructive",
       })
       router.push('/dashboard')
@@ -216,7 +217,7 @@ export default function GarageEmergencyPage() {
           <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border border-yellow-200 shadow-sm">
             <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
             <Clock3 className="w-3 h-3 mr-1" />
-            Chờ xử lý
+            Pending
           </div>
         )
       case 'QUOTED':
@@ -224,7 +225,7 @@ export default function GarageEmergencyPage() {
           <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200 shadow-sm">
             <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
             <DollarSign className="w-3 h-3 mr-1" />
-            Đã báo giá
+            Quoted
           </div>
         )
       case 'ACCEPTED':
@@ -232,7 +233,7 @@ export default function GarageEmergencyPage() {
           <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Đã chấp nhận
+            Accepted
           </div>
         )
       case 'COMPLETED':
@@ -240,7 +241,7 @@ export default function GarageEmergencyPage() {
           <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border border-emerald-200 shadow-sm">
             <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Hoàn thành
+            Completed
           </div>
         )
       case 'CANCELLED':
@@ -248,7 +249,7 @@ export default function GarageEmergencyPage() {
           <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200 shadow-sm">
             <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
             <XCircle className="w-3 h-3 mr-1" />
-            Đã hủy
+            Cancelled
           </div>
         )
       default:
@@ -298,8 +299,8 @@ export default function GarageEmergencyPage() {
       // Show loading for accept action
       if (newStatus === 'ACCEPTED') {
         Swal.fire({
-          title: 'Đang chấp nhận...',
-          text: 'Vui lòng đợi trong giây lát',
+          title: 'Accepting...',
+          text: 'Please wait a moment',
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading()
@@ -345,8 +346,8 @@ export default function GarageEmergencyPage() {
       // Show success message based on action
       if (newStatus === 'ACCEPTED') {
         await Swal.fire({
-          title: 'Thành công!',
-          text: `Yêu cầu cứu hộ #${requestId} đã được chấp nhận thành công`,
+          title: 'Success!',
+          text: `Emergency request #${requestId} has been accepted successfully`,
           icon: 'success',
           confirmButtonColor: '#059669',
           confirmButtonText: 'OK'
@@ -363,8 +364,8 @@ export default function GarageEmergencyPage() {
         
       } else {
         toast({
-          title: "Thành công",
-          description: `Đã cập nhật trạng thái yêu cầu #${requestId}`,
+          title: "Success",
+          description: `Updated status for request #${requestId}`,
         })
       }
       
@@ -378,18 +379,18 @@ export default function GarageEmergencyPage() {
       
       // Show error message
       if (newStatus === 'ACCEPTED') {
-        const errorMessage = error.response?.data?.message || error.message || 'Không thể chấp nhận yêu cầu'
+        const errorMessage = error.response?.data?.message || error.message || 'Cannot accept request'
         await Swal.fire({
-          title: 'Lỗi!',
-          text: `Không thể chấp nhận yêu cầu #${requestId}: ${errorMessage}`,
+          title: 'Error!',
+          text: `Cannot accept request #${requestId}: ${errorMessage}`,
           icon: 'error',
           confirmButtonColor: '#dc2626',
           confirmButtonText: 'OK'
         })
       } else {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái',
+          title: "Error",
+          description: error.response?.data?.message || error.message || 'Cannot update status',
           variant: "destructive",
         })
       }
@@ -416,8 +417,8 @@ export default function GarageEmergencyPage() {
         ))
         
         toast({
-          title: "Thành công",
-          description: "Yêu cầu cứu hộ đã hoàn thành thành công",
+          title: "Success",
+          description: "Emergency request completed successfully",
         })
       } else {
         throw new Error(response.data?.message || 'API call failed')
@@ -431,28 +432,28 @@ export default function GarageEmergencyPage() {
       })
       
       toast({
-        title: "Lỗi",
-        description: error.response?.data?.message || error.message || 'Không thể hoàn thành yêu cầu',
+        title: "Error",
+        description: error.response?.data?.message || error.message || 'Cannot complete request',
         variant: "destructive",
       })
     }
   }
 
-  // Handle delete request (Cancel/Hủy)
-  const handleDeleteRequest = async (requestId: number) => {
+  // Handle cancel request (set status to CANCELLED)
+  const handleCancelRequest = async (requestId: number) => {
     try {
-      console.log('🗑️ Cancelling request:', requestId)
+      console.log('🚫 Cancelling request:', requestId)
       
       // Show SweetAlert confirmation dialog
       const result = await Swal.fire({
-        title: 'Xác nhận hủy',
-        text: `Bạn có chắc chắn muốn "Hủy" yêu cầu cứu hộ #${requestId}?`,
+        title: 'Confirm Cancel',
+        text: `Are you sure you want to cancel emergency request #${requestId}?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc2626',
         cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Hủy yêu cầu',
-        cancelButtonText: 'Không',
+        confirmButtonText: 'Cancel Request',
+        cancelButtonText: 'No',
         backdrop: true,
         allowOutsideClick: false,
         customClass: {
@@ -467,8 +468,71 @@ export default function GarageEmergencyPage() {
       
       // Show loading
       Swal.fire({
-        title: 'Đang hủy...',
-        text: 'Vui lòng đợi',
+        title: 'Cancelling...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        }
+      })
+      
+      // Update status to CANCELLED
+      await handleStatusUpdate(requestId, 'CANCELLED')
+      
+      // Show success message
+      await Swal.fire({
+        title: 'Cancelled Successfully!',
+        text: `Emergency request #${requestId} has been cancelled`,
+        icon: 'success',
+        confirmButtonColor: '#059669',
+        confirmButtonText: 'OK'
+      })
+      
+    } catch (error: any) {
+      console.error('❌ Error cancelling request:', error)
+      
+      // Show error message
+      await Swal.fire({
+        title: 'Error!',
+        text: `Cannot cancel request: ${error.message}`,
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+        confirmButtonText: 'OK'
+      })
+    }
+  }
+
+  // Handle delete request (permanently remove from database)
+  const handleDeleteRequest = async (requestId: number) => {
+    try {
+      console.log('🗑️ Deleting request permanently:', requestId)
+      
+      // Show SweetAlert confirmation dialog
+      const result = await Swal.fire({
+        title: 'Confirm Delete',
+        text: `Are you sure you want to PERMANENTLY DELETE emergency request #${requestId}? This action cannot be undone!`,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Delete Permanently',
+        cancelButtonText: 'Cancel',
+        backdrop: true,
+        allowOutsideClick: false,
+        customClass: {
+          popup: 'swal-popup',
+          title: 'swal-title'
+        }
+      })
+      
+      if (!result.isConfirmed) {
+        return
+      }
+      
+      // Show loading
+      Swal.fire({
+        title: 'Deleting...',
+        text: 'Please wait',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading()
@@ -483,23 +547,23 @@ export default function GarageEmergencyPage() {
       if (response.data && (response.data.message || response.data.id)) {
         console.log('🎉 Request deletion successful - database updated!')
         
-        // Update local state - remove from list instead of marking as cancelled
+        // Update local state - remove from list
         setRequests(prev => prev.filter(req => req.id !== requestId))
         
         // Show success message
         await Swal.fire({
-          title: 'Đã hủy thành công!',
-          text: `Yêu cầu cứu hộ #${requestId} đã được hủy thành công`,
+          title: 'Deleted Successfully!',
+          text: `Emergency request #${requestId} has been permanently deleted`,
           icon: 'success',
           confirmButtonColor: '#059669',
           confirmButtonText: 'OK'
         })
         
-        // Show additional info for successful cancellation
+        // Show additional info for successful deletion
         setTimeout(() => {
           toast({
-            title: "Hủy thành công",
-            description: "Yêu cầu đã được hủy và xóa khỏi hệ thống!",
+            title: "Delete Successful",
+            description: "Request has been permanently deleted from the system!",
             variant: "default",
           })
         }, 2000)
@@ -508,12 +572,12 @@ export default function GarageEmergencyPage() {
       }
       
     } catch (error: any) {
-      console.error('❌ Error cancelling request:', error)
+      console.error('❌ Error deleting request:', error)
       
       // Show error message
       await Swal.fire({
-        title: 'Lỗi!',
-        text: `Không thể hủy yêu cầu: ${error.message}`,
+        title: 'Error!',
+        text: `Cannot delete request: ${error.message}`,
         icon: 'error',
         confirmButtonColor: '#dc2626',
         confirmButtonText: 'OK'
@@ -537,7 +601,7 @@ export default function GarageEmergencyPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-slate-600 text-lg">Đang kiểm tra quyền truy cập...</p>
+          <p className="text-slate-600 text-lg">Checking access permissions...</p>
         </div>
       </div>
     )
@@ -552,9 +616,9 @@ export default function GarageEmergencyPage() {
             <AlertTriangle className="h-10 w-10 text-red-600" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">Không có quyền truy cập</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Access Denied</h1>
             <p className="text-gray-600">
-              Chỉ tài khoản garage mới có thể truy cập trang quản lý cứu hộ khẩn cấp.
+              Only garage accounts can access the emergency rescue management page.
             </p>
           </div>
           <div className="space-y-3">
@@ -562,14 +626,14 @@ export default function GarageEmergencyPage() {
               onClick={() => router.push('/dashboard')}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              Quay về Dashboard
+              Back to Dashboard
             </Button>
             <Button 
               variant="outline"
               onClick={() => router.push('/garage/register')}
               className="w-full"
             >
-              Đăng ký Garage
+              Register Garage
             </Button>
           </div>
         </div>
@@ -594,8 +658,8 @@ export default function GarageEmergencyPage() {
                     <AlertTriangle className="h-10 w-10 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-4xl font-bold tracking-tight">Quản lý Cứu hộ Khẩn cấp</h1>
-                    <p className="text-blue-100 text-lg mt-2">Hệ thống quản lý yêu cầu cứu hộ chuyên nghiệp</p>
+                    <h1 className="text-4xl font-bold tracking-tight">Emergency Rescue Management</h1>
+                    <p className="text-blue-100 text-lg mt-2">Professional emergency rescue request management system</p>
                   </div>
                 </div>
                 
@@ -603,15 +667,15 @@ export default function GarageEmergencyPage() {
                 <div className="flex gap-6 mt-6">
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[140px] border border-white/20">
                     <div className="text-2xl font-bold">{stats.total}</div>
-                    <div className="text-blue-100 text-sm">Tổng yêu cầu</div>
+                    <div className="text-blue-100 text-sm">Total Requests</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[140px] border border-white/20">
                     <div className="text-2xl font-bold">{stats.pending}</div>
-                    <div className="text-blue-100 text-sm">Chờ xử lý</div>
+                    <div className="text-blue-100 text-sm">Pending</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[140px] border border-white/20">
                     <div className="text-2xl font-bold">{stats.accepted}</div>
-                    <div className="text-blue-100 text-sm">Đã chấp nhận</div>
+                    <div className="text-blue-100 text-sm">Accepted</div>
                   </div>
                 </div>
               </div>
@@ -624,7 +688,7 @@ export default function GarageEmergencyPage() {
                   className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105"
                 >
                   <RefreshCw className={`h-5 w-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  {loading ? 'Đang tải...' : 'Làm mới dữ liệu'}
+                  {loading ? 'Loading...' : 'Refresh Data'}
                 </Button>
               </div>
             </div>
@@ -639,7 +703,7 @@ export default function GarageEmergencyPage() {
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Filter className="h-5 w-5 text-blue-600" />
         </div>
-              Bộ lọc và Tìm kiếm
+              Filter and Search
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
@@ -647,7 +711,7 @@ export default function GarageEmergencyPage() {
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <Input
-                  placeholder="Tìm kiếm theo mô tả, tên khách hàng, số điện thoại..."
+                  placeholder="Search by description, customer name, phone number..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl text-base transition-all duration-300"
@@ -657,15 +721,13 @@ export default function GarageEmergencyPage() {
                 <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-full lg:w-56 pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl text-base transition-all duration-300">
-                    <SelectValue placeholder="Lọc theo trạng thái" />
+                    <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-2 shadow-xl">
-                    <SelectItem value="all" className="rounded-lg">Tất cả trạng thái</SelectItem>
-                    <SelectItem value="PENDING" className="rounded-lg">🟡 Chờ xử lý</SelectItem>
-                    <SelectItem value="QUOTED" className="rounded-lg">🔵 Đã báo giá</SelectItem>
-                    <SelectItem value="ACCEPTED" className="rounded-lg">🟢 Đã chấp nhận</SelectItem>
-                    <SelectItem value="COMPLETED" className="rounded-lg">✅ Hoàn thành</SelectItem>
-                    <SelectItem value="CANCELLED" className="rounded-lg">❌ Đã hủy</SelectItem>
+                    <SelectItem value="all" className="rounded-lg">All Status</SelectItem>
+                    <SelectItem value="PENDING" className="rounded-lg">🟡 Pending</SelectItem>
+                    <SelectItem value="ACCEPTED" className="rounded-lg">🟢 Accepted</SelectItem>
+                    <SelectItem value="COMPLETED" className="rounded-lg">✅ Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -675,7 +737,7 @@ export default function GarageEmergencyPage() {
             <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
               <div className="flex items-center gap-2 text-sm text-blue-700">
                 <TrendingUp className="h-4 w-4" />
-                <span>Hiển thị <strong>{filteredRequests.length}</strong> trong tổng số <strong>{requests.length}</strong> yêu cầu</span>
+                <span>Showing <strong>{filteredRequests.length}</strong> out of <strong>{requests.length}</strong> requests</span>
               </div>
             </div>
           </CardContent>
@@ -690,13 +752,13 @@ export default function GarageEmergencyPage() {
                   <AlertTriangle className="h-7 w-7 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">Danh sách Yêu cầu Cứu hộ</h2>
-                  <p className="text-gray-600 text-sm mt-1">Quản lý và xử lý các yêu cầu khẩn cấp từ khách hàng</p>
+                  <h2 className="text-2xl font-bold text-gray-800">Emergency Requests List</h2>
+                  <p className="text-gray-600 text-sm mt-1">Manage and process emergency requests from customers</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="px-4 py-2 bg-blue-100 rounded-xl">
-                  <span className="text-blue-700 font-semibold">{filteredRequests.length} yêu cầu</span>
+                  <span className="text-blue-700 font-semibold">{filteredRequests.length} requests</span>
                 </div>
               </div>
             </CardTitle>
@@ -711,8 +773,8 @@ export default function GarageEmergencyPage() {
                   <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full opacity-20 animate-pulse"></div>
                 </div>
                 <div className="text-center space-y-3">
-                  <h3 className="text-2xl font-bold text-gray-800">Đang tải dữ liệu...</h3>
-                  <p className="text-gray-600 text-lg">Vui lòng đợi trong giây lát</p>
+                  <h3 className="text-2xl font-bold text-gray-800">Loading data...</h3>
+                  <p className="text-gray-600 text-lg">Please wait a moment</p>
                 </div>
               </div>
             ) : error ? (
@@ -731,14 +793,14 @@ export default function GarageEmergencyPage() {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <h3 className="text-2xl font-bold text-gray-700">Không có yêu cầu cứu hộ nào</h3>
-                  <p className="text-gray-600 text-lg">Hãy kiểm tra lại bộ lọc hoặc thử làm mới dữ liệu</p>
+                  <h3 className="text-2xl font-bold text-gray-700">No emergency requests found</h3>
+                  <p className="text-gray-600 text-lg">Please check your filters or try refreshing the data</p>
                   <Button
                     onClick={loadRequests}
                     className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
                   >
                     <RefreshCw className="h-5 w-5 mr-2" />
-                    Làm mới dữ liệu
+                    Refresh Data
                   </Button>
                 </div>
               </div>
@@ -751,11 +813,11 @@ export default function GarageEmergencyPage() {
                     <div className="flex-1 grid grid-cols-4 gap-6">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-blue-600" />
-                        Khách hàng
+                        Customer
                       </div>
                       <div className="flex items-center gap-2">
                         <MessageSquare className="h-4 w-4 text-purple-600" />
-                        Mô tả sự cố
+                        Issue Description
                       </div>
                       <div className="flex items-center gap-2">
                         <Building className="h-4 w-4 text-orange-600" />
@@ -763,10 +825,10 @@ export default function GarageEmergencyPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock3 className="h-4 w-4 text-yellow-600" />
-                        Trạng thái & Thời gian
+                        Status & Time
                       </div>
                     </div>
-                    <div className="w-10 text-center">Hành động</div>
+                    <div className="w-16 text-center">Actions</div>
                   </div>
                 </div>
 
@@ -810,7 +872,7 @@ export default function GarageEmergencyPage() {
                                       className="text-green-700 hover:bg-green-50 cursor-pointer"
                                     >
                                       <CheckCircle className="h-4 w-4 mr-2" />
-                                      Chấp nhận
+                                      Accept
                                     </DropdownMenuItem>
                                   )}
                                   
@@ -820,7 +882,7 @@ export default function GarageEmergencyPage() {
                                       className="text-emerald-700 hover:bg-emerald-50 cursor-pointer"
                                     >
                                       <CheckCircle2 className="h-4 w-4 mr-2" />
-                                      Hoàn thành
+                                      Complete
                                     </DropdownMenuItem>
                                   )}
 
@@ -832,16 +894,15 @@ export default function GarageEmergencyPage() {
                                     className="text-blue-700 hover:bg-blue-50 cursor-pointer"
                                   >
                                     <Eye className="h-4 w-4 mr-2" />
-                                    Xem chi tiết
+                                    View Details
                                   </DropdownMenuItem>
                                   
-                                  {['PENDING', 'ACCEPTED'].includes(request.status) && (
+                                  {['PENDING', 'ACCEPTED', 'COMPLETED'].includes(request.status) && (
                                     <DropdownMenuItem 
                                       onClick={() => handleDeleteRequest(request.id)}
-                                      className="text-red-700 hover:bg-red-50 cursor-pointer"
+                                      className="text-red-700 hover:bg-red-50 cursor-pointer flex justify-center items-center"
                                     >
-                                      <XCircle className="h-4 w-4 mr-2" />
-                                      Hủy yêu cầu
+                                      <Trash2 className="h-4 w-4" />
                                     </DropdownMenuItem>
                                   )}
                                 </DropdownMenuContent>
@@ -852,12 +913,12 @@ export default function GarageEmergencyPage() {
                           {/* Content */}
                           <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
                             {/* Problem Description */}
-                            <div className="bg-gray-50 rounded-lg p-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <MessageSquare className="h-4 w-4 text-purple-600" />
-                                <span className="text-sm font-semibold text-gray-700">Mô tả sự cố</span>
-                              </div>
-                              <p className="text-sm text-gray-800">{request.description || 'Không có mô tả'}</p>
+                              <div className="bg-gray-50 rounded-lg p-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <MessageSquare className="h-4 w-4 text-purple-600" />
+                                  <span className="text-sm font-semibold text-gray-700">Issue Description</span>
+                                </div>
+                                <p className="text-sm text-gray-800">{request.description || 'No description'}</p>
                               <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                                 <MapPin className="h-3 w-3 text-blue-500" />
                                 <span className="bg-blue-50 px-2 py-1 rounded font-mono">{request.latitude?.toFixed(4)}, {request.longitude?.toFixed(4)}</span>
@@ -868,7 +929,7 @@ export default function GarageEmergencyPage() {
                             <div>
                               <div className="flex items-center gap-2 mb-2">
                                 <Building className="h-4 w-4 text-orange-600" />
-                                <span className="text-sm font-semibold text-gray-700">Garage cứu hộ</span>
+                                <span className="text-sm font-semibold text-gray-700">Rescue Garage</span>
                               </div>
                               {request.garage ? (
                                 <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
@@ -882,7 +943,7 @@ export default function GarageEmergencyPage() {
                               ) : (
                                 <div className="bg-gray-50 rounded-lg p-3 border text-center">
                                   <Building className="h-6 w-6 text-gray-400 mx-auto mb-1" />
-                                  <p className="text-xs text-gray-500">Chưa chọn garage</p>
+                                  <p className="text-xs text-gray-500">No garage selected</p>
                                 </div>
                               )}
                             </div>
@@ -905,7 +966,7 @@ export default function GarageEmergencyPage() {
                           </div>
 
                           {/* Main Content */}
-                          <div className="flex-1 grid grid-cols-4 gap-6">
+                          <div className="flex-1 grid grid-cols-4 gap-6 mr-4">
                             {/* Customer & Contact */}
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
@@ -926,7 +987,7 @@ export default function GarageEmergencyPage() {
                             {/* Problem Description */}
                             <div className="space-y-2">
                               <div className="bg-gray-50 rounded-lg p-3 border">
-                                <p className="text-sm text-gray-800 font-medium mb-1">{request.description || 'Không có mô tả'}</p>
+                                <p className="text-sm text-gray-800 font-medium mb-1">{request.description || 'No description'}</p>
                                 <div className="flex items-center gap-1 text-xs text-gray-500">
                                   <MapPin className="h-3 w-3 text-blue-500" />
                                   <span>{request.latitude?.toFixed(4)}, {request.longitude?.toFixed(4)}</span>
@@ -952,7 +1013,7 @@ export default function GarageEmergencyPage() {
                           ) : (
                                 <div className="bg-gray-50 rounded-lg p-3 border text-center">
                                   <Building className="h-6 w-6 text-gray-400 mx-auto mb-1" />
-                                  <p className="text-xs text-gray-500">Chưa chọn garage</p>
+                                  <p className="text-xs text-gray-500">No garage selected</p>
                                 </div>
                               )}
                         </div>
@@ -970,7 +1031,7 @@ export default function GarageEmergencyPage() {
                         </div>
 
                           {/* Actions */}
-                          <div className="flex-shrink-0">
+                          <div className="w-16 flex justify-center">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                               <Button 
@@ -988,7 +1049,7 @@ export default function GarageEmergencyPage() {
                                     className="text-green-700 hover:bg-green-50 cursor-pointer"
                               >
                                     <CheckCircle className="h-4 w-4 mr-2" />
-                                Chấp nhận
+                                Accept
                                   </DropdownMenuItem>
                             )}
                             
@@ -998,7 +1059,7 @@ export default function GarageEmergencyPage() {
                                     className="text-emerald-700 hover:bg-emerald-50 cursor-pointer"
                               >
                                     <CheckCircle2 className="h-4 w-4 mr-2" />
-                                Hoàn thành
+                                Complete
                                   </DropdownMenuItem>
                             )}
 
@@ -1010,16 +1071,15 @@ export default function GarageEmergencyPage() {
                                   className="text-blue-700 hover:bg-blue-50 cursor-pointer"
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
-                                  Xem chi tiết
+                                  View Details
                                 </DropdownMenuItem>
                             
-                            {['PENDING', 'ACCEPTED'].includes(request.status) && (
+                            {['PENDING', 'ACCEPTED', 'COMPLETED'].includes(request.status) && (
                                   <DropdownMenuItem 
                                 onClick={() => handleDeleteRequest(request.id)}
-                                    className="text-red-700 hover:bg-red-50 cursor-pointer"
+                                    className="text-red-700 hover:bg-red-50 cursor-pointer flex justify-center items-center"
                                   >
-                                    <XCircle className="h-4 w-4 mr-2" />
-                                    Hủy yêu cầu
+                                    <Trash2 className="h-4 w-4" />
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuContent>

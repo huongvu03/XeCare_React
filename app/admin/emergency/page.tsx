@@ -29,7 +29,8 @@ import {
   Building,
   MoreVertical,
   Download,
-  RotateCcw
+  RotateCcw,
+  Trash2
 } from 'lucide-react'
 import EmergencyApi from '@/lib/api/EmergencyApi'
 import { useToast } from '@/hooks/use-toast'
@@ -874,13 +875,12 @@ Time: ${formatDate(request.createdAt)}
                                     Copy Information
                                   </DropdownMenuItem>
                                   
-                                  {['PENDING', 'ACCEPTED'].includes(request.status) && (
+                                  {['PENDING', 'ACCEPTED', 'COMPLETED'].includes(request.status) && (
                                     <DropdownMenuItem 
                                       onClick={() => handleDeleteRequest(request.id)}
-                                      className="text-red-700 hover:bg-red-50 cursor-pointer"
+                                      className="text-red-700 hover:bg-red-50 cursor-pointer flex justify-center items-center"
                                     >
-                                      <XCircle className="h-4 w-4 mr-2" />
-                                      Cancel Request
+                                      <Trash2 className="h-4 w-4" />
                                     </DropdownMenuItem>
                                   )}
                                 </DropdownMenuContent>
@@ -1033,13 +1033,12 @@ Time: ${formatDate(request.createdAt)}
                                       Copy Information
                                   </DropdownMenuItem>
                                   
-                                  {['PENDING', 'ACCEPTED'].includes(request.status) && (
+                                  {['PENDING', 'ACCEPTED', 'COMPLETED'].includes(request.status) && (
                                     <DropdownMenuItem 
                                       onClick={() => handleDeleteRequest(request.id)}
-                                      className="text-red-700 hover:bg-red-50 cursor-pointer"
+                                      className="text-red-700 hover:bg-red-50 cursor-pointer flex justify-center items-center"
                                     >
-                                      <XCircle className="h-4 w-4 mr-2" />
-                                        Cancel Request
+                                      <Trash2 className="h-4 w-4" />
                                     </DropdownMenuItem>
                                   )}
                                 </DropdownMenuContent>
