@@ -69,7 +69,7 @@ function MultiSelect({ options, selectedValues, onSelectionChange, placeholder, 
     ? placeholder 
     : selectedValues.length === 1 
       ? selectedValues[0]
-      : `${selectedValues.length} đã chọn`;
+      : `${selectedValues.length} selected`;
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -256,15 +256,15 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
       <CardContent className="p-4">
         {/* Filter Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
-          {/* Tên garage */}
+          {/* Garage Name */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <Search className="w-4 h-4 text-blue-500" />
-              Tên garage
+              Garage Name
             </Label>
             <Input
               key={`name-${resetKey}`}
-              placeholder="Nhập tên garage..."
+              placeholder="Enter garage name..."
               value={searchParams.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
               onKeyPress={handleKeyPress}
@@ -272,39 +272,39 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
             />
           </div>
 
-          {/* Dịch vụ */}
+          {/* Services */}
           <MultiSelect
             key={`service-${resetKey}`}
             options={services || []}
             selectedValues={Array.isArray(searchParams.service) ? searchParams.service : []}
             onSelectionChange={(values) => handleArrayChange('service', values)}
-            placeholder="Chọn dịch vụ..."
-            label="Dịch vụ"
+            placeholder="Select services..."
+            label="Services"
             icon={<Settings className="w-4 h-4 text-green-500" />}
             className="space-y-2"
           />
 
-          {/* Loại xe */}
+          {/* Vehicle Types */}
           <MultiSelect
             key={`vehicleType-${resetKey}`}
             options={vehicleTypes || []}
             selectedValues={Array.isArray(searchParams.vehicleType) ? searchParams.vehicleType : []}
             onSelectionChange={(values) => handleArrayChange('vehicleType', values)}
-            placeholder="Chọn loại xe..."
-            label="Loại xe"
+            placeholder="Select vehicle types..."
+            label="Vehicle Types"
             icon={<Car className="w-4 h-4 text-orange-500" />}
             className="space-y-2"
           />
 
-          {/* Địa chỉ */}
+          {/* Address */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <MapPin className="w-4 h-4 text-purple-500" />
-              Địa chỉ
+              Address
             </Label>
             <Input
               key={`address-${resetKey}`}
-              placeholder="Nhập địa chỉ..."
+              placeholder="Enter address..."
               value={searchParams.address || ''}
               onChange={(e) => handleInputChange('address', e.target.value)}
               onKeyPress={handleKeyPress}
@@ -312,11 +312,11 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
             />
           </div>
 
-          {/* Đánh giá */}
+          {/* Rating */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
               <Star className="w-4 h-4 text-yellow-500" />
-              Đánh giá tối thiểu
+              Minimum Rating
             </Label>
             <Select
               key={`rating-${resetKey}`}
@@ -324,15 +324,15 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
               onValueChange={(value) => handleInputChange('minRating', parseFloat(value))}
             >
               <SelectTrigger className="h-10 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500">
-                <SelectValue placeholder="Chọn đánh giá..." />
+                <SelectValue placeholder="Select rating..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">Tất cả</SelectItem>
-                <SelectItem value="1">1 sao trở lên</SelectItem>
-                <SelectItem value="2">2 sao trở lên</SelectItem>
-                <SelectItem value="3">3 sao trở lên</SelectItem>
-                <SelectItem value="4">4 sao trở lên</SelectItem>
-                <SelectItem value="5">5 sao</SelectItem>
+                <SelectItem value="0">All</SelectItem>
+                <SelectItem value="1">1 star and above</SelectItem>
+                <SelectItem value="2">2 stars and above</SelectItem>
+                <SelectItem value="3">3 stars and above</SelectItem>
+                <SelectItem value="4">4 stars and above</SelectItem>
+                <SelectItem value="5">5 stars</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -348,12 +348,12 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
             {isLoading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Tìm...
+                Searching...
               </>
             ) : (
               <>
                 <Search className="w-4 h-4 mr-2" />
-                Tìm kiếm
+                Search
               </>
             )}
           </Button>
@@ -363,7 +363,7 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
             disabled={isLoading}
             className="h-10 border-gray-200 hover:bg-gray-50 px-6"
           >
-            Đặt lại
+            Reset
           </Button>
         </div>
 
@@ -373,11 +373,11 @@ export function SearchFilters({ services, vehicleTypes, onSearch, onReset, isLoa
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-500" />
-                Sắp xếp theo đánh giá cao nhất
+                Sorted by highest rating
               </span>
             </div>
             <div className="text-xs text-gray-500">
-              Nhấn Enter để tìm kiếm nhanh
+              Press Enter for quick search
             </div>
           </div>
         </div>

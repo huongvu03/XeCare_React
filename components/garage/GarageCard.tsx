@@ -160,7 +160,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
 
       <CardContent className="p-5">
         <div className="space-y-4">
-          {/* Tên garage */}
+          {/* Garage Name */}
           <div>
             <h3 className="font-bold text-xl text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
               {garage.name}
@@ -175,7 +175,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             </div>
           </div>
 
-          {/* Địa chỉ */}
+          {/* Address */}
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
@@ -183,14 +183,14 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             </p>
           </div>
 
-          {/* Mô tả */}
+          {/* Description */}
           {garage.description && (
             <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">
               {garage.description}
             </p>
           )}
 
-          {/* Dịch vụ */}
+          {/* Services */}
           {garage.serviceNames && garage.serviceNames.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             </div>
           )}
 
-          {/* Loại xe */}
+          {/* Vehicle Types */}
           {garage.vehicleTypeNames && garage.vehicleTypeNames.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -229,7 +229,7 @@ export function GarageCard({ garage, onViewDetails, onContact }: GarageCardProps
             </div>
           )}
 
-          {/* Thông tin liên hệ */}
+          {/* Contact Information */}
           <div className="space-y-2 pt-2 border-t border-gray-100">
             <div className="flex items-center gap-3">
               <Phone className="w-4 h-4 text-gray-400" />
