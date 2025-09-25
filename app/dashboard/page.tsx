@@ -234,11 +234,13 @@ export default function UnifiedDashboard() {
     loadFavoriteGarages()
   }, [user]) // Run when user changes
 
-  // Load latest emergency request when user is available
+  // Load latest emergency request when user is available (only for USER role)
   useEffect(() => {
     const loadLatestEmergencyRequest = async () => {
-      if (!user) {
-        console.log("🔄 Dashboard: User not available, skipping emergency request load")
+      if (!user || user.role !== 'USER') {
+        console.log("🔄 Dashboard: User not available or not USER role, skipping emergency request load")
+        setLatestEmergencyRequest(null)
+        setEmergencyLoading(false)
         return
       }
       
@@ -452,67 +454,69 @@ export default function UnifiedDashboard() {
               </CardContent>
             </Card>
 
-            {/* View Emergency Request Details Card */}
-            <Card className="border-orange-100 hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center space-x-2 text-lg">
-                  <Eye className="h-5 w-5 text-orange-600" />
-                  <span>Emergency Request Details</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {emergencyLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-orange-600" />
-                    <span className="ml-2 text-slate-600 text-sm">Loading...</span>
-                  </div>
-                ) : latestEmergencyRequest ? (
-                  <div>
-                    <p className="text-slate-600 text-sm mb-3">
-                      View details of your latest emergency request
-                    </p>
-                    <div className="bg-orange-50 p-3 rounded-lg mb-3">
-                      <p className="text-sm font-medium text-slate-900">
-                        Request #{latestEmergencyRequest.id}
-                      </p>
-                      <p className="text-xs text-slate-600">
-                        {new Date(latestEmergencyRequest.createdAt).toLocaleDateString('vi-VN')}
-                      </p>
-                      <p className="text-xs text-slate-600">
-                        Status: <span className={`font-medium ${
-                          latestEmergencyRequest.status === 'PENDING' ? 'text-yellow-600' :
-                          latestEmergencyRequest.status === 'ACCEPTED' ? 'text-green-600' :
-                          latestEmergencyRequest.status === 'COMPLETED' ? 'text-blue-600' :
-                          'text-red-600'
-                        }`}>
-                          {latestEmergencyRequest.status}
-                        </span>
-                      </p>
+            {/* View Emergency Request Details Card - Only show for USER role */}
+            {user && user.role === 'USER' && (
+              <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center space-x-2 text-lg">
+                    <Eye className="h-5 w-5 text-orange-600" />
+                    <span>Emergency Request Details</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {emergencyLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin text-orange-600" />
+                      <span className="ml-2 text-slate-600 text-sm">Loading...</span>
                     </div>
-                    <Button 
-                      className="w-full bg-gradient-to-r from-orange-600 to-red-600"
-                      onClick={() => router.push(`/emergency/${latestEmergencyRequest.id}`)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </Button>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-slate-600 text-sm mb-4">
-                      No emergency requests found
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      className="w-full border-orange-200 text-orange-600"
-                      onClick={() => router.push("/emergency")}
-                    >
-                      Create Emergency Request
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  ) : latestEmergencyRequest ? (
+                    <div>
+                      <p className="text-slate-600 text-sm mb-3">
+                        View details of your latest emergency request
+                      </p>
+                      <div className="bg-orange-50 p-3 rounded-lg mb-3">
+                        <p className="text-sm font-medium text-slate-900">
+                          Request #{latestEmergencyRequest.id}
+                        </p>
+                        <p className="text-xs text-slate-600">
+                          {new Date(latestEmergencyRequest.createdAt).toLocaleDateString('vi-VN')}
+                        </p>
+                        <p className="text-xs text-slate-600">
+                          Status: <span className={`font-medium ${
+                            latestEmergencyRequest.status === 'PENDING' ? 'text-yellow-600' :
+                            latestEmergencyRequest.status === 'ACCEPTED' ? 'text-green-600' :
+                            latestEmergencyRequest.status === 'COMPLETED' ? 'text-blue-600' :
+                            'text-red-600'
+                          }`}>
+                            {latestEmergencyRequest.status}
+                          </span>
+                        </p>
+                      </div>
+                      <Button 
+                        className="w-full bg-gradient-to-r from-orange-600 to-red-600"
+                        onClick={() => router.push(`/emergency/${latestEmergencyRequest.id}`)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-slate-600 text-sm mb-4">
+                        No emergency requests found
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-orange-200 text-orange-600"
+                        onClick={() => router.push("/emergency")}
+                      >
+                        Create Emergency Request
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Register Garage Button - Only show if user doesn't have garages */}
             {(!user || !user.garages || !Array.isArray(user.garages) || user.garages.length === 0) && (
