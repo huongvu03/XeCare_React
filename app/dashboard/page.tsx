@@ -34,7 +34,7 @@ import { getUserProfile } from "@/lib/api/UserApi"
 import { getGaragesByOwner } from "@/lib/api/GarageApi"
 import { getUserAppointments, getPendingAppointmentsCount, type Appointment } from "@/lib/api/AppointmentApi"
 import { getMyFavorites } from "@/lib/api/FavoriteApi"
-import EmergencyApi from "@/lib/api/EmergencyApi"
+import EmergencyApi, { type EmergencyRequest } from "@/lib/api/EmergencyApi"
 
 interface FavoriteGarage {
   id: number
@@ -73,8 +73,10 @@ export default function UnifiedDashboard() {
   const [favoriteGarages, setFavoriteGarages] = useState<FavoriteGarage[]>([])
   const [favoritesLoading, setFavoritesLoading] = useState(true)
   
-  // Latest Emergency Request
-  const [latestEmergencyRequest, setLatestEmergencyRequest] = useState<any>(null)
+  // Emergency Requests
+  const [latestEmergencyRequest, setLatestEmergencyRequest] = useState<EmergencyRequest | null>(null)
+  const [emergencyLoading, setEmergencyLoading] = useState(true)
+  
   
   // Dashboard Statistics
   const [todayAppointmentsCount, setTodayAppointmentsCount] = useState(0)
@@ -243,69 +245,32 @@ export default function UnifiedDashboard() {
       console.log("🔄 Dashboard: Loading latest emergency request for user:", user.email)
       
       try {
-        const emergencyResponse = await EmergencyApi.getMyRequests()
-        console.log("✅ Dashboard: Emergency requests loaded:", emergencyResponse.data?.length || 0)
-        console.log("📊 Dashboard: Emergency response data:", emergencyResponse.data)
+        setEmergencyLoading(true)
+        const emergencyResponse = await EmergencyApi.getUserEmergencyRequests()
+        const emergencyRequests = Array.isArray(emergencyResponse.data) ? emergencyResponse.data : []
         
-        // Get the latest (most recent) emergency request
-        if (emergencyResponse.data && Array.isArray(emergencyResponse.data) && emergencyResponse.data.length > 0) {
-          const latest = emergencyResponse.data.sort((a, b) => 
+        // Lấy emergency request gần nhất (mới nhất)
+        if (emergencyRequests.length > 0) {
+          const latest = emergencyRequests.sort((a, b) => 
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )[0]
           setLatestEmergencyRequest(latest)
-          console.log("✅ Dashboard: Latest emergency request set:", {
-            id: latest.id,
-            description: latest.description,
-            status: latest.status,
-            createdAt: latest.createdAt
-          })
+          console.log("✅ Dashboard: Latest emergency request loaded:", latest.id)
         } else {
-          console.log("⚠️ Dashboard: No emergency requests or data is not array:", emergencyResponse.data)
-          
-          // Try fallback: get from all requests and filter by user
-          try {
-            console.log("🔄 Dashboard: Trying fallback - getting all requests...")
-            const allRequestsResponse = await EmergencyApi.getAllRequests()
-            console.log("📊 Dashboard: All requests response:", allRequestsResponse.data?.length || 0)
-            
-            if (allRequestsResponse.data && Array.isArray(allRequestsResponse.data)) {
-              // Filter requests by current user
-              const userRequests = allRequestsResponse.data.filter(req => 
-                req.user && req.user.id === user.id
-              )
-              console.log("👤 Dashboard: User-specific requests found:", userRequests.length)
-              
-              if (userRequests.length > 0) {
-                const latest = userRequests.sort((a, b) => 
-                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                )[0]
-                setLatestEmergencyRequest(latest)
-                console.log("✅ Dashboard: Latest emergency request from fallback:", latest.id)
-              } else {
-                console.log("⚠️ Dashboard: No emergency requests found for user")
-                setLatestEmergencyRequest(null)
-              }
-            } else {
-              setLatestEmergencyRequest(null)
-            }
-          } catch (fallbackErr) {
-            console.error("❌ Dashboard: Fallback also failed:", fallbackErr)
-            setLatestEmergencyRequest(null)
-          }
+          setLatestEmergencyRequest(null)
+          console.log("✅ Dashboard: No emergency requests found")
         }
       } catch (emergencyErr) {
         console.error("❌ Dashboard: Error loading emergency requests:", emergencyErr)
-        console.error("❌ Dashboard: Error details:", {
-          message: emergencyErr.message,
-          status: emergencyErr.response?.status,
-          data: emergencyErr.response?.data
-        })
         setLatestEmergencyRequest(null)
+      } finally {
+        setEmergencyLoading(false)
       }
     }
 
     loadLatestEmergencyRequest()
   }, [user]) // Run when user changes
+
 
   // Load pending appointments count for each garage
   const loadGaragePendingCounts = async (garages: Garage[]) => {
@@ -487,6 +452,68 @@ export default function UnifiedDashboard() {
               </CardContent>
             </Card>
 
+            {/* View Emergency Request Details Card */}
+            <Card className="border-orange-100 hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <Eye className="h-5 w-5 text-orange-600" />
+                  <span>Emergency Request Details</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {emergencyLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-orange-600" />
+                    <span className="ml-2 text-slate-600 text-sm">Loading...</span>
+                  </div>
+                ) : latestEmergencyRequest ? (
+                  <div>
+                    <p className="text-slate-600 text-sm mb-3">
+                      View details of your latest emergency request
+                    </p>
+                    <div className="bg-orange-50 p-3 rounded-lg mb-3">
+                      <p className="text-sm font-medium text-slate-900">
+                        Request #{latestEmergencyRequest.id}
+                      </p>
+                      <p className="text-xs text-slate-600">
+                        {new Date(latestEmergencyRequest.createdAt).toLocaleDateString('vi-VN')}
+                      </p>
+                      <p className="text-xs text-slate-600">
+                        Status: <span className={`font-medium ${
+                          latestEmergencyRequest.status === 'PENDING' ? 'text-yellow-600' :
+                          latestEmergencyRequest.status === 'ACCEPTED' ? 'text-green-600' :
+                          latestEmergencyRequest.status === 'COMPLETED' ? 'text-blue-600' :
+                          'text-red-600'
+                        }`}>
+                          {latestEmergencyRequest.status}
+                        </span>
+                      </p>
+                    </div>
+                    <Button 
+                      className="w-full bg-gradient-to-r from-orange-600 to-red-600"
+                      onClick={() => router.push(`/emergency/${latestEmergencyRequest.id}`)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-slate-600 text-sm mb-4">
+                      No emergency requests found
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-orange-200 text-orange-600"
+                      onClick={() => router.push("/emergency")}
+                    >
+                      Create Emergency Request
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Register Garage Button - Only show if user doesn't have garages */}
             {(!user || !user.garages || !Array.isArray(user.garages) || user.garages.length === 0) && (
               <Card className="border-green-100 hover:shadow-lg transition-shadow">
@@ -529,38 +556,6 @@ export default function UnifiedDashboard() {
               </CardContent>
             </Card>
 
-            {/* Latest Emergency Request Card - Only for USER role */}
-            {user && user.role === 'USER' && (
-              <Card className="border-orange-100 hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center space-x-2 text-lg">
-                    <AlertCircle className="h-5 w-5 text-orange-600" />
-                    <span>Emergency Request Details</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-600 text-sm mb-4">View your latest emergency request information</p>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-orange-200 text-orange-600 hover:bg-orange-50"
-                    onClick={() => {
-                      console.log("🔍 Dashboard: Button clicked - latestEmergencyRequest:", latestEmergencyRequest)
-                      
-                      if (latestEmergencyRequest && latestEmergencyRequest.id) {
-                        console.log("✅ Dashboard: Navigating to emergency details:", latestEmergencyRequest.id)
-                        router.push(`/emergency/${latestEmergencyRequest.id}`)
-                      } else {
-                        console.log("⚠️ Dashboard: No latest emergency request, navigating to emergency page")
-                        router.push("/emergency")
-                      }
-                    }}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Emergency Request Details
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Garage Emergency Management - Only for GARAGE role */}
             {user && user.role === 'GARAGE' && (

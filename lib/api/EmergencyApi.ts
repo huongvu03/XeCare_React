@@ -94,21 +94,12 @@ class EmergencyApi {
     });
   }
 
-  // Lấy danh sách yêu cầu cứu hộ của user
-  getMyRequests() {
-    return axiosClient.get<EmergencyRequest[]>('/apis/emergency/my-requests');
-  }
 
   // Lấy danh sách yêu cầu cứu hộ cho garage
   getGarageRequests() {
     return axiosClient.get<EmergencyRequest[]>('/apis/emergency/garage-requests');
   }
 
-  // Lấy TẤT CẢ yêu cầu cứu hộ từ database (không cần auth)
-  getAllRequests() {
-    console.log('📡 [EmergencyApi] Calling getAllRequests - no auth required');
-    return axiosClient.get<EmergencyRequest[]>('/apis/emergency/all-requests');
-  }
 
   // Garage tạo báo giá (public endpoint for demo)
   async createQuote(data: EmergencyQuoteDto) {
@@ -223,7 +214,7 @@ class EmergencyApi {
       // Use the secure endpoint that requires authentication
       console.log('📡 [EmergencyApi] Getting request details via secure endpoint for ID:', requestId);
       return axiosClient.get<EmergencyRequest>(`/apis/emergency/request-detail/${requestId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.log('❌ [EmergencyApi] Error getting request by ID:', error);
       console.log('❌ [EmergencyApi] Error details:', {
         message: error.message,
@@ -237,30 +228,24 @@ class EmergencyApi {
         return axiosClient.get<EmergencyRequest>(`/apis/emergency/requests/${requestId}`);
       } catch (fallbackError) {
         console.log('❌ [EmergencyApi] Both secure endpoints failed:', fallbackError);
-        
-        // Final fallback: try to get from all-requests (less secure but works)
-        try {
-          console.log('📡 [EmergencyApi] Final fallback: getting from all-requests for ID:', requestId);
-          const allRequestsResponse = await this.getAllRequests();
-          
-          if (allRequestsResponse.data && Array.isArray(allRequestsResponse.data)) {
-            const foundRequest = allRequestsResponse.data.find(req => req.id === requestId);
-            
-            if (foundRequest) {
-              console.log('✅ [EmergencyApi] Found request in all-requests fallback:', foundRequest.id);
-              return { data: foundRequest };
-            } else {
-              console.log('❌ [EmergencyApi] Request not found in all-requests for ID:', requestId);
-              throw new Error('Request not found');
-            }
-          } else {
-            throw new Error('No data received from all-requests');
-          }
-        } catch (finalError) {
-          console.log('❌ [EmergencyApi] All methods failed:', finalError);
-          throw finalError;
-        }
+        throw fallbackError;
       }
+    }
+  }
+
+  // Lấy danh sách yêu cầu cứu hộ của user
+  async getUserEmergencyRequests() {
+    try {
+      console.log('📡 [EmergencyApi] Getting user emergency requests');
+      return axiosClient.get<EmergencyRequest[]>('/apis/emergency/my-requests');
+    } catch (error: any) {
+      console.log('❌ [EmergencyApi] Error getting user emergency requests:', error);
+      console.log('❌ [EmergencyApi] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      throw error;
     }
   }
 }
