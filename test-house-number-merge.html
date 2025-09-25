@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test House Number Merge Logic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-case {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+        }
+        .test-input {
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .result-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .result-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .test-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #2563eb;
+        }
+        .log {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test House Number Merge Logic</h1>
+        <p>Kiểm tra tại sao số nhà bị mất khi merge với geocoding result</p>
+        
+        <div class="test-case">
+            <h3>Test Cases</h3>
+            <div class="test-input">Input: "1093 Ta Quang Buu"</div>
+            <div class="test-input">Expected: Giữ lại "1093"</div>
+            <div id="test1-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="test-input">Input: "48 Bui Thi Xuan"</div>
+            <div class="test-input">Expected: Giữ lại "48"</div>
+            <div id="test2-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="test-input">Input: "123 Nguyen Hue"</div>
+            <div class="test-input">Expected: Giữ lại "123"</div>
+            <div id="test3-result" class="test-result"></div>
+        </div>
+        
+        <button class="test-button" onclick="runAllTests()">Run All Tests</button>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        // Mock geocoding results
+        const mockGeocodingResults = {
+            '1093 Ta Quang Buu': '1093 Tạ Quang Bửu, Phường Bình Đông, Ho Chi Minh City, 72400, Vietnam',
+            '48 Bui Thi Xuan': 'Bùi Thị Xuân, Phường Quy Nhơn Tây, Gia Lai Province, Vietnam',
+            '123 Nguyen Hue': '123 Nguyễn Huệ, Quận 1, Ho Chi Minh City, 70000, Vietnam'
+        };
+
+        // Current merge logic (có vấn đề)
+        function mergeAddressWithHouseNumberCurrent(userInput, geocodingResult) {
+            console.log('Merging addresses:', { userInput, geocodingResult });
+            
+            // Tìm số nhà trong input của user (số ở đầu chuỗi)
+            const houseNumberMatch = userInput.match(/^(\d+[a-zA-Z]?)\s*(.+)/);
+            
+            if (houseNumberMatch) {
+                const houseNumber = houseNumberMatch[1]; // Số nhà
+                const streetName = houseNumberMatch[2].trim(); // Tên đường
+                
+                console.log('Found house number:', houseNumber, 'Street name:', streetName);
+                
+                // Kiểm tra xem geocoding result có chứa tên đường không
+                if (geocodingResult.toLowerCase().includes(streetName.toLowerCase())) {
+                    // Nếu có, thay thế số nhà trong geocoding result
+                    const mergedAddress = geocodingResult.replace(/^\d+[a-zA-Z]?\s*/, `${houseNumber} `);
+                    console.log('Merged address:', mergedAddress);
+                    return mergedAddress;
+                } else {
+                    // Nếu không match tên đường, thêm số nhà vào đầu geocoding result
+                    const mergedAddress = `${houseNumber} ${geocodingResult}`;
+                    console.log('Added house number to geocoding result:', mergedAddress);
+                    return mergedAddress;
+                }
+            }
+            
+            // Nếu không tìm thấy số nhà, trả về geocoding result
+            console.log('No house number found, using geocoding result');
+            return geocodingResult;
+        }
+
+        // Improved merge logic
+        function mergeAddressWithHouseNumberImproved(userInput, geocodingResult) {
+            console.log('Merging addresses (improved):', { userInput, geocodingResult });
+            
+            // Tìm số nhà trong input của user (số ở đầu chuỗi)
+            const houseNumberMatch = userInput.match(/^(\d+[a-zA-Z]?)\s*(.+)/);
+            
+            if (houseNumberMatch) {
+                const houseNumber = houseNumberMatch[1]; // Số nhà
+                const streetName = houseNumberMatch[2].trim(); // Tên đường
+                
+                console.log('Found house number:', houseNumber, 'Street name:', streetName);
+                
+                // 🔥 IMPROVED: Luôn thêm số nhà vào đầu geocoding result
+                // Không cần kiểm tra match tên đường vì geocoding đã đúng
+                const mergedAddress = `${houseNumber} ${geocodingResult}`;
+                console.log('Merged address (improved):', mergedAddress);
+                return mergedAddress;
+            }
+            
+            // Nếu không tìm thấy số nhà, trả về geocoding result
+            console.log('No house number found, using geocoding result');
+            return geocodingResult;
+        }
+
+        function testMergeLogic(userInput, expectedResult, testId) {
+            log(`\n🧪 Testing: "${userInput}"`);
+            
+            const geocodingResult = mockGeocodingResults[userInput];
+            if (!geocodingResult) {
+                log(`❌ No mock geocoding result for: "${userInput}"`, 'error');
+                return;
+            }
+            
+            log(`   Geocoding result: "${geocodingResult}"`);
+            
+            // Test current logic
+            const currentResult = mergeAddressWithHouseNumberCurrent(userInput, geocodingResult);
+            log(`   Current logic result: "${currentResult}"`);
+            
+            // Test improved logic
+            const improvedResult = mergeAddressWithHouseNumberImproved(userInput, geocodingResult);
+            log(`   Improved logic result: "${improvedResult}"`);
+            
+            // Check if house number is preserved
+            const houseNumberMatch = userInput.match(/^(\d+[a-zA-Z]?)\s*/);
+            if (houseNumberMatch) {
+                const houseNumber = houseNumberMatch[1];
+                const currentHasHouseNumber = currentResult.startsWith(houseNumber);
+                const improvedHasHouseNumber = improvedResult.startsWith(houseNumber);
+                
+                log(`   House number "${houseNumber}" in current result: ${currentHasHouseNumber ? '✅' : '❌'}`);
+                log(`   House number "${houseNumber}" in improved result: ${improvedHasHouseNumber ? '✅' : '❌'}`);
+                
+                // Update UI
+                const resultElement = document.getElementById(testId);
+                if (currentHasHouseNumber) {
+                    resultElement.className = 'test-result result-success';
+                    resultElement.textContent = `✅ Current: "${currentResult}" (House number preserved)`;
+                } else {
+                    resultElement.className = 'test-result result-error';
+                    resultElement.textContent = `❌ Current: "${currentResult}" (House number LOST!)`;
+                }
+                
+                if (!currentHasHouseNumber && improvedHasHouseNumber) {
+                    log(`   💡 IMPROVED LOGIC WOULD FIX THIS!`, 'success');
+                }
+            }
+        }
+
+        function runAllTests() {
+            log('🚀 Running all tests...');
+            
+            testMergeLogic('1093 Ta Quang Buu', 'Should preserve 1093', 'test1-result');
+            testMergeLogic('48 Bui Thi Xuan', 'Should preserve 48', 'test2-result');
+            testMergeLogic('123 Nguyen Hue', 'Should preserve 123', 'test3-result');
+            
+            log('\n✅ All tests completed!');
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Initialize
+        log('🚀 House Number Merge Test Ready');
+        log('💡 Click "Run All Tests" to see the issue');
+    </script>
+</body>
+</html>

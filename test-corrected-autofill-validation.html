@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Corrected Auto-fill & Validation Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .validation-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .validation-loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .validation-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .validation-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .test-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #2563eb;
+        }
+        .demo-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .demo-title {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        .log {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .step-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .step-1 { background-color: #2196f3; }
+        .step-2 { background-color: #ff9800; }
+        .step-3 { background-color: #4caf50; }
+        .step-4 { background-color: #f44336; }
+        .step-cancel { background-color: #9e9e9e; }
+        .flow-diagram {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .flow-step {
+            margin: 5px 0;
+            padding: 5px 10px;
+            background-color: white;
+            border-radius: 3px;
+            border-left: 3px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Corrected Auto-fill & Validation Order</h1>
+        <p><strong>Trình tự mới:</strong> User Input → Auto-fill → Validation → Cancel nếu lỗi</p>
+        
+        <div class="flow-diagram">
+            <h4>📋 Flow Diagram</h4>
+            <div class="flow-step"><span class="step-indicator step-1">1</span> User nhập địa chỉ</div>
+            <div class="flow-step"><span class="step-indicator step-2">2</span> Geocoding & Auto-fill</div>
+            <div class="flow-step"><span class="step-indicator step-3">3</span> Validate địa chỉ</div>
+            <div class="flow-step"><span class="step-indicator step-4">4</span> Cancel geocoding nếu lỗi</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="address">Địa chỉ:</label>
+            <input 
+                type="text" 
+                id="address" 
+                placeholder="Nhập số nhà hoặc địa chỉ (ví dụ: 1093)"
+                autocomplete="off"
+            >
+            <div id="validation-message" class="validation-message" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">🎯 Test Scenarios</h3>
+            <button class="test-button" onclick="testScenario1()">Scenario 1: Nhập "1093" (Trùng lặp)</button>
+            <button class="test-button" onclick="testScenario2()">Scenario 2: Nhập "999" (Không trùng)</button>
+            <button class="test-button" onclick="testScenario3()">Scenario 3: Nhập địa chỉ dài</button>
+            <button class="test-button" onclick="testScenario4()">Scenario 4: Test race condition</button>
+            <button class="test-button" onclick="clearTest()">Clear All</button>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">📋 Console Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // State variables
+        let currentAddress = '';
+        let lastGeocodingResult = null;
+        let lastValidatedAddress = '';
+        let hasAutoFilled = false;
+        let validationTimeout = null;
+        let geocodingTimeout = null;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'cancelled' ? '🚫' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function showValidationMessage(message, type) {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.textContent = message;
+            messageElement.className = `validation-message validation-${type}`;
+            messageElement.style.display = 'block';
+        }
+
+        function hideValidationMessage() {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.style.display = 'none';
+        }
+
+        // Mock validation API
+        async function checkAddressAvailability(address) {
+            log(`🔍 Checking address: "${address}"`);
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 600));
+            
+            // Mock response - địa chỉ "1093" bị trùng lặp
+            const isTaken = address.includes('1093');
+            
+            return {
+                data: {
+                    address: address,
+                    isTaken: isTaken,
+                    message: isTaken 
+                        ? 'Địa chỉ này đã được sử dụng bởi một garage khác (trùng khớp chính xác)'
+                        : 'Địa chỉ có thể sử dụng'
+                }
+            };
+        }
+
+        // Cancel geocoding
+        function cancelGeocoding() {
+            if (geocodingTimeout) {
+                clearTimeout(geocodingTimeout);
+                geocodingTimeout = null;
+            }
+            log('🚫 Geocoding cancelled', 'cancelled');
+        }
+
+        // Mock geocoding
+        function geocodeAddress(address) {
+            log(`🗺️ STEP 1: Starting geocoding for: "${address}"`, 'info');
+            
+            // Cancel any existing geocoding
+            cancelGeocoding();
+            
+            geocodingTimeout = setTimeout(() => {
+                if (address.includes('1093')) {
+                    const result = {
+                        display_name: '1093 Tạ Quang Bửu, Phường Bình Đông, Ho Chi Minh City, 72400, Vietnam',
+                        lat: 10.8231,
+                        lon: 106.6297
+                    };
+                    log(`✅ STEP 1: Geocoding result: "${result.display_name}"`, 'success');
+                    autoFillAddress(address, result);
+                } else if (address.includes('999')) {
+                    const result = {
+                        display_name: '999 Nguyễn Huệ, Quận 1, Ho Chi Minh City, 70000, Vietnam',
+                        lat: 10.7769,
+                        lon: 106.7009
+                    };
+                    log(`✅ STEP 1: Geocoding result: "${result.display_name}"`, 'success');
+                    autoFillAddress(address, result);
+                } else {
+                    log(`❌ STEP 1: No geocoding result for: "${address}"`, 'warning');
+                }
+                geocodingTimeout = null;
+            }, 1000); // Slower than validation to test race condition
+        }
+
+        // Auto-fill address
+        function autoFillAddress(userInput, geocodingResult) {
+            log(`🔄 STEP 2: Auto-filling address...`, 'info');
+            log(`   User input: "${userInput}"`);
+            log(`   Geocoding result: "${geocodingResult.display_name}"`);
+            
+            const mergedAddress = geocodingResult.display_name;
+            
+            log(`   Merged address: "${mergedAddress}"`, 'success');
+            
+            // Set auto-fill flag
+            hasAutoFilled = true;
+            
+            // Update input field
+            const addressInput = document.getElementById('address');
+            addressInput.value = mergedAddress;
+            currentAddress = mergedAddress;
+            
+            // Reset auto-fill flag after a short delay
+            setTimeout(() => {
+                hasAutoFilled = false;
+                log(`🔄 Auto-fill flag reset`, 'info');
+            }, 100);
+            
+            // Validate immediately after auto-fill
+            log(`🔍 STEP 3: Validating auto-filled address immediately...`, 'info');
+            validateAddress(mergedAddress);
+        }
+
+        // Validate address
+        async function validateAddress(address) {
+            const trimmedAddress = address.trim();
+            
+            // Skip validation if same address was already validated
+            if (trimmedAddress === lastValidatedAddress) {
+                log(`⏭️ Skipping validation - same address already validated: "${trimmedAddress}"`, 'warning');
+                return;
+            }
+            
+            if (trimmedAddress.length > 0) {
+                showValidationMessage('Đang kiểm tra địa chỉ...', 'loading');
+                log(`🔍 STEP 3: Starting validation for: "${trimmedAddress}"`, 'info');
+                
+                try {
+                    const response = await checkAddressAvailability(trimmedAddress);
+                    const data = response.data;
+                    
+                    log(`✅ STEP 3: Validation completed: ${data.isTaken ? 'TAKEN' : 'AVAILABLE'}`, data.isTaken ? 'error' : 'success');
+                    log(`   Message: ${data.message}`);
+                    
+                    showValidationMessage(data.message, data.isTaken ? 'error' : 'success');
+                    lastValidatedAddress = trimmedAddress;
+                    
+                    // Cancel geocoding if address is taken
+                    if (data.isTaken) {
+                        log('🚫 STEP 4: Address is taken, cancelling any pending geocoding', 'cancelled');
+                        cancelGeocoding();
+                    } else {
+                        log('✅ STEP 4: Address is available, keeping auto-fill result', 'success');
+                    }
+                    
+                } catch (error) {
+                    log(`❌ STEP 3: Validation error: ${error.message}`, 'error');
+                    showValidationMessage('Không thể kiểm tra địa chỉ', 'error');
+                }
+            } else {
+                hideValidationMessage();
+                lastValidatedAddress = '';
+            }
+        }
+
+        // Debounced validation
+        function debouncedValidateAddress(address) {
+            if (validationTimeout) {
+                clearTimeout(validationTimeout);
+            }
+            
+            validationTimeout = setTimeout(() => {
+                validateAddress(address);
+            }, 500);
+        }
+
+        // Handle input changes
+        document.getElementById('address').addEventListener('input', function(e) {
+            const newAddress = e.target.value;
+            
+            log(`📝 User input changed: "${newAddress}"`, 'info');
+            
+            // Reset validation if address changed significantly
+            if (newAddress !== lastValidatedAddress && newAddress.length > 0) {
+                log(`🔄 Address changed, resetting validation state`, 'info');
+                hideValidationMessage();
+            }
+            
+            currentAddress = newAddress;
+            
+            // 🔥 TRÌNH TỰ MỚI: Chỉ geocode, KHÔNG validate ngay
+            // Validation sẽ được gọi trong autoFillAddress sau khi auto-fill hoàn thành
+            
+            // Chỉ geocode nếu address ngắn
+            const shouldGeocode = newAddress.length < 50;
+            
+            if (shouldGeocode) {
+                log(`🗺️ STEP 1: Triggering geocoding for: "${newAddress}"`, 'info');
+                geocodeAddress(newAddress);
+            } else {
+                log(`⏭️ Skipping geocoding - address seems complete: "${newAddress}"`, 'warning');
+                // Nếu không geocode, validate ngay lập tức
+                debouncedValidateAddress(newAddress);
+            }
+        });
+
+        // Test scenarios
+        function testScenario1() {
+            log('\n🧪 SCENARIO 1: Nhập "1093" (Trùng lặp)');
+            log('Expected: Auto-fill → Validation → Cancel geocoding → Show error');
+            document.getElementById('address').value = '1093';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function testScenario2() {
+            log('\n🧪 SCENARIO 2: Nhập "999" (Không trùng)');
+            log('Expected: Auto-fill → Validation → Keep result → Show success');
+            document.getElementById('address').value = '999';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function testScenario3() {
+            log('\n🧪 SCENARIO 3: Nhập địa chỉ dài');
+            log('Expected: Skip geocoding → Direct validation');
+            document.getElementById('address').value = '123 Very Long Address That Should Not Trigger Geocoding';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function testScenario4() {
+            log('\n🧪 SCENARIO 4: Test race condition');
+            log('Expected: Auto-fill completes → Validation → Cancel if error');
+            document.getElementById('address').value = '1093';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+            
+            // Simulate user continuing to type
+            setTimeout(() => {
+                log('🔄 User continues typing...', 'info');
+                document.getElementById('address').value = '1093 Test';
+                document.getElementById('address').dispatchEvent(new Event('input'));
+            }, 500);
+        }
+
+        function clearTest() {
+            log('\n🧹 CLEARING ALL TESTS');
+            document.getElementById('address').value = '';
+            document.getElementById('log').innerHTML = '';
+            hideValidationMessage();
+            lastValidatedAddress = '';
+            lastGeocodingResult = null;
+            hasAutoFilled = false;
+            cancelGeocoding();
+        }
+
+        // Initialize
+        log('🚀 Corrected Auto-fill & Validation Test Ready');
+        log('💡 Try typing "1093" to test the corrected order');
+        log('🎯 Expected: STEP 1 (Geocoding) → STEP 2 (Auto-fill) → STEP 3 (Validation) → STEP 4 (Cancel if error)');
+    </script>
+</body>
+</html>

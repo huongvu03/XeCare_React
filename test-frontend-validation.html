@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .validation-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .validation-loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .validation-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .validation-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .test-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #2563eb;
+        }
+        .demo-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .demo-title {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        .log {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .api-response {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Frontend Validation</h1>
+        <p>Test API validation trực tiếp để kiểm tra tại sao frontend không bắt lỗi trùng lặp</p>
+        
+        <div class="form-group">
+            <label for="address">Địa chỉ:</label>
+            <input 
+                type="text" 
+                id="address" 
+                placeholder="Nhập địa chỉ để test"
+                autocomplete="off"
+            >
+            <div id="validation-message" class="validation-message" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">🎯 Test Scenarios</h3>
+            <button class="test-button" onclick="testScenario1()">Test "1093" (Should detect duplicate)</button>
+            <button class="test-button" onclick="testScenario2()">Test "1093 Tạ Quang Bửu..." (Auto-filled)</button>
+            <button class="test-button" onclick="testScenario3()">Test "999 Nguyễn Huệ" (Should be OK)</button>
+            <button class="test-button" onclick="testScenario4()">Test Exact Database Address</button>
+            <button class="test-button" onclick="clearTest()">Clear All</button>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">📋 API Response</h3>
+            <div id="api-response" class="api-response" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">📋 Console Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function showValidationMessage(message, type) {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.textContent = message;
+            messageElement.className = `validation-message validation-${type}`;
+            messageElement.style.display = 'block';
+        }
+
+        function hideValidationMessage() {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.style.display = 'none';
+        }
+
+        function showApiResponse(data) {
+            const responseElement = document.getElementById('api-response');
+            responseElement.textContent = JSON.stringify(data, null, 2);
+            responseElement.style.display = 'block';
+        }
+
+        function hideApiResponse() {
+            const responseElement = document.getElementById('api-response');
+            responseElement.style.display = 'none';
+        }
+
+        // Test API validation trực tiếp
+        async function testAddressValidation(address) {
+            log(`🔍 Testing address validation: "${address}"`);
+            showValidationMessage('Đang kiểm tra địa chỉ...', 'loading');
+            
+            try {
+                const response = await fetch(`http://localhost:8080/apis/garage/validation/address?address=${encodeURIComponent(address)}`);
+                const data = await response.json();
+                
+                log(`✅ API Response received:`, 'success');
+                log(`   Status: ${response.status}`);
+                log(`   Address: ${data.address}`);
+                log(`   isTaken: ${data.isTaken}`);
+                log(`   exactMatch: ${data.exactMatch}`);
+                log(`   normalizedMatch: ${data.normalizedMatch}`);
+                log(`   similarMatch: ${data.similarMatch}`);
+                log(`   Message: ${data.message}`);
+                
+                showApiResponse(data);
+                
+                if (data.isTaken) {
+                    showValidationMessage(data.message, 'error');
+                    log(`❌ Address is taken: ${data.message}`, 'error');
+                } else {
+                    showValidationMessage(data.message, 'success');
+                    log(`✅ Address is available: ${data.message}`, 'success');
+                }
+                
+                return data;
+                
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`, 'error');
+                showValidationMessage('Không thể kiểm tra địa chỉ', 'error');
+                showApiResponse({ error: error.message });
+                return null;
+            }
+        }
+
+        // Test scenarios
+        function testScenario1() {
+            log('\n🧪 SCENARIO 1: Test "1093" (Should detect duplicate)');
+            document.getElementById('address').value = '1093';
+            testAddressValidation('1093');
+        }
+
+        function testScenario2() {
+            log('\n🧪 SCENARIO 2: Test "1093 Tạ Quang Bửu..." (Auto-filled)');
+            const autoFilledAddress = '1093 Tạ Quang Bửu, Phường Bình Đông, Ho Chi Minh City, 72400, Vietnam';
+            document.getElementById('address').value = autoFilledAddress;
+            testAddressValidation(autoFilledAddress);
+        }
+
+        function testScenario3() {
+            log('\n🧪 SCENARIO 3: Test "999 Nguyễn Huệ" (Should be OK)');
+            const newAddress = '999 Nguyễn Huệ, Quận 1, Ho Chi Minh City, 70000, Vietnam';
+            document.getElementById('address').value = newAddress;
+            testAddressValidation(newAddress);
+        }
+
+        function testScenario4() {
+            log('\n🧪 SCENARIO 4: Test Exact Database Address');
+            const exactAddress = '1093 Tạ Quang Bửu, Chánh Hưng, Chánh Hưng Ward, Ho Chi Minh City, 72400, Vietnam';
+            document.getElementById('address').value = exactAddress;
+            testAddressValidation(exactAddress);
+        }
+
+        function clearTest() {
+            log('\n🧹 CLEARING ALL TESTS');
+            document.getElementById('address').value = '';
+            document.getElementById('log').innerHTML = '';
+            hideValidationMessage();
+            hideApiResponse();
+        }
+
+        // Handle input changes
+        document.getElementById('address').addEventListener('input', function(e) {
+            const address = e.target.value;
+            if (address.length > 5) {
+                log(`📝 User input: "${address}"`);
+                testAddressValidation(address);
+            }
+        });
+
+        // Initialize
+        log('🚀 Frontend Validation Test Ready');
+        log('💡 Try typing "1093" to test validation');
+        log('🎯 Expected: Should detect duplicate for "1093" and similar addresses');
+    </script>
+</body>
+</html>

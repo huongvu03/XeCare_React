@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +17,7 @@ import { getAllSystemServices, type Service } from "@/lib/api/ServiceApi"
 import { getAllVehicleTypes, type VehicleType } from "@/lib/api/VehicleTypeApi"
 import { useAuth } from "@/hooks/use-auth"
 import { useGeocoding } from "@/hooks/use-geocoding"
+import { useDebouncedCallback } from "@/hooks/use-debounce"
 import { OperatingHoursForm } from "@/components/operating-hours-form"
 import { createDefaultOperatingHours } from "@/lib/utils/operatingHours"
 import Swal from 'sweetalert2'
@@ -29,8 +30,8 @@ export default function GarageRegistrationPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
-  // Geocoding hook
-  const { geocodeAddress, isLoading: geocodingLoading, error: geocodingError, result: geocodingResult, clearError: clearGeocodingError } = useGeocoding(1500)
+  // Geocoding hook - giảm delay từ 1500ms xuống 500ms để auto-fill nhanh hơn
+  const { geocodeAddress, geocodeAddressImmediate, cancelGeocoding, isLoading: geocodingLoading, error: geocodingError, result: geocodingResult, clearError: clearGeocodingError } = useGeocoding(500)
 
   // Form data
   const [garageName, setGarageName] = useState("")
@@ -64,6 +65,9 @@ export default function GarageRegistrationPage() {
     isTaken: false,
     message: ""
   })
+  
+  // Track last validated address to avoid re-validating same address
+  const lastValidatedAddress = useRef<string>("")
 
   // Get current location
   const getCurrentLocation = () => {
@@ -86,22 +90,44 @@ export default function GarageRegistrationPage() {
     }
   }
 
-  // Handle address change with geocoding and validation
-  const handleAddressChange = async (newAddress: string) => {
-    setAddress(newAddress)
-    geocodeAddress(newAddress)
+  // Address validation function (without debounce for immediate validation)
+  const validateAddress = useCallback(async (newAddress: string) => {
+    const trimmedAddress = newAddress.trim()
     
-    // Validate address if it's not empty
-    if (newAddress.trim().length > 0) {
+    // Skip validation if same address was already validated
+    if (trimmedAddress === lastValidatedAddress.current) {
+      console.log('⏭️ Skipping validation - same address already validated:', trimmedAddress)
+      return
+    }
+    
+    if (trimmedAddress.length > 0) {
       setAddressValidation(prev => ({ ...prev, isValidating: true }))
       
       try {
-        const response = await checkAddressAvailability(newAddress.trim())
-        setAddressValidation({
+        console.log('🔍 Validating address:', trimmedAddress)
+        console.log('   Last validated address:', lastValidatedAddress.current)
+        const response = await checkAddressAvailability(trimmedAddress)
+        
+        const validationResult = {
           isValidating: false,
           isTaken: response.data.isTaken,
           message: response.data.message
-        })
+        }
+        
+        console.log('✅ Validation API response:', response.data)
+        console.log('📝 Setting validation state:', validationResult)
+        
+        setAddressValidation(validationResult)
+        lastValidatedAddress.current = trimmedAddress
+        console.log('✅ Validation completed and cached:', response.data)
+        
+        // 🚫 Cancel geocoding nếu địa chỉ bị trùng lặp
+        if (response.data.isTaken) {
+          console.log('🚫 STEP 4: Address is taken, cancelling any pending geocoding')
+          cancelGeocoding()
+        } else {
+          console.log('✅ STEP 4: Address is available, keeping auto-fill result')
+        }
       } catch (error) {
         console.error("Error checking address availability:", error)
         setAddressValidation({
@@ -116,19 +142,108 @@ export default function GarageRegistrationPage() {
         isTaken: false,
         message: ""
       })
+      lastValidatedAddress.current = ""
     }
-  }
+  }, [cancelGeocoding])
+
+  // Force validation (bypass cache) for auto-filled addresses
+  const forceValidateAddress = useCallback(async (newAddress: string) => {
+    const trimmedAddress = newAddress.trim()
+    
+    if (trimmedAddress.length > 0) {
+      console.log('🔍 Force validating address (bypassing cache):', trimmedAddress)
+      setAddressValidation(prev => ({ ...prev, isValidating: true }))
+      
+      try {
+        const response = await checkAddressAvailability(trimmedAddress)
+        
+        const validationResult = {
+          isValidating: false,
+          isTaken: response.data.isTaken,
+          message: response.data.message
+        }
+        
+        console.log('✅ Force validation API response:', response.data)
+        console.log('📝 Setting force validation state:', validationResult)
+        
+        setAddressValidation(validationResult)
+        lastValidatedAddress.current = trimmedAddress
+        console.log('✅ Force validation completed:', response.data)
+        
+      } catch (error) {
+        console.error('❌ Force validation error:', error)
+        setAddressValidation({
+          isValidating: false,
+          isTaken: false,
+          message: "Có lỗi xảy ra khi kiểm tra địa chỉ"
+        })
+      }
+    }
+  }, [checkAddressAvailability])
+
+  // Debounced address validation function (for user typing)
+  const debouncedAddressValidation = useDebouncedCallback(validateAddress, 500)
+
+  // Handle address change with geocoding and validation
+  const handleAddressChange = useCallback(async (newAddress: string) => {
+    setAddress(newAddress)
+    
+    // Reset validation nếu địa chỉ thay đổi đáng kể
+    if (newAddress !== lastValidatedAddress.current && newAddress.length > 0) {
+      console.log('🔄 Address changed, resetting validation state')
+      console.log('   Old address:', lastValidatedAddress.current)
+      console.log('   New address:', newAddress)
+      setAddressValidation({
+        isValidating: false,
+        isTaken: false,
+        message: ""
+      })
+    }
+    
+    // 🔥 FIXED: Luôn validate địa chỉ bất kể geocoding có thành công hay không
+    // Validation cần chạy để phát hiện địa chỉ trùng lặp ngay cả khi geocoding thất bại
+    
+    // Chỉ geocode nếu:
+    // 1. User nhập địa chỉ ngắn (có thể cần auto-fill)
+    // 2. Hoặc địa chỉ hiện tại khác với địa chỉ auto-fill trước đó
+    const shouldGeocode = newAddress.length < 50 || newAddress !== lastGeocodingResult.current
+    
+    if (shouldGeocode) {
+      // Sử dụng immediate geocoding cho địa chỉ có vẻ đầy đủ (chứa số nhà + tên đường)
+      const hasHouseNumber = /^\d+/.test(newAddress.trim())
+      const hasStreetName = /\b(đường|phố|phường|xã|quận|huyện|thành phố|tỉnh|việt nam|vietnam|ward|district|street|road|avenue)\b/i.test(newAddress) ||
+                           /\b[A-Z][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+ [A-Z][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+\b/.test(newAddress)
+      
+      if (hasHouseNumber && hasStreetName && newAddress.length >= 15) {
+        console.log('⚡ STEP 1: Triggering IMMEDIATE geocoding for complete address:', newAddress)
+        geocodeAddressImmediate(newAddress)
+      } else {
+        console.log('🗺️ STEP 1: Triggering NORMAL geocoding for:', newAddress)
+        geocodeAddress(newAddress)
+      }
+    } else {
+      console.log('⏭️ Skipping geocoding - address seems complete:', newAddress)
+    }
+    
+    // 🔥 QUAN TRỌNG: Luôn validate địa chỉ (với debounce)
+    // Điều này đảm bảo validation chạy ngay cả khi geocoding thất bại
+    debouncedAddressValidation(newAddress)
+  }, [geocodeAddress, geocodeAddressImmediate, debouncedAddressValidation])
 
   // Ref để tránh infinite loop khi auto-fill address
   const lastGeocodingResult = useRef<string | null>(null)
   const lastAddressInput = useRef<string>("")
+  const hasAutoFilled = useRef<boolean>(false)
 
   // Reset geocoding result ref khi địa chỉ input thay đổi
   useEffect(() => {
     if (address !== lastAddressInput.current) {
+      // Chỉ reset nếu user thực sự thay đổi input (không phải auto-fill)
+      if (!hasAutoFilled.current) {
       lastGeocodingResult.current = null
+        console.log('User manually changed address, reset geocoding ref. New address:', address)
+      }
       lastAddressInput.current = address
-      console.log('Address input changed, reset geocoding ref. New address:', address)
       console.log('lastAddressInput updated to:', lastAddressInput.current)
     }
   }, [address])
@@ -146,18 +261,20 @@ export default function GarageRegistrationPage() {
       
       console.log('Found house number:', houseNumber, 'Street name:', streetName)
       
-      // Kiểm tra xem geocoding result có chứa tên đường không
-      if (geocodingResult.toLowerCase().includes(streetName.toLowerCase())) {
-        // Nếu có, thay thế số nhà trong geocoding result
-        const mergedAddress = geocodingResult.replace(/^\d+[a-zA-Z]?\s*/, `${houseNumber} `)
-        console.log('Merged address:', mergedAddress)
-        return mergedAddress
+      // 🔥 FIXED: Luôn giữ lại số nhà của user
+      // Nếu geocoding result đã có số nhà, thay thế nó bằng số nhà của user
+      // Nếu chưa có, thêm vào đầu
+      let mergedAddress
+      if (/^\d+[a-zA-Z]?\s/.test(geocodingResult)) {
+        // Geocoding result đã có số nhà, thay thế nó
+        mergedAddress = geocodingResult.replace(/^\d+[a-zA-Z]?\s*/, `${houseNumber} `)
+        console.log('Replaced house number in geocoding result:', mergedAddress)
       } else {
-        // Nếu không match tên đường, thêm số nhà vào đầu geocoding result
-        const mergedAddress = `${houseNumber} ${geocodingResult}`
+        // Geocoding result chưa có số nhà, thêm vào đầu
+        mergedAddress = `${houseNumber} ${geocodingResult}`
         console.log('Added house number to geocoding result:', mergedAddress)
-        return mergedAddress
       }
+        return mergedAddress
     }
     
     // Nếu không tìm thấy số nhà, trả về geocoding result
@@ -184,13 +301,36 @@ export default function GarageRegistrationPage() {
         
         // Merge số nhà của user với địa chỉ đầy đủ từ geocoding
         const mergedAddress = mergeAddressWithHouseNumber(originalUserInput, geocodingAddress)
+                      
+                      console.log('🔄 STEP 2: Auto-filling address:', mergedAddress)
+                      
+                      // 🔥 FIXED: Reset validation state trước khi auto-fill
+                      // Điều này đảm bảo không hiển thị validation state cũ
+                      setAddressValidation({
+                        isValidating: false,
+                        isTaken: false,
+                        message: ""
+                      })
+                      
+                      // Set flag để đánh dấu đây là auto-fill
+                      hasAutoFilled.current = true
         
         setAddress(mergedAddress)
         lastGeocodingResult.current = mergedAddress
-        console.log('Final auto-filled address:', mergedAddress)
-      }
-    }
-  }, [geocodingResult])
+                      console.log('✅ Auto-fill completed:', mergedAddress)
+                      
+                      // Reset flag sau khi set address
+                      setTimeout(() => {
+                        hasAutoFilled.current = false
+                      }, 100)
+                      
+                      // 🔥 STEP 3: Gọi validation ngay lập tức cho địa chỉ đã auto-fill
+                      // Force validate để bỏ qua cache và có kết quả ngay
+                      console.log('🔍 STEP 3: Force validating auto-filled address immediately')
+                      forceValidateAddress(mergedAddress)
+                    }
+                  }
+                }, [geocodingResult, forceValidateAddress])
 
   // Load services and vehicle types from API
   useEffect(() => {
@@ -275,22 +415,54 @@ export default function GarageRegistrationPage() {
 
     // Validation
     if (!garageName || !address || !phone || !email || !description) {
+      await Swal.fire({
+        title: 'Thiếu thông tin!',
+        text: 'Vui lòng điền đầy đủ tất cả thông tin bắt buộc.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b',
+        showConfirmButton: true
+      })
       setError("Please fill in all required information.")
       return
     }
 
     if (selectedServices.length === 0) {
+      await Swal.fire({
+        title: 'Thiếu dịch vụ!',
+        text: 'Vui lòng chọn ít nhất một dịch vụ.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b',
+        showConfirmButton: true
+      })
       setError("Please select at least one service.")
       return
     }
 
     if (selectedVehicleTypes.length === 0) {
+      await Swal.fire({
+        title: 'Thiếu loại xe!',
+        text: 'Vui lòng chọn ít nhất một loại xe.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b',
+        showConfirmButton: true
+      })
       setError("Please select at least one vehicle type.")
       return
     }
 
     // Check if address is already taken
     if (addressValidation.isTaken) {
+      await Swal.fire({
+        title: 'Địa chỉ đã được sử dụng!',
+        text: 'Địa chỉ này đã được sử dụng bởi garage khác. Vui lòng chọn địa chỉ khác.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ef4444',
+        showConfirmButton: true
+      })
       setError("This address is already used by another garage. Please choose a different address.")
       return
     }
@@ -363,20 +535,20 @@ export default function GarageRegistrationPage() {
       
       // Show SweetAlert success notification
       await Swal.fire({
-        title: '🎉 Registration Successful!',
+        title: '🎉 Đăng ký thành công!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Garage <strong>"${garageName}"</strong> has been registered successfully!</p>
-            <p class="text-sm text-gray-600 mb-4">Please wait for admin approval to start receiving appointments from customers.</p>
+            <p class="text-lg mb-4">Garage <strong>"${garageName}"</strong> đã được đăng ký thành công!</p>
+            <p class="text-sm text-gray-600 mb-4">Vui lòng chờ admin phê duyệt để bắt đầu nhận lịch hẹn từ khách hàng.</p>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-blue-700">
-                <strong>Note:</strong> You will be redirected to the garage dashboard shortly...
+                <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến dashboard garage trong vài giây...
               </p>
             </div>
           </div>
         `,
         icon: 'success',
-        confirmButtonText: 'Great!',
+        confirmButtonText: 'Tuyệt vời!',
         confirmButtonColor: '#3b82f6',
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -402,20 +574,20 @@ export default function GarageRegistrationPage() {
       
       // Show SweetAlert error notification
       await Swal.fire({
-        title: '❌ Registration Failed!',
+        title: '❌ Đăng ký thất bại!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Cannot register garage</p>
+            <p class="text-lg mb-4">Không thể đăng ký garage</p>
             <p class="text-sm text-gray-600 mb-4">${errorMessage}</p>
             <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-red-700">
-                <strong>Suggestion:</strong> Please check the information again and try again.
+                <strong>Gợi ý:</strong> Vui lòng kiểm tra lại thông tin và thử lại.
               </p>
             </div>
           </div>
         `,
         icon: 'error',
-        confirmButtonText: 'Try Again',
+        confirmButtonText: 'Thử lại',
         confirmButtonColor: '#ef4444',
         allowOutsideClick: true,
         allowEscapeKey: true
@@ -533,15 +705,22 @@ export default function GarageRegistrationPage() {
                 )}
                 
                 {!addressValidation.isValidating && addressValidation.message && (
-                  <div className={`flex items-center space-x-2 text-sm mt-1 ${
+                  <div className={`flex items-start space-x-2 text-sm mt-1 ${
                     addressValidation.isTaken ? 'text-red-600' : 'text-green-600'
                   }`}>
                     {addressValidation.isTaken ? (
-                      <AlertCircle className="h-4 w-4" />
+                      <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     ) : (
-                      <CheckCircle className="h-4 w-4" />
+                      <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     )}
+                    <div className="flex-1">
                     <span>{addressValidation.message}</span>
+                      {addressValidation.isTaken && (
+                        <div className="text-xs text-red-500 mt-1">
+                          💡 Mẹo: Thử thêm số nhà cụ thể hoặc tên đường khác để tránh trùng lặp
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

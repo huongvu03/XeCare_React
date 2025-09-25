@@ -25,6 +25,7 @@ import {
   Loader2,
   ArrowLeft
 } from "lucide-react"
+import Swal from 'sweetalert2'
 import { 
   getGarageServices, 
   createGarageService, 
@@ -84,6 +85,53 @@ export default function GarageServicesPage() {
   
   // Loading states for individual actions
   const [togglingServices, setTogglingServices] = useState<Set<number>>(new Set())
+  
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL')
+  
+  // Track newly added services in current session
+  const [newlyAddedServiceIds, setNewlyAddedServiceIds] = useState<Set<number>>(new Set())
+  const [previousServiceIds, setPreviousServiceIds] = useState<Set<number>>(new Set())
+
+  // Filter and sort services based on status (newest first)
+  const filteredServices = services
+    .filter(service => {
+      if (statusFilter === 'ALL') return true
+      if (statusFilter === 'ACTIVE') return service.isActive
+      if (statusFilter === 'INACTIVE') return !service.isActive
+      return true
+    })
+    .sort((a, b) => b.id - a.id) // Sort by ID descending (newest first)
+
+  // Detect newly added services
+  useEffect(() => {
+    if (services.length > 0) {
+      const currentServiceIds = new Set(services.map(s => s.id))
+      
+      // Find new services by comparing with previous set
+      if (previousServiceIds.size > 0) {
+        const newIds = [...currentServiceIds].filter(id => !previousServiceIds.has(id))
+        
+        if (newIds.length > 0) {
+          setNewlyAddedServiceIds(prev => new Set([...prev, ...newIds]))
+          console.log("New services detected:", newIds)
+          
+          // Auto-remove NEW badge after 10 seconds
+          setTimeout(() => {
+            setNewlyAddedServiceIds(prev => {
+              const updated = new Set(prev)
+              newIds.forEach(id => updated.delete(id))
+              return updated
+            })
+            console.log("NEW badges removed for services:", newIds)
+          }, 10000)
+        }
+      }
+      
+      // Update previous service IDs
+      setPreviousServiceIds(currentServiceIds)
+    }
+  }, [services])
 
   // Fetch data
   const fetchData = async () => {
@@ -176,19 +224,42 @@ export default function GarageServicesPage() {
 
   // Handle form submission
   const handleSubmit = async (isEdit: boolean = false) => {
+    console.log("🚀 handleSubmit called - starting form submission")
+    console.log("🚀 Form data:", formData)
+    console.log("🚀 Is custom service mode:", isCustomServiceMode)
+    
     let originalService: GarageService | undefined = undefined
     
     try {
       setSubmitting(true)
       
-      // Validate system service data
-      if (!isCustomServiceMode) {
-        const errors = validateSystemService(formData)
-        if (Object.keys(errors).length > 0) {
-          setCustomServiceErrors(errors)
-          toast.error("Please check the information again")
-          return
-        }
+      // Validate service data based on mode
+      let errors = {}
+      if (isCustomServiceMode) {
+        // Validate custom service data
+        errors = validateCustomService(formData)
+      } else {
+        // Validate system service data
+        errors = validateSystemService(formData)
+      }
+      
+      if (Object.keys(errors).length > 0) {
+        setCustomServiceErrors(errors)
+        
+        // Show SweetAlert validation error
+        await Swal.fire({
+          title: '⚠️ Thông tin không hợp lệ!',
+          text: 'Vui lòng kiểm tra lại thông tin đã nhập.',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#f59e0b',
+          showConfirmButton: true,
+          timer: 4000,
+          timerProgressBar: true,
+          allowOutsideClick: true,
+          allowEscapeKey: true
+        })
+        return
       }
       
       if (isEdit && editingService) {
@@ -212,7 +283,22 @@ export default function GarageServicesPage() {
         }
         
         await updateGarageService(editingService.id, formData)
-        toast.success("Service updated successfully!")
+        
+        // Show SweetAlert success notification for update
+        await Swal.fire({
+          title: '✅ Cập nhật service thành công!',
+          text: 'Service đã được cập nhật thành công!',
+          icon: 'success',
+          confirmButtonText: 'Tuyệt vời!',
+          confirmButtonColor: '#10b981',
+          showConfirmButton: true,
+          timer: 3000,
+          timerProgressBar: true,
+          allowOutsideClick: true,
+          allowEscapeKey: true,
+          allowEnterKey: true,
+          stopKeydownPropagation: false
+        })
         
         // Reset form and close dialog
         setFormData({
@@ -225,10 +311,37 @@ export default function GarageServicesPage() {
         setIsEditDialogOpen(false)
         setCustomServiceErrors({})
       } else {
-        await createGarageService(formData)
-        toast.success("Service added successfully! The service has been activated and is ready to use.")
+        // Debug: Log form data before sending
+        console.log("🚀 Creating garage service with data:", formData)
+        console.log("🚀 Garage ID:", garageId)
+        console.log("🚀 Is Custom Service Mode:", isCustomServiceMode)
         
-        // Reset form and close dialog
+        if (isCustomServiceMode) {
+          // Handle custom service creation
+          console.log("🔧 Creating custom service...")
+          const customServiceData = {
+            name: formData.serviceName || '',
+            description: formData.serviceDescription || '',
+            basePrice: formData.price || 0,
+            estimatedTimeMinutes: formData.estimatedTimeMinutes || 30,
+            isActive: formData.isActive ?? true
+          }
+          console.log("🔧 Custom service data:", customServiceData)
+          
+          try {
+            const result = await createCustomService(garageId, customServiceData)
+            console.log("✅ Custom service created successfully:", result)
+          } catch (error) {
+            console.error("❌ Error creating custom service:", error)
+            throw error // Re-throw to trigger catch block
+          }
+        } else {
+          // Handle system service creation
+          console.log("⚙️ Creating system service...")
+          await createGarageService(garageId, formData)
+        }
+        
+        // Reset form and close dialog first
         setFormData({
           serviceId: 0,
           price: 0,
@@ -238,8 +351,45 @@ export default function GarageServicesPage() {
         setIsAddDialogOpen(false)
         setCustomServiceErrors({})
         
-        // Refresh data for new service
-        fetchData()
+        // Show SweetAlert success notification
+        console.log("🎉 About to show SweetAlert success notification")
+        const result = await Swal.fire({
+          title: '🎉 Thêm service thành công!',
+          html: `
+            <div class="text-center">
+              <p class="text-lg mb-4">Service đã được thêm thành công!</p>
+              <p class="text-sm text-gray-600 mb-4">Service đã được kích hoạt và sẵn sàng sử dụng.</p>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                <p class="text-sm text-green-700">
+                  <strong>Lưu ý:</strong> Service sẽ xuất hiện trong danh sách ngay lập tức.
+                </p>
+              </div>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonText: 'Tuyệt vời!',
+          confirmButtonColor: '#10b981',
+          showConfirmButton: true,
+          timer: 3000,
+          timerProgressBar: true,
+          allowOutsideClick: true,
+          allowEscapeKey: true,
+          allowEnterKey: true,
+          stopKeydownPropagation: false
+        })
+        
+        console.log("SweetAlert result:", result)
+        
+        // Refresh data for new service after SweetAlert is closed
+        // Use setTimeout to ensure SweetAlert is fully closed before refreshing
+        setTimeout(async () => {
+          try {
+            await fetchData()
+            console.log("Data refreshed successfully after adding service")
+          } catch (refreshError) {
+            console.error("Error refreshing data:", refreshError)
+          }
+        }, 100)
       }
     } catch (err: any) {
       console.error("Error submitting form:", err)
@@ -255,7 +405,29 @@ export default function GarageServicesPage() {
         )
       }
       
-      toast.error(err.response?.data?.message || "An error occurred. Please try again.")
+      // Show SweetAlert error notification
+      await Swal.fire({
+        title: '❌ Lỗi khi thêm service!',
+        html: `
+          <div class="text-center">
+            <p class="text-lg mb-4">Không thể thêm service</p>
+            <p class="text-sm text-gray-600 mb-4">${err.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại."}</p>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
+              <p class="text-sm text-red-700">
+                <strong>Gợi ý:</strong> Vui lòng kiểm tra lại thông tin và thử lại.
+              </p>
+            </div>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonText: 'Thử lại',
+        confirmButtonColor: '#ef4444',
+        showConfirmButton: true,
+        timer: 5000,
+        timerProgressBar: true,
+        allowOutsideClick: true,
+        allowEscapeKey: true
+      })
     } finally {
       setSubmitting(false)
     }
@@ -1087,17 +1259,58 @@ export default function GarageServicesPage() {
         {/* Services List */}
         <Card>
           <CardHeader>
-            <CardTitle>Services List</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Services List</CardTitle>
+              
+              {/* Filter Buttons */}
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">Filter:</span>
+                <Button
+                  variant={statusFilter === 'ALL' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('ALL')}
+                >
+                  All ({services.length})
+                </Button>
+                <Button
+                  variant={statusFilter === 'ACTIVE' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('ACTIVE')}
+                  className={statusFilter === 'ACTIVE' 
+                    ? "bg-green-600 hover:bg-green-700 text-white" 
+                    : "text-green-600 border-green-600 hover:bg-green-50"
+                  }
+                >
+                  Active ({services.filter(s => s.isActive).length})
+                </Button>
+                <Button
+                  variant={statusFilter === 'INACTIVE' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('INACTIVE')}
+                  className={statusFilter === 'INACTIVE' 
+                    ? "bg-red-600 hover:bg-red-700 text-white" 
+                    : "text-red-600 border-red-600 hover:bg-red-50"
+                  }
+                >
+                  Inactive ({services.filter(s => !s.isActive).length})
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {services.length === 0 ? (
+            {filteredServices.length === 0 ? (
               <div className="text-center py-8">
                 <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No services yet. Add the first service!</p>
+                <p className="text-gray-600">
+                  {services.length === 0 
+                    ? "No services yet. Add the first service!" 
+                    : `No ${statusFilter.toLowerCase()} services found.`
+                  }
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
-                {services.map((service) => (
+                {filteredServices.map((service) => (
                   <div key={service.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -1106,6 +1319,12 @@ export default function GarageServicesPage() {
                           <Badge variant={service.isActive ? "default" : "secondary"}>
                             {service.isActive ? "✅ Active" : "⏸️ Paused"}
                           </Badge>
+                          {/* Show NEW badge for newly added services in current session */}
+                          {newlyAddedServiceIds.has(service.id) && (
+                            <Badge variant="destructive" className="animate-pulse">
+                              🆕 NEW
+                            </Badge>
+                          )}
                         </div>
                         
                         <p className="text-sm text-gray-600 mb-2">{service.serviceDescription}</p>

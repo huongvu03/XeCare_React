@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Geocoding Failure + Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .validation-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .validation-loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .validation-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .validation-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .geocoding-error {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .test-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #2563eb;
+        }
+        .demo-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .demo-title {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        .log {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .flow-diagram {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .flow-step {
+            margin: 5px 0;
+            padding: 5px 10px;
+            background-color: white;
+            border-radius: 3px;
+            border-left: 3px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Geocoding Failure + Validation</h1>
+        <p><strong>Vấn đề:</strong> Geocoding thất bại → Validation không chạy → Không phát hiện trùng lặp</p>
+        
+        <div class="flow-diagram">
+            <h4>📋 Flow Diagram</h4>
+            <div class="flow-step">1. User nhập địa chỉ đầy đủ</div>
+            <div class="flow-step">2. Geocoding thất bại (không tìm thấy tọa độ)</div>
+            <div class="flow-step">3. Validation KHÔNG chạy (vì geocoding thất bại)</div>
+            <div class="flow-step">4. ❌ Không phát hiện địa chỉ trùng lặp</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="address">Địa chỉ:</label>
+            <input 
+                type="text" 
+                id="address" 
+                placeholder="Nhập địa chỉ đầy đủ để test"
+                autocomplete="off"
+            >
+            <div id="validation-message" class="validation-message" style="display: none;"></div>
+            <div id="geocoding-message" class="validation-message" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">🎯 Test Scenarios</h3>
+            <button class="test-button" onclick="testScenario1()">Scenario 1: Geocoding Success + Validation</button>
+            <button class="test-button" onclick="testScenario2()">Scenario 2: Geocoding Failure + Validation</button>
+            <button class="test-button" onclick="testScenario3()">Scenario 3: Duplicate Address (Full)</button>
+            <button class="test-button" onclick="clearTest()">Clear All</button>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">📋 Console Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data
+        const mockGeocodingResults = {
+            '1093 Ta Quang Buu': {
+                success: true,
+                result: {
+                    display_name: '1093 Tạ Quang Bửu, Phường Bình Đông, Ho Chi Minh City, 72400, Vietnam',
+                    lat: 10.8231,
+                    lon: 106.6297
+                }
+            },
+            '48 Bui Thi Xuan': {
+                success: true,
+                result: {
+                    display_name: '48 Bùi Thị Xuân, Phường Quy Nhơn Tây, Gia Lai Province, Vietnam',
+                    lat: 13.9801,
+                    lon: 108.0000
+                }
+            }
+        };
+
+        const mockValidationResults = {
+            '1093 Tạ Quang Bửu, Chánh Hưng, Chánh Hưng Ward, Ho Chi Minh City, 72400, Vietnam': {
+                isTaken: true,
+                message: 'Địa chỉ này đã được sử dụng bởi một garage khác (trùng khớp chính xác)'
+            },
+            '48 Bùi Thị Xuân, Phường Quy Nhơn Tây, Gia Lai Province, Vietnam': {
+                isTaken: false,
+                message: 'Địa chỉ có thể sử dụng'
+            }
+        };
+
+        // State variables
+        let currentAddress = '';
+        let validationTimeout = null;
+        let geocodingTimeout = null;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function showValidationMessage(message, type) {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.textContent = message;
+            messageElement.className = `validation-message validation-${type}`;
+            messageElement.style.display = 'block';
+        }
+
+        function showGeocodingMessage(message, type) {
+            const messageElement = document.getElementById('geocoding-message');
+            messageElement.textContent = message;
+            messageElement.className = `validation-message geocoding-${type}`;
+            messageElement.style.display = 'block';
+        }
+
+        function hideValidationMessage() {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.style.display = 'none';
+        }
+
+        function hideGeocodingMessage() {
+            const messageElement = document.getElementById('geocoding-message');
+            messageElement.style.display = 'none';
+        }
+
+        // Mock geocoding
+        function geocodeAddress(address) {
+            log(`🗺️ Starting geocoding for: "${address}"`);
+            
+            // Cancel any existing geocoding
+            if (geocodingTimeout) {
+                clearTimeout(geocodingTimeout);
+            }
+            
+            geocodingTimeout = setTimeout(() => {
+                const result = mockGeocodingResults[address];
+                
+                if (result && result.success) {
+                    log(`✅ Geocoding success: "${result.result.display_name}"`, 'success');
+                    showGeocodingMessage(`Found and automatically updated: ${result.result.display_name}`, 'success');
+                    autoFillAddress(address, result.result);
+                } else {
+                    log(`❌ Geocoding failed: Cannot find coordinates for "${address}"`, 'error');
+                    showGeocodingMessage(`Không thể tìm tọa độ cho địa chỉ này. Vui lòng nhập thủ công.`, 'error');
+                }
+                
+                geocodingTimeout = null;
+            }, 1000);
+        }
+
+        // Auto-fill address
+        function autoFillAddress(userInput, geocodingResult) {
+            log(`🔄 Auto-filling address: "${geocodingResult.display_name}"`);
+            
+            const addressInput = document.getElementById('address');
+            addressInput.value = geocodingResult.display_name;
+            currentAddress = geocodingResult.display_name;
+        }
+
+        // Mock validation
+        async function validateAddress(address) {
+            const trimmedAddress = address.trim();
+            
+            if (trimmedAddress.length > 0) {
+                showValidationMessage('Đang kiểm tra địa chỉ...', 'loading');
+                log(`🔍 Starting validation for: "${trimmedAddress}"`);
+                
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const result = mockValidationResults[trimmedAddress];
+                
+                if (result) {
+                    log(`✅ Validation completed: ${result.isTaken ? 'TAKEN' : 'AVAILABLE'}`, result.isTaken ? 'error' : 'success');
+                    log(`   Message: ${result.message}`);
+                    
+                    showValidationMessage(result.message, result.isTaken ? 'error' : 'success');
+                    
+                    if (result.isTaken) {
+                        log('🚫 Address is taken, should cancel any pending geocoding', 'cancelled');
+                    } else {
+                        log('✅ Address is available', 'success');
+                    }
+                } else {
+                    log(`✅ Validation completed: AVAILABLE (new address)`, 'success');
+                    showValidationMessage('Địa chỉ có thể sử dụng', 'success');
+                }
+            } else {
+                hideValidationMessage();
+            }
+        }
+
+        // Debounced validation
+        function debouncedValidateAddress(address) {
+            if (validationTimeout) {
+                clearTimeout(validationTimeout);
+            }
+            
+            validationTimeout = setTimeout(() => {
+                validateAddress(address);
+            }, 500);
+        }
+
+        // Handle input changes
+        document.getElementById('address').addEventListener('input', function(e) {
+            const newAddress = e.target.value;
+            
+            log(`📝 User input changed: "${newAddress}"`);
+            
+            // Reset messages
+            if (newAddress !== currentAddress && newAddress.length > 0) {
+                hideValidationMessage();
+                hideGeocodingMessage();
+            }
+            
+            currentAddress = newAddress;
+            
+            // 🔥 FIXED: Luôn validate địa chỉ bất kể geocoding có thành công hay không
+            const shouldGeocode = newAddress.length < 50;
+            
+            if (shouldGeocode) {
+                log(`🗺️ Triggering geocoding for: "${newAddress}"`);
+                geocodeAddress(newAddress);
+            } else {
+                log(`⏭️ Skipping geocoding - address seems complete: "${newAddress}"`);
+            }
+            
+            // 🔥 QUAN TRỌNG: Luôn validate địa chỉ (với debounce)
+            debouncedValidateAddress(newAddress);
+        });
+
+        // Test scenarios
+        function testScenario1() {
+            log('\n🧪 SCENARIO 1: Geocoding Success + Validation');
+            document.getElementById('address').value = '1093 Ta Quang Buu';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function testScenario2() {
+            log('\n🧪 SCENARIO 2: Geocoding Failure + Validation');
+            // Simulate geocoding failure by using an address not in mock data
+            document.getElementById('address').value = '999 Unknown Street, Nowhere City';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function testScenario3() {
+            log('\n🧪 SCENARIO 3: Duplicate Address (Full)');
+            // This should trigger geocoding failure but validation should still detect duplicate
+            document.getElementById('address').value = '1093 Tạ Quang Bửu, Chánh Hưng, Chánh Hưng Ward, Ho Chi Minh City, 72400, Vietnam';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function clearTest() {
+            log('\n🧹 CLEARING ALL TESTS');
+            document.getElementById('address').value = '';
+            document.getElementById('log').innerHTML = '';
+            hideValidationMessage();
+            hideGeocodingMessage();
+            currentAddress = '';
+        }
+
+        // Initialize
+        log('🚀 Geocoding Failure + Validation Test Ready');
+        log('💡 Try Scenario 3 to test the fix');
+        log('🎯 Expected: Geocoding fails but validation still detects duplicate');
+    </script>
+</body>
+</html>

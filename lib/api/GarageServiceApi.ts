@@ -1,5 +1,6 @@
 // lib/api/GarageServiceApi.ts
 import axiosClient from "../axiosClient"
+import axios from "axios"
 
 // Interface cho dịch vụ hệ thống (Services)
 export interface SystemService {
@@ -47,15 +48,15 @@ export interface GarageServiceStats {
 
 // Lấy danh sách dịch vụ của garage
 export const getGarageServices = (garageId: number) =>
-  axiosClient.get<GarageService[]>(`/apis/garage/management/services/${garageId}`)
+  axios.get<GarageService[]>(`http://localhost:8080/apis/garage/management/services/${garageId}`)
 
 // Lấy chi tiết dịch vụ
 export const getGarageServiceById = (serviceId: number) =>
   axiosClient.get<GarageService>(`/apis/garage-services/${serviceId}`)
 
 // Thêm dịch vụ mới cho garage
-export const createGarageService = (data: GarageServiceRequest) =>
-  axiosClient.post<GarageService>("/apis/garage/management/services", data)
+export const createGarageService = (garageId: number, data: GarageServiceRequest) =>
+  axiosClient.post<GarageService>(`/apis/garage/management/services/${garageId}`, data)
 
 // Tạo custom service mới
 export const createCustomService = (garageId: number, data: CreateCustomServiceRequest) =>

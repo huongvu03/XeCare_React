@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Empty Address Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .validation-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .validation-loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .validation-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .validation-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .test-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #2563eb;
+        }
+        .log {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Empty Address Validation</h1>
+        <p>Test validation: Khi địa chỉ để trống, hiển thị lỗi "Địa chỉ không được để trống"</p>
+        
+        <div class="form-group">
+            <label for="address">Địa chỉ *:</label>
+            <input 
+                type="text" 
+                id="address" 
+                placeholder="Nhập địa chỉ để test"
+                autocomplete="off"
+            >
+            <div id="validation-message" class="validation-message" style="display: none;"></div>
+        </div>
+
+        <button class="test-button" onclick="testEmptyAddress()">Test Empty Address</button>
+        <button class="test-button" onclick="testValidAddress()">Test Valid Address</button>
+        <button class="test-button" onclick="testClearAddress()">Test Clear Address</button>
+        <button class="test-button" onclick="clearTest()">Clear All</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        // State variables
+        let currentAddress = '';
+        let addressValidation = {
+            isValidating: false,
+            isTaken: false,
+            message: ""
+        };
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function showValidationMessage(message, type) {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.textContent = message;
+            messageElement.className = `validation-message validation-${type}`;
+            messageElement.style.display = 'block';
+        }
+
+        function hideValidationMessage() {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.style.display = 'none';
+        }
+
+        function validateAddress(address) {
+            const trimmedAddress = address.trim();
+            
+            if (trimmedAddress.length === 0) {
+                log('🚫 Address is empty, showing validation error');
+                addressValidation = {
+                    isValidating: false,
+                    isTaken: true,
+                    message: "Địa chỉ không được để trống"
+                };
+                showValidationMessage(addressValidation.message, 'error');
+                return;
+            }
+            
+            if (trimmedAddress.length < 10) {
+                log('⚠️ Address is too short, showing validation error');
+                addressValidation = {
+                    isValidating: false,
+                    isTaken: true,
+                    message: "Địa chỉ quá ngắn, vui lòng nhập địa chỉ đầy đủ"
+                };
+                showValidationMessage(addressValidation.message, 'error');
+                return;
+            }
+            
+            // Simulate API validation
+            log('🔍 Validating address:', trimmedAddress);
+            addressValidation = {
+                isValidating: true,
+                isTaken: false,
+                message: "Đang kiểm tra địa chỉ..."
+            };
+            showValidationMessage(addressValidation.message, 'loading');
+            
+            setTimeout(() => {
+                // Mock validation result
+                if (trimmedAddress.includes('1093 Tạ Quang Bửu, Chánh Hưng')) {
+                    addressValidation = {
+                        isValidating: false,
+                        isTaken: true,
+                        message: "Địa chỉ này đã được sử dụng bởi một garage khác"
+                    };
+                    showValidationMessage(addressValidation.message, 'error');
+                } else {
+                    addressValidation = {
+                        isValidating: false,
+                        isTaken: false,
+                        message: "Địa chỉ có thể sử dụng"
+                    };
+                    showValidationMessage(addressValidation.message, 'success');
+                }
+                log('✅ Validation completed:', addressValidation.message);
+            }, 1000);
+        }
+
+        function testEmptyAddress() {
+            log('\n🧪 TESTING EMPTY ADDRESS...');
+            document.getElementById('address').value = '';
+            currentAddress = '';
+            validateAddress('');
+        }
+
+        function testValidAddress() {
+            log('\n🧪 TESTING VALID ADDRESS...');
+            const validAddress = '1093 Tạ Quang Bửu, Bình Đông, Bình Đông Ward, Ho Chi Minh City, 72400, Vietnam';
+            document.getElementById('address').value = validAddress;
+            currentAddress = validAddress;
+            validateAddress(validAddress);
+        }
+
+        function testClearAddress() {
+            log('\n🧪 TESTING CLEAR ADDRESS...');
+            document.getElementById('address').value = '';
+            currentAddress = '';
+            validateAddress('');
+        }
+
+        function clearTest() {
+            log('\n🧹 CLEARING ALL TESTS');
+            document.getElementById('address').value = '';
+            document.getElementById('log').innerHTML = '';
+            hideValidationMessage();
+            currentAddress = '';
+            addressValidation = {
+                isValidating: false,
+                isTaken: false,
+                message: ""
+            };
+        }
+
+        // Handle input changes
+        document.getElementById('address').addEventListener('input', function(e) {
+            const newAddress = e.target.value;
+            currentAddress = newAddress;
+            validateAddress(newAddress);
+        });
+
+        // Initialize
+        log('🚀 Empty Address Validation Test Ready');
+        log('💡 Test the validation: Empty address should show error message');
+        
+        // Test empty address initially
+        testEmptyAddress();
+    </script>
+</body>
+</html>

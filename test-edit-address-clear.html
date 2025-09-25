@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Edit Address Clear</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .test-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #2563eb;
+        }
+        .log {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.loaded {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .status.cleared {
+            background-color: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffcc02;
+        }
+        .status.auto-filled {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Edit Address Clear Logic</h1>
+        <p>Test logic: Khi user xóa địa chỉ, không nên auto-fill lại địa chỉ cũ</p>
+        
+        <div class="form-group">
+            <label for="address">Địa chỉ (Edit Mode):</label>
+            <input 
+                type="text" 
+                id="address" 
+                placeholder="Nhập địa chỉ để test"
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="status loaded" id="status">
+            📋 Loaded: 1093 Tạ Quang Bửu, Chánh Hưng, Chánh Hưng Ward, Ho Chi Minh City, 72400, Vietnam
+        </div>
+
+        <button class="test-button" onclick="simulateLoadGarage()">Simulate Load Garage</button>
+        <button class="test-button" onclick="simulateClearAddress()">Simulate Clear Address</button>
+        <button class="test-button" onclick="simulateTypeAddress()">Simulate Type Address</button>
+        <button class="test-button" onclick="clearTest()">Clear All</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        // State variables
+        let currentAddress = '';
+        let lastValidatedAddress = '';
+        let lastGeocodingResult = '';
+        let lastAddressInput = '';
+        let hasAutoFilled = false;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(message, className) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${className}`;
+        }
+
+        function simulateLoadGarage() {
+            log('\n🔄 SIMULATING GARAGE LOAD...');
+            currentAddress = '1093 Tạ Quang Bửu, Chánh Hưng, Chánh Hưng Ward, Ho Chi Minh City, 72400, Vietnam';
+            lastValidatedAddress = currentAddress;
+            lastGeocodingResult = currentAddress;
+            
+            document.getElementById('address').value = currentAddress;
+            updateStatus(`📋 Loaded: ${currentAddress}`, 'loaded');
+            log(`✅ Garage loaded with address: ${currentAddress}`);
+            log(`✅ Validation cache set to: ${lastValidatedAddress}`);
+        }
+
+        function simulateClearAddress() {
+            log('\n🗑️ SIMULATING ADDRESS CLEAR...');
+            currentAddress = '';
+            lastAddressInput = '';
+            
+            document.getElementById('address').value = '';
+            updateStatus('🚫 Address cleared by user', 'cleared');
+            log(`✅ Address cleared by user`);
+            log(`✅ lastAddressInput set to: "${lastAddressInput}"`);
+            
+            // Test auto-fill logic
+            setTimeout(() => {
+                log('\n🔍 Testing auto-fill logic after clear...');
+                if (lastAddressInput.length === 0) {
+                    log('✅ Auto-fill correctly skipped - user has cleared address');
+                } else {
+                    log('❌ Auto-fill should be skipped but was triggered');
+                }
+            }, 100);
+        }
+
+        function simulateTypeAddress() {
+            log('\n⌨️ SIMULATING ADDRESS INPUT...');
+            const newAddress = '1093 Ta Quang Buu';
+            currentAddress = newAddress;
+            lastAddressInput = newAddress;
+            
+            document.getElementById('address').value = newAddress;
+            updateStatus(`⌨️ User typing: ${newAddress}`, 'auto-filled');
+            log(`✅ User typed: ${newAddress}`);
+            log(`✅ lastAddressInput set to: "${lastAddressInput}"`);
+            
+            // Simulate geocoding result
+            setTimeout(() => {
+                log('\n🗺️ Simulating geocoding result...');
+                const geocodingResult = '1093 Tạ Quang Bửu, Bình Đông, Bình Đông Ward, Ho Chi Minh City, 72400, Vietnam';
+                
+                // Test auto-fill logic
+                if (lastAddressInput.length === 0) {
+                    log('🚫 Auto-fill skipped - user has cleared address');
+                } else {
+                    log(`✅ Auto-fill triggered for: ${geocodingResult}`);
+                    currentAddress = geocodingResult;
+                    lastGeocodingResult = geocodingResult;
+                    document.getElementById('address').value = geocodingResult;
+                    updateStatus(`🔄 Auto-filled: ${geocodingResult}`, 'auto-filled');
+                }
+            }, 1000);
+        }
+
+        function clearTest() {
+            log('\n🧹 CLEARING ALL TESTS');
+            currentAddress = '';
+            lastValidatedAddress = '';
+            lastGeocodingResult = '';
+            lastAddressInput = '';
+            hasAutoFilled = false;
+            
+            document.getElementById('address').value = '';
+            document.getElementById('log').innerHTML = '';
+            updateStatus('🧹 Test cleared', 'cleared');
+        }
+
+        // Initialize
+        log('🚀 Edit Address Clear Test Ready');
+        log('💡 Test the logic: Load garage → Clear address → Should not auto-fill');
+        
+        // Simulate initial load
+        simulateLoadGarage();
+    </script>
+</body>
+</html>

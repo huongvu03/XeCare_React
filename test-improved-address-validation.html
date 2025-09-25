@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Improved Address Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-title {
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .test-case {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+        .info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .test-button {
+            background-color: #2563eb;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background-color: #1d4ed8;
+        }
+        .description {
+            background-color: #f9fafb;
+            padding: 10px;
+            border-left: 4px solid #3b82f6;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Improved Address Validation</h1>
+    <p>Kiểm tra validation địa chỉ cải tiến với các trường hợp:</p>
+
+    <div class="test-container">
+        <div class="test-title">📋 Test Cases</div>
+        
+        <div class="description">
+            <strong>Validation Rules:</strong>
+            <ul>
+                <li>Địa chỉ phải có ít nhất 10 ký tự</li>
+                <li>Phải chứa từ khóa địa lý: đường, phố, phường, xã, quận, huyện, thành phố, tỉnh, việt nam</li>
+                <li>Không được để trống</li>
+            </ul>
+        </div>
+
+        <div class="test-case">
+            <h4>Test 1: Địa chỉ quá ngắn</h4>
+            <input type="text" class="test-input" id="test1" value="abc" placeholder="Nhập địa chỉ...">
+            <button class="test-button" onclick="testAddress('test1')">Test</button>
+            <div id="result1" class="test-result" style="display: none;"></div>
+            <div class="description">
+                <strong>Expected:</strong> "Địa chỉ quá ngắn, vui lòng nhập địa chỉ đầy đủ"
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h4>Test 2: Địa chỉ đủ dài nhưng không có từ khóa địa lý</h4>
+            <input type="text" class="test-input" id="test2" value="hello world this is a long address" placeholder="Nhập địa chỉ...">
+            <button class="test-button" onclick="testAddress('test2')">Test</button>
+            <div id="result2" class="test-result" style="display: none;"></div>
+            <div class="description">
+                <strong>Expected:</strong> Sẽ cho phép geocoding (vì đủ dài)
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h4>Test 3: Địa chỉ trống</h4>
+            <input type="text" class="test-input" id="test3" value="" placeholder="Nhập địa chỉ...">
+            <button class="test-button" onclick="testAddress('test3')">Test</button>
+            <div id="result3" class="test-result" style="display: none;"></div>
+            <div class="description">
+                <strong>Expected:</strong> Không hiển thị lỗi (Save Change sẽ validate)
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h4>Test 4: Địa chỉ hợp lệ</h4>
+            <input type="text" class="test-input" id="test4" value="123 Đường ABC, Phường XYZ" placeholder="Nhập địa chỉ...">
+            <button class="test-button" onclick="testAddress('test4')">Test</button>
+            <div id="result4" class="test-result" style="display: none;"></div>
+            <div class="description">
+                <strong>Expected:</strong> Sẽ gọi API để kiểm tra trùng lặp
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h4>Test 5: Địa chỉ có từ khóa tiếng Việt</h4>
+            <input type="text" class="test-input" id="test5" value="1093 Tạ Quang Bửu, Phường Bình Đông" placeholder="Nhập địa chỉ...">
+            <button class="test-button" onclick="testAddress('test5')">Test</button>
+            <div id="result5" class="test-result" style="display: none;"></div>
+            <div class="description">
+                <strong>Expected:</strong> Sẽ gọi API để kiểm tra trùng lặp
+            </div>
+        </div>
+
+        <div class="test-case">
+            <h4>Test 6: Tên đường Việt Nam (Tạ Quang Bửu)</h4>
+            <input type="text" class="test-input" id="test6" value="1093 Ta quang buu" placeholder="Nhập địa chỉ...">
+            <button class="test-button" onclick="testAddress('test6')">Test</button>
+            <div id="result6" class="test-result" style="display: none;"></div>
+            <div class="description">
+                <strong>Expected:</strong> Sẽ cho phép geocoding và auto-fill (vì đủ dài)
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-title">🔧 Manual Testing</div>
+        <p>Mở trang edit garage và test thủ công:</p>
+        <ol>
+            <li>Nhập "abc" → Should show "Địa chỉ quá ngắn"</li>
+            <li>Nhập "hello world this is long enough" → Should allow geocoding</li>
+            <li>Để trống → Should NOT show error (Save Change will validate)</li>
+            <li>Nhập "1093 Ta quang buu" → Should allow geocoding and auto-fill</li>
+        </ol>
+    </div>
+
+    <script>
+        function validateAddressBasic(address) {
+            const trimmedAddress = address.trim();
+            
+            // Check empty - bỏ validation trống vì Save Change sẽ validate
+            if (trimmedAddress.length === 0) {
+                return {
+                    isValid: true,
+                    message: "Địa chỉ trống - Save Change sẽ validate"
+                };
+            }
+            
+            // Check minimum length
+            if (trimmedAddress.length < 10) {
+                return {
+                    isValid: false,
+                    message: "Địa chỉ quá ngắn, vui lòng nhập địa chỉ đầy đủ"
+                };
+            }
+            
+            // Đơn giản hóa validation - chỉ kiểm tra độ dài
+            // Cho phép geocoding với bất kỳ địa chỉ nào đủ dài
+            console.log('✅ Address passed basic validation, allowing geocoding');
+            
+            return {
+                isValid: true,
+                message: "Địa chỉ hợp lệ, sẽ kiểm tra trùng lặp..."
+            };
+        }
+
+        function testAddress(inputId) {
+            const input = document.getElementById(inputId);
+            const resultDiv = document.getElementById('result' + inputId.replace('test', ''));
+            const address = input.value;
+            
+            const validation = validateAddressBasic(address);
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            
+            if (validation.isValid) {
+                resultDiv.classList.add('success');
+                resultDiv.textContent = `✅ ${validation.message}`;
+            } else {
+                resultDiv.classList.add('error');
+                resultDiv.textContent = `❌ ${validation.message}`;
+            }
+        }
+
+        // Auto-test all cases on load
+        window.onload = function() {
+            setTimeout(() => {
+                ['test1', 'test2', 'test3', 'test4', 'test5', 'test6'].forEach(testId => {
+                    testAddress(testId);
+                });
+            }, 500);
+        };
+    </script>
+</body>
+</html>

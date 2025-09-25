@@ -15,6 +15,7 @@ import { getGarageById, type Garage } from "@/lib/api/GarageApi"
 import { canUserReviewAppointment, type CanReviewResponse, type CanReviewApiResponse } from "@/lib/api/ReviewAppointmentApi"
 import { ReviewAppointmentModal } from "@/components/review/ReviewAppointmentModal"
 import { useAuth } from "@/hooks/use-auth"
+import Swal from "sweetalert2"
 
 export default function AppointmentsPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -270,7 +271,13 @@ export default function AppointmentsPage() {
     if (!appointmentToCancel) return
     
     if (!cancelReason.trim()) {
-      alert("Please enter the cancellation reason")
+      await Swal.fire({
+        title: '⚠️ Thiếu lý do hủy',
+        text: 'Vui lòng nhập lý do hủy lịch hẹn.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b'
+      })
       return
     }
 
@@ -291,7 +298,36 @@ export default function AppointmentsPage() {
       
       // Clear any previous errors
       setError("")
-      alert("Appointment cancelled successfully!")
+      
+      // Show SweetAlert success notification
+      await Swal.fire({
+        title: '✅ Hủy lịch hẹn thành công!',
+        html: `
+          <div class="text-center">
+            <p class="text-lg mb-4">Lịch hẹn đã được hủy thành công!</p>
+            <p class="text-sm text-gray-600 mb-4">Garage đã nhận được thông báo về việc hủy lịch hẹn.</p>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+              <p class="text-sm text-blue-700">
+                <strong>Thông tin lịch hẹn đã hủy:</strong><br>
+                • Mã lịch hẹn: <strong>#${appointmentToCancel.id}</strong><br>
+                • Garage: <strong>${appointmentToCancel.garageName}</strong><br>
+                • Ngày: <strong>${new Date(appointmentToCancel.appointmentDate).toLocaleDateString('vi-VN')}</strong><br>
+                • Lý do: <strong>${cancelReason.trim()}</strong>
+              </p>
+            </div>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#10b981',
+        showConfirmButton: true,
+        allowOutsideClick: true,
+        allowEscapeKey: true,
+        allowEnterKey: true,
+        stopKeydownPropagation: false,
+        timer: 5000,
+        timerProgressBar: true
+      })
       
       // Reload appointments to get fresh data from server
       setTimeout(() => loadAppointments(), 1000)
@@ -299,6 +335,36 @@ export default function AppointmentsPage() {
     } catch (err: any) {
       console.error("❌ Error cancelling appointment:", err)
       const errorMessage = err.response?.data?.message || err.message || "Unknown error"
+      
+      // Show SweetAlert error notification
+      await Swal.fire({
+        title: '❌ Lỗi hủy lịch hẹn',
+        html: `
+          <div class="text-center">
+            <p class="mb-3">Đã xảy ra lỗi khi hủy lịch hẹn.</p>
+            <p class="text-sm text-gray-600 mb-3">${errorMessage}</p>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p class="text-sm text-red-700">
+                <strong>Gợi ý:</strong><br>
+                • Kiểm tra kết nối internet<br>
+                • Thử lại sau vài phút<br>
+                • Liên hệ garage trực tiếp nếu cần
+              </p>
+            </div>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonText: 'Thử lại',
+        confirmButtonColor: '#ef4444',
+        showConfirmButton: true,
+        allowOutsideClick: true,
+        allowEscapeKey: true,
+        allowEnterKey: true,
+        stopKeydownPropagation: false,
+        timer: 8000,
+        timerProgressBar: true
+      })
+      
       setError(`Cannot cancel appointment: ${errorMessage}`)
       setIsCancelling(false)
     }

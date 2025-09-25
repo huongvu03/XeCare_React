@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Geocoding Speed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-title {
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .test-button {
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background-color: #1d4ed8;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .timing {
+            font-weight: bold;
+            color: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Geocoding Speed</h1>
+    <p>Kiểm tra tốc độ geocoding với các delay khác nhau:</p>
+
+    <div class="test-container">
+        <div class="test-title">📋 Test Cases</div>
+        
+        <div>
+            <label>Địa chỉ test:</label>
+            <input type="text" class="test-input" id="addressInput" value="1093 Ta Quang Buu" placeholder="Nhập địa chỉ...">
+        </div>
+
+        <div>
+            <button class="test-button" onclick="testGeocodingSpeed(0)">Test với delay 0ms (ngay lập tức)</button>
+            <button class="test-button" onclick="testGeocodingSpeed(300)">Test với delay 300ms</button>
+            <button class="test-button" onclick="testGeocodingSpeed(500)">Test với delay 500ms</button>
+            <button class="test-button" onclick="testGeocodingSpeed(1000)">Test với delay 1000ms</button>
+            <button class="test-button" onclick="testGeocodingSpeed(1500)">Test với delay 1500ms (hiện tại)</button>
+        </div>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-title">📊 Kết quả so sánh</div>
+        <div id="comparison"></div>
+    </div>
+
+    <script>
+        const results = [];
+        
+        async function testGeocodingSpeed(delay) {
+            const address = document.getElementById('addressInput').value;
+            const resultDiv = document.getElementById('result');
+            const startTime = Date.now();
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = `🔄 Testing geocoding with ${delay}ms delay...\nAddress: ${address}`;
+            
+            try {
+                // Simulate delay
+                if (delay > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+                
+                // Simulate geocoding API call
+                const geocodeStartTime = Date.now();
+                const geocodeResult = await simulateGeocoding(address);
+                const geocodeEndTime = Date.now();
+                
+                const totalTime = Date.now() - startTime;
+                const geocodeTime = geocodeEndTime - geocodeStartTime;
+                
+                const result = {
+                    delay,
+                    address,
+                    totalTime,
+                    geocodeTime,
+                    success: true,
+                    result: geocodeResult
+                };
+                
+                results.push(result);
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Geocoding completed!\n` +
+                    `Delay: ${delay}ms\n` +
+                    `Geocoding API time: ${geocodeTime}ms\n` +
+                    `Total time: ${totalTime}ms\n` +
+                    `Result: ${geocodeResult.display_name}`;
+                
+                updateComparison();
+                
+            } catch (error) {
+                const totalTime = Date.now() - startTime;
+                
+                const result = {
+                    delay,
+                    address,
+                    totalTime,
+                    success: false,
+                    error: error.message
+                };
+                
+                results.push(result);
+                
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Geocoding failed!\n` +
+                    `Delay: ${delay}ms\n` +
+                    `Total time: ${totalTime}ms\n` +
+                    `Error: ${error.message}`;
+                
+                updateComparison();
+            }
+        }
+        
+        async function simulateGeocoding(address) {
+            // Simulate API call delay (typical geocoding service response time)
+            await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 400)); // 800-1200ms
+            
+            if (address.toLowerCase().includes('ta quang buu')) {
+                return {
+                    lat: 10.8231,
+                    lon: 106.6297,
+                    display_name: "1093 Tạ Quang Bửu, Phường Chánh Hưng, Quận 7, Thành phố Hồ Chí Minh, Vietnam"
+                };
+            }
+            
+            throw new Error('Không tìm thấy địa chỉ');
+        }
+        
+        function updateComparison() {
+            const comparisonDiv = document.getElementById('comparison');
+            
+            if (results.length === 0) {
+                comparisonDiv.innerHTML = '<p>Chưa có kết quả nào</p>';
+                return;
+            }
+            
+            let html = '<table border="1" style="width: 100%; border-collapse: collapse;">';
+            html += '<tr><th>Delay (ms)</th><th>Total Time (ms)</th><th>Geocoding Time (ms)</th><th>Status</th></tr>';
+            
+            results.forEach(result => {
+                const status = result.success ? '✅ Success' : '❌ Failed';
+                const totalTimeClass = result.totalTime > 3000 ? 'timing' : '';
+                html += `<tr>
+                    <td>${result.delay}</td>
+                    <td class="${totalTimeClass}">${result.totalTime}</td>
+                    <td>${result.geocodeTime || 'N/A'}</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            
+            // Find fastest and slowest
+            const successfulResults = results.filter(r => r.success);
+            if (successfulResults.length > 0) {
+                const fastest = successfulResults.reduce((min, r) => r.totalTime < min.totalTime ? r : min);
+                const slowest = successfulResults.reduce((max, r) => r.totalTime > max.totalTime ? r : max);
+                
+                html += `<br><p><strong>Nhanh nhất:</strong> ${fastest.delay}ms delay → ${fastest.totalTime}ms total</p>`;
+                html += `<p><strong>Chậm nhất:</strong> ${slowest.delay}ms delay → ${slowest.totalTime}ms total</p>`;
+                html += `<p><strong>Khuyến nghị:</strong> Sử dụng delay ${fastest.delay}ms để có trải nghiệm tốt nhất</p>`;
+            }
+            
+            comparisonDiv.innerHTML = html;
+        }
+        
+        // Auto-test on load
+        window.onload = function() {
+            setTimeout(() => {
+                testGeocodingSpeed(500); // Test với delay 500ms mặc định
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

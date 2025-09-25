@@ -96,14 +96,6 @@ export const getGarageById = (id: number) =>
   axiosClient.get<Garage>(`/apis/garage/${id}`)
 
 // Check address availability
-export interface AddressValidationResponse {
-  address: string
-  isTaken: boolean
-  message: string
-}
-
-export const checkAddressAvailability = (address: string) =>
-  axiosClient.get<AddressValidationResponse>(`/apis/garage/validation/address?address=${encodeURIComponent(address)}`)
 
 // Đăng ký garage (cho user có role garage)
 export const registerGarage = (data: {
@@ -296,5 +288,74 @@ export const getEmergencyRescueGarages = async (latitude: number, longitude: num
     const enhancedError = new Error(errorMessage)
     enhancedError.cause = error
     throw enhancedError
+  }
+}
+
+// Address validation interfaces
+export interface AddressValidationResponse {
+  address: string
+  isTaken: boolean
+  exactMatch: boolean
+  normalizedMatch: boolean
+  similarMatch: boolean
+  message: string
+  normalizedAddress: string
+}
+
+export interface AddressValidationForEditResponse extends AddressValidationResponse {
+  garageId: number
+  isOwnAddress: boolean
+}
+
+export interface AddressSimilarityResponse {
+  address: string
+  normalizedAddress: string
+  hasHouseNumber: boolean
+  houseNumber?: string
+}
+
+// Address validation APIs
+export const checkAddressAvailability = async (address: string): Promise<{data: AddressValidationResponse}> => {
+  try {
+    const response = await axios.get<AddressValidationResponse>(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/apis/garage/validation/address`,
+      {
+        params: { address }
+      }
+    )
+    return { data: response.data }
+  } catch (error: any) {
+    console.error('Error checking address availability:', error)
+    throw new Error(error?.response?.data?.error || 'Cannot check address availability')
+  }
+}
+
+export const checkAddressAvailabilityForEdit = async (address: string, garageId: number): Promise<{data: AddressValidationForEditResponse}> => {
+  try {
+    const response = await axios.get<AddressValidationForEditResponse>(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/apis/garage/validation/address/edit`,
+      {
+        params: { address, garageId }
+      }
+    )
+    return { data: response.data }
+  } catch (error: any) {
+    console.error('Error checking address availability for edit:', error)
+    throw new Error(error?.response?.data?.error || 'Cannot check address availability for edit')
+  }
+}
+
+export const checkAddressSimilarity = async (address: string): Promise<{data: AddressSimilarityResponse}> => {
+  try {
+    const response = await axios.get<AddressSimilarityResponse>(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/apis/garage/validation/address/similarity`,
+      {
+        params: { address }
+      }
+    )
+    return { data: response.data }
+  } catch (error: any) {
+    console.error('Error checking address similarity:', error)
+    throw new Error(error?.response?.data?.error || 'Cannot check address similarity')
   }
 }

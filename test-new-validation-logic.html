@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Validation Logic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .validation-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .validation-loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .validation-success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .validation-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .test-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #2563eb;
+        }
+        .demo-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .demo-title {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        .log {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-auto-fill {
+            background-color: #ff9800;
+        }
+        .status-validating {
+            background-color: #2196f3;
+        }
+        .status-validated {
+            background-color: #4caf50;
+        }
+        .status-error {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test New Validation Logic</h1>
+        <p>Test thứ tự: Auto-fill → Validate → Không auto-fill lại khi user nhập</p>
+        
+        <div class="form-group">
+            <label for="address">Địa chỉ:</label>
+            <input 
+                type="text" 
+                id="address" 
+                placeholder="Nhập số nhà hoặc địa chỉ (ví dụ: 1093)"
+                autocomplete="off"
+            >
+            <div id="validation-message" class="validation-message" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">🎯 Test Scenarios</h3>
+            <button class="test-button" onclick="testScenario1()">Scenario 1: Nhập "1093" → Auto-fill → Validate</button>
+            <button class="test-button" onclick="testScenario2()">Scenario 2: Tiếp tục nhập sau auto-fill</button>
+            <button class="test-button" onclick="testScenario3()">Scenario 3: Nhập địa chỉ mới</button>
+            <button class="test-button" onclick="clearTest()">Clear All</button>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">📊 Status Indicators</h3>
+            <div>
+                <span class="status-indicator status-auto-fill"></span> Auto-fill
+                <span class="status-indicator status-validating"></span> Validating
+                <span class="status-indicator status-validated"></span> Validated
+                <span class="status-indicator status-error"></span> Error
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">📋 Console Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data
+        const mockGeocodingResults = {
+            '1093': {
+                display_name: '1093 Tạ Quang Bửu, Phường Bình Đông, Ho Chi Minh City, 72400, Vietnam',
+                lat: 10.8231,
+                lon: 106.6297
+            }
+        };
+
+        // State variables
+        let currentAddress = '';
+        let lastGeocodingResult = null;
+        let lastValidatedAddress = '';
+        let hasAutoFilled = false;
+        let validationTimeout = null;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${icon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function showValidationMessage(message, type) {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.textContent = message;
+            messageElement.className = `validation-message validation-${type}`;
+            messageElement.style.display = 'block';
+        }
+
+        function hideValidationMessage() {
+            const messageElement = document.getElementById('validation-message');
+            messageElement.style.display = 'none';
+        }
+
+        // Mock validation API
+        async function checkAddressAvailability(address) {
+            log(`🔍 Checking address: "${address}"`);
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Mock response - địa chỉ này đã tồn tại
+            const isTaken = address.includes('1093 Tạ Quang Bửu');
+            
+            return {
+                data: {
+                    address: address,
+                    isTaken: isTaken,
+                    message: isTaken 
+                        ? 'Địa chỉ này đã được sử dụng bởi một garage khác (trùng khớp chính xác)'
+                        : 'Địa chỉ có thể sử dụng',
+                    exactMatch: isTaken,
+                    normalizedMatch: isTaken,
+                    similarMatch: false
+                }
+            };
+        }
+
+        // Mock geocoding
+        function geocodeAddress(address) {
+            log(`🗺️ Geocoding address: "${address}"`);
+            
+            setTimeout(() => {
+                const result = mockGeocodingResults[address];
+                if (result) {
+                    log(`✅ Geocoding result: "${result.display_name}"`, 'success');
+                    autoFillAddress(address, result);
+                } else {
+                    log(`❌ No geocoding result for: "${address}"`, 'warning');
+                }
+            }, 500);
+        }
+
+        // Auto-fill address
+        function autoFillAddress(userInput, geocodingResult) {
+            log(`🔄 Auto-filling address...`, 'info');
+            log(`   User input: "${userInput}"`);
+            log(`   Geocoding result: "${geocodingResult.display_name}"`);
+            
+            // Set auto-fill flag
+            hasAutoFilled = true;
+            
+            // Merge addresses
+            const mergedAddress = mergeAddressWithHouseNumber(userInput, geocodingResult.display_name);
+            
+            log(`   Merged address: "${mergedAddress}"`, 'success');
+            
+            // Update input field
+            const addressInput = document.getElementById('address');
+            addressInput.value = mergedAddress;
+            currentAddress = mergedAddress;
+            
+            // Reset auto-fill flag after a short delay
+            setTimeout(() => {
+                hasAutoFilled = false;
+                log(`🔄 Auto-fill flag reset`, 'info');
+            }, 100);
+            
+            // Validate immediately after auto-fill
+            log(`⚡ Validating auto-filled address immediately...`, 'info');
+            validateAddress(mergedAddress);
+        }
+
+        // Merge house number with full address
+        function mergeAddressWithHouseNumber(userInput, geocodingResult) {
+            const houseNumberMatch = userInput.match(/^(\d+[a-zA-Z]?)\s*(.+)/);
+            
+            if (houseNumberMatch) {
+                const houseNumber = houseNumberMatch[1];
+                const streetName = houseNumberMatch[2].trim();
+                
+                if (geocodingResult.toLowerCase().includes(streetName.toLowerCase())) {
+                    return geocodingResult.replace(/^\d+[a-zA-Z]?\s*/, `${houseNumber} `);
+                } else {
+                    return `${houseNumber} ${geocodingResult}`;
+                }
+            }
+            
+            return geocodingResult;
+        }
+
+        // Validate address
+        async function validateAddress(address) {
+            const trimmedAddress = address.trim();
+            
+            // Skip validation if same address was already validated
+            if (trimmedAddress === lastValidatedAddress) {
+                log(`⏭️ Skipping validation - same address already validated: "${trimmedAddress}"`, 'warning');
+                return;
+            }
+            
+            if (trimmedAddress.length > 0) {
+                showValidationMessage('Đang kiểm tra địa chỉ...', 'loading');
+                log(`🔍 Starting validation for: "${trimmedAddress}"`, 'info');
+                
+                try {
+                    const response = await checkAddressAvailability(trimmedAddress);
+                    const data = response.data;
+                    
+                    log(`✅ Validation completed: ${data.isTaken ? 'TAKEN' : 'AVAILABLE'}`, data.isTaken ? 'error' : 'success');
+                    log(`   Message: ${data.message}`);
+                    
+                    showValidationMessage(data.message, data.isTaken ? 'error' : 'success');
+                    lastValidatedAddress = trimmedAddress;
+                    
+                } catch (error) {
+                    log(`❌ Validation error: ${error.message}`, 'error');
+                    showValidationMessage('Không thể kiểm tra địa chỉ', 'error');
+                }
+            } else {
+                hideValidationMessage();
+                lastValidatedAddress = '';
+            }
+        }
+
+        // Debounced validation
+        function debouncedValidateAddress(address) {
+            if (validationTimeout) {
+                clearTimeout(validationTimeout);
+            }
+            
+            validationTimeout = setTimeout(() => {
+                validateAddress(address);
+            }, 500);
+        }
+
+        // Handle input changes
+        document.getElementById('address').addEventListener('input', function(e) {
+            const newAddress = e.target.value;
+            
+            log(`📝 User input changed: "${newAddress}"`, 'info');
+            
+            // Reset validation if address changed significantly
+            if (newAddress !== lastValidatedAddress && newAddress.length > 0) {
+                log(`🔄 Address changed, resetting validation state`, 'info');
+                hideValidationMessage();
+            }
+            
+            currentAddress = newAddress;
+            
+            // Only geocode if:
+            // 1. User entered short address (might need auto-fill)
+            // 2. Or current address is different from previous auto-fill
+            const shouldGeocode = newAddress.length < 50 || newAddress !== lastGeocodingResult;
+            
+            if (shouldGeocode) {
+                log(`🗺️ Triggering geocoding for: "${newAddress}"`, 'info');
+                geocodeAddress(newAddress);
+            } else {
+                log(`⏭️ Skipping geocoding - address seems complete: "${newAddress}"`, 'warning');
+            }
+            
+            // Always validate address (with debounce)
+            debouncedValidateAddress(newAddress);
+        });
+
+        // Test scenarios
+        function testScenario1() {
+            log('\n🧪 SCENARIO 1: Nhập "1093" → Auto-fill → Validate');
+            document.getElementById('address').value = '1093';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function testScenario2() {
+            log('\n🧪 SCENARIO 2: Tiếp tục nhập sau auto-fill');
+            const currentValue = document.getElementById('address').value;
+            document.getElementById('address').value = currentValue + ' - Test';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function testScenario3() {
+            log('\n🧪 SCENARIO 3: Nhập địa chỉ mới');
+            document.getElementById('address').value = '999 Nguyễn Huệ';
+            document.getElementById('address').dispatchEvent(new Event('input'));
+        }
+
+        function clearTest() {
+            log('\n🧹 CLEARING ALL TESTS');
+            document.getElementById('address').value = '';
+            document.getElementById('log').innerHTML = '';
+            hideValidationMessage();
+            lastValidatedAddress = '';
+            lastGeocodingResult = null;
+            hasAutoFilled = false;
+        }
+
+        // Initialize
+        log('🚀 New Validation Logic Test Ready');
+        log('💡 Try typing "1093" to see the new logic in action');
+        log('🎯 Expected flow: Input → Auto-fill → Validate → No re-auto-fill');
+    </script>
+</body>
+</html>
