@@ -13,6 +13,7 @@ import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Save, X, Camera } fr
 
 import { updateUserInfoApi, updateUserImageApi, getUserProfile } from "@/lib/api/UserApi"
 import { getImageUrl } from "@/utils/getImageUrl"
+import { getMyNotifications } from "@/lib/api/NotificationApi"
 
 
 export default function ProfilePage() {
@@ -21,6 +22,9 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState("")
   const [error, setError] = useState("")
+  
+  // Real data states
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
 
 
   const [formData, setFormData] = useState({
@@ -30,9 +34,6 @@ export default function ProfilePage() {
     image: null as File | null,
     createdAt: "",
     address: "",
-    bio: "",
-    website: "",
-    emergencyContact: "",
   })
 
   useEffect(() => {
@@ -44,12 +45,35 @@ export default function ProfilePage() {
         image: null as File | null,
         createdAt: user.createdAt || "",
         address: user.address || "",
-        bio: "",
-        website: "",
-        emergencyContact: "",
       })
+      
+      // Fetch real data for garage owners
+      if (user.role === "GARAGE") {
+        fetchRecentActivity()
+      }
     }
   }, [user])
+
+
+  // Fetch recent activity (notifications)
+  const fetchRecentActivity = async () => {
+    if (!user) return
+    
+    try {
+      const notificationsResponse = await getMyNotifications()
+      const notifications = notificationsResponse.data
+      
+      // Get recent notifications (last 5)
+      const recentNotifications = notifications
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5)
+      
+      setRecentActivity(recentNotifications)
+    } catch (error) {
+      console.error("Error fetching recent activity:", error)
+      setRecentActivity([])
+    }
+  }
 
 
   const handleInputChange = (field: string, value: string) => {
@@ -153,9 +177,6 @@ export default function ProfilePage() {
         image: null as File | null,
         address: user.address || "",
         createdAt: user.createdAt || "",
-        bio: "",
-        website: "",
-        emergencyContact: "",
       })
     }
     setIsEditing(false)
@@ -307,25 +328,6 @@ export default function ProfilePage() {
                 {getRoleBadge(user?.role || "")}
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">
-                    {user?.role === "GARAGE" ? "156" : user?.role === "ADMIN" ? "1,234" : "12"}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    {user?.role === "GARAGE" ? "Customers" : user?.role === "ADMIN" ? "Users" : "Appointments"}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">
-                    {user?.role === "GARAGE" ? "4.8" : user?.role === "ADMIN" ? "98%" : "5"}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    {user?.role === "GARAGE" ? "Rating" : user?.role === "ADMIN" ? "Uptime" : "Rating"}
-                  </p>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -435,20 +437,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="emergencyContact">Emergency Contact</Label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="emergencyContact"
-                      value={formData.emergencyContact}
-                      onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
-                      disabled={!isEditing}
-                      className="pl-10"
-                      placeholder="Emergency phone number"
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -466,34 +454,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {user?.role === "GARAGE" && (
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange("website", e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="https://example.com"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">{user?.role === "GARAGE" ? "Garage Description" : "About Me"}</Label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
-                  disabled={!isEditing}
-                  className="min-h-[100px]"
-                  placeholder={
-                    user?.role === "GARAGE"
-                      ? "Describe your garage, services and experience..."
-                      : "Write a few lines about yourself..."
-                  }
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -543,28 +503,24 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {user?.role === "GARAGE" ? (
-                    <>
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <span className="text-sm text-slate-600">New appointment from Nguyen Van A</span>
-                        <span className="text-xs text-blue-600">2 hours ago</span>
+                  {recentActivity.length > 0 ? (
+                    recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <span className="text-sm text-slate-600">{activity.message || activity.title}</span>
+                        <span className="text-xs text-blue-600">
+                          {new Date(activity.createdAt).toLocaleDateString('vi-VN', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Completed car repair for Tran Thi B</span>
-                        <span className="text-xs text-blue-600">1 day ago</span>
-                      </div>
-                    </>
+                    ))
                   ) : (
-                    <>
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Booked car repair at Thanh Cong Garage</span>
-                        <span className="text-xs text-blue-600">3 days ago</span>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm text-slate-600">Rated 5 stars for ABC Garage</span>
-                        <span className="text-xs text-blue-600">1 week ago</span>
-                      </div>
-                    </>
+                    <div className="text-center py-4">
+                      <p className="text-sm text-slate-500">No recent activity</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
