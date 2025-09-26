@@ -577,7 +577,7 @@ export default function GarageServicesPage() {
     try {
       // Call API in background
       await toggleGarageServiceStatus(serviceId)
-      toast.success("Cập nhật trạng thái thành công!")
+      toast.success("Service status updated successfully!")
     } catch (err: any) {
       console.error("Error toggling status:", err)
       
@@ -606,7 +606,29 @@ export default function GarageServicesPage() {
         })
       }
       
-      toast.error("Có lỗi xảy ra khi cập nhật trạng thái.")
+      // Handle specific error for pending appointments
+      if (err.response?.status === 400 && err.response?.data?.error === "Cannot disable service") {
+        const errorData = err.response.data
+        await Swal.fire({
+          title: '⚠️ Cannot Disable Service',
+          html: `
+            <div class="text-center">
+              <p class="mb-3">${errorData.message}</p>
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p class="text-sm text-yellow-700">
+                  <strong>Suggestion:</strong> Please handle pending appointments first, then try again.
+                </p>
+              </div>
+            </div>
+          `,
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#f59e0b'
+        })
+      } else {
+        // Handle other errors
+        toast.error("Failed to update service status")
+      }
     } finally {
       // Clear loading state
       setTogglingServices(prev => {
