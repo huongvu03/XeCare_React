@@ -554,8 +554,8 @@ export default function EditGaragePage() {
     // Validation (same as registration form)
     if (!garageName || !address || !phone || !email || !description) {
       await Swal.fire({
-        title: 'Thiếu thông tin!',
-        text: 'Vui lòng điền đầy đủ tất cả thông tin bắt buộc.',
+        title: 'Missing Information!',
+        text: 'Please fill in all required information.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b',
@@ -569,8 +569,8 @@ export default function EditGaragePage() {
     const phoneRegex = /^[0-9]{10,11}$/
     if (!phoneRegex.test(phone)) {
       await Swal.fire({
-        title: 'Số điện thoại không hợp lệ!',
-        text: 'Số điện thoại phải có 10-11 chữ số.',
+        title: 'Invalid Phone Number!',
+        text: 'Phone number must have 10-11 digits.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#ef4444',
@@ -584,8 +584,8 @@ export default function EditGaragePage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       await Swal.fire({
-        title: 'Email không hợp lệ!',
-        text: 'Vui lòng nhập địa chỉ email hợp lệ.',
+        title: 'Invalid Email!',
+        text: 'Please enter a valid email address.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#ef4444',
@@ -598,8 +598,8 @@ export default function EditGaragePage() {
     // Validate name length
     if (garageName.length < 2 || garageName.length > 100) {
       await Swal.fire({
-        title: 'Tên garage không hợp lệ!',
-        text: 'Tên garage phải có từ 2-100 ký tự.',
+        title: 'Invalid Garage Name!',
+        text: 'Garage name must be 2-100 characters.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#ef4444',
@@ -612,8 +612,8 @@ export default function EditGaragePage() {
     // Validate description length
     if (description.length > 500) {
       await Swal.fire({
-        title: 'Mô tả quá dài!',
-        text: 'Mô tả không được vượt quá 500 ký tự.',
+        title: 'Description Too Long!',
+        text: 'Description cannot exceed 500 characters.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#ef4444',
@@ -626,8 +626,8 @@ export default function EditGaragePage() {
     // Validate address length
     if (address.length > 255) {
       await Swal.fire({
-        title: 'Địa chỉ quá dài!',
-        text: 'Địa chỉ không được vượt quá 255 ký tự.',
+        title: 'Address Too Long!',
+        text: 'Address cannot exceed 255 characters.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#ef4444',
@@ -639,8 +639,8 @@ export default function EditGaragePage() {
 
     if (selectedServices.length === 0) {
       await Swal.fire({
-        title: 'Thiếu dịch vụ!',
-        text: 'Vui lòng chọn ít nhất một dịch vụ.',
+        title: 'Missing Services!',
+        text: 'Please select at least one service.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b',
@@ -652,8 +652,8 @@ export default function EditGaragePage() {
 
     if (selectedVehicleTypes.length === 0) {
       await Swal.fire({
-        title: 'Thiếu loại xe!',
-        text: 'Vui lòng chọn ít nhất một loại xe.',
+        title: 'Missing Vehicle Types!',
+        text: 'Please select at least one vehicle type.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b',
@@ -711,8 +711,8 @@ export default function EditGaragePage() {
       
       // Show SweetAlert success message
       await Swal.fire({
-        title: 'Thành công!',
-        text: 'Thông tin garage đã được cập nhật thành công! Garage sẽ được gửi đến admin để phê duyệt lại.',
+        title: 'Success!',
+        text: 'Garage information has been updated successfully! Garage will be sent to admin for re-approval.',
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#2563eb',
@@ -731,10 +731,10 @@ export default function EditGaragePage() {
       
       // Show SweetAlert error message
       await Swal.fire({
-        title: 'Lỗi!',
-        text: err.response?.data?.message || "Không thể cập nhật thông tin garage",
+        title: 'Error!',
+        text: err.response?.data?.message || "Cannot update garage information",
         icon: 'error',
-        confirmButtonText: 'Thử lại',
+        confirmButtonText: 'Try Again',
         confirmButtonColor: '#ef4444',
         showConfirmButton: true
       })

@@ -272,8 +272,8 @@ export default function AppointmentsPage() {
     
     if (!cancelReason.trim()) {
       await Swal.fire({
-        title: '⚠️ Thiếu lý do hủy',
-        text: 'Vui lòng nhập lý do hủy lịch hẹn.',
+        title: '⚠️ Missing Cancellation Reason',
+        text: 'Please enter the reason for cancelling the appointment.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b'
@@ -301,18 +301,18 @@ export default function AppointmentsPage() {
       
       // Show SweetAlert success notification
       await Swal.fire({
-        title: '✅ Hủy lịch hẹn thành công!',
+        title: '✅ Appointment Cancelled Successfully!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Lịch hẹn đã được hủy thành công!</p>
-            <p class="text-sm text-gray-600 mb-4">Garage đã nhận được thông báo về việc hủy lịch hẹn.</p>
+            <p class="text-lg mb-4">Appointment has been cancelled successfully!</p>
+            <p class="text-sm text-gray-600 mb-4">Garage has been notified about the appointment cancellation.</p>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-blue-700">
-                <strong>Thông tin lịch hẹn đã hủy:</strong><br>
-                • Mã lịch hẹn: <strong>#${appointmentToCancel.id}</strong><br>
+                <strong>Cancelled Appointment Information:</strong><br>
+                • Appointment ID: <strong>#${appointmentToCancel.id}</strong><br>
                 • Garage: <strong>${appointmentToCancel.garageName}</strong><br>
-                • Ngày: <strong>${new Date(appointmentToCancel.appointmentDate).toLocaleDateString('vi-VN')}</strong><br>
-                • Lý do: <strong>${cancelReason.trim()}</strong>
+                • Date: <strong>${new Date(appointmentToCancel.appointmentDate).toLocaleDateString('en-US')}</strong><br>
+                • Reason: <strong>${cancelReason.trim()}</strong>
               </p>
             </div>
           </div>
@@ -338,23 +338,23 @@ export default function AppointmentsPage() {
       
       // Show SweetAlert error notification
       await Swal.fire({
-        title: '❌ Lỗi hủy lịch hẹn',
+        title: '❌ Error Cancelling Appointment',
         html: `
           <div class="text-center">
-            <p class="mb-3">Đã xảy ra lỗi khi hủy lịch hẹn.</p>
+            <p class="mb-3">An error occurred while cancelling the appointment.</p>
             <p class="text-sm text-gray-600 mb-3">${errorMessage}</p>
             <div class="bg-red-50 border border-red-200 rounded-lg p-3">
               <p class="text-sm text-red-700">
-                <strong>Gợi ý:</strong><br>
-                • Kiểm tra kết nối internet<br>
-                • Thử lại sau vài phút<br>
-                • Liên hệ garage trực tiếp nếu cần
+                <strong>Suggestions:</strong><br>
+                • Check your internet connection<br>
+                • Try again in a few minutes<br>
+                • Contact the garage directly if needed
               </p>
             </div>
           </div>
         `,
         icon: 'error',
-        confirmButtonText: 'Thử lại',
+        confirmButtonText: 'Try Again',
         confirmButtonColor: '#ef4444',
         showConfirmButton: true,
         allowOutsideClick: true,

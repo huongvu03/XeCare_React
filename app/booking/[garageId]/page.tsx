@@ -208,15 +208,15 @@ export default function BookingPage() {
     
     if (!user) {
       await Swal.fire({
-        title: '🔐 Cần đăng nhập',
+        title: '🔐 Login Required',
         html: `
           <div class="text-center">
-            <p class="mb-3">Bạn cần đăng nhập để đặt lịch hẹn.</p>
-            <p class="text-sm text-gray-600">Vui lòng đăng nhập trên trang chủ trước khi đặt lịch.</p>
+            <p class="mb-3">You need to login to book an appointment.</p>
+            <p class="text-sm text-gray-600">Please login on the homepage before booking.</p>
           </div>
         `,
         icon: 'warning',
-        confirmButtonText: 'Đăng nhập',
+        confirmButtonText: 'Login',
         confirmButtonColor: '#3b82f6',
         showConfirmButton: true,
         allowOutsideClick: false,
@@ -233,8 +233,8 @@ export default function BookingPage() {
     // Validation
     if (!appointmentDate || !description || !contactPhone || !contactEmail) {
       await Swal.fire({
-        title: '⚠️ Thiếu thông tin',
-        text: 'Vui lòng điền đầy đủ thông tin bắt buộc.',
+        title: '⚠️ Missing Information',
+        text: 'Please fill in all required information.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b'
@@ -244,8 +244,8 @@ export default function BookingPage() {
 
     if (!selectedService) {
       await Swal.fire({
-        title: '⚠️ Chưa chọn dịch vụ',
-        text: 'Vui lòng chọn dịch vụ bạn muốn đặt lịch.',
+        title: '⚠️ No Service Selected',
+        text: 'Please select the service you want to book.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b'
@@ -255,8 +255,8 @@ export default function BookingPage() {
 
     if (availableVehicleTypes.length > 0 && !selectedVehicleType) {
       await Swal.fire({
-        title: '⚠️ Chưa chọn loại xe',
-        text: 'Vui lòng chọn loại xe cho dịch vụ này.',
+        title: '⚠️ No Vehicle Type Selected',
+        text: 'Please select a vehicle type for this service.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b'
@@ -266,11 +266,11 @@ export default function BookingPage() {
 
     if (availableVehicleTypes.length === 0) {
       await Swal.fire({
-        title: '❌ Không có xe phù hợp',
+        title: '❌ No Suitable Vehicle',
         html: `
           <div class="text-center">
-            <p class="mb-3">Bạn không có xe nào phù hợp với garage này.</p>
-            <p class="text-sm text-gray-600">Vui lòng thêm xe vào tài khoản hoặc chọn garage khác phù hợp với xe của bạn.</p>
+            <p class="mb-3">You don't have any vehicle suitable for this garage.</p>
+            <p class="text-sm text-gray-600">Please add a vehicle to your account or choose another garage suitable for your vehicle.</p>
           </div>
         `,
         icon: 'error',
@@ -283,8 +283,8 @@ export default function BookingPage() {
     // Check if user has vehicles of the selected type but hasn't selected a specific vehicle
     if (filteredVehicles.length > 0 && !selectedVehicle) {
       await Swal.fire({
-        title: '⚠️ Chưa chọn xe cụ thể',
-        text: 'Vui lòng chọn xe cụ thể để đặt lịch.',
+        title: '⚠️ No Specific Vehicle Selected',
+        text: 'Please select a specific vehicle to book an appointment.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b'
@@ -316,23 +316,23 @@ export default function BookingPage() {
       
       // Show SweetAlert success notification
       await Swal.fire({
-        title: '🎉 Đặt lịch thành công!',
+        title: '🎉 Booking Successful!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Lịch hẹn đã được đặt thành công!</p>
-            <p class="text-sm text-gray-600 mb-4">Garage sẽ liên hệ với bạn sớm nhất để xác nhận thời gian cụ thể.</p>
+            <p class="text-lg mb-4">Appointment has been booked successfully!</p>
+            <p class="text-sm text-gray-600 mb-4">Garage will contact you soon to confirm the specific time.</p>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-blue-700">
-                <strong>Thông tin đặt lịch:</strong><br>
+                <strong>Booking Information:</strong><br>
                 • Garage: <strong>${garage.name}</strong><br>
-                • Ngày: <strong>${new Date(appointmentDate).toLocaleDateString('vi-VN')}</strong><br>
-                • Dịch vụ: <strong>${services.find(s => s.serviceId === selectedService)?.serviceName}</strong>
+                • Date: <strong>${new Date(appointmentDate).toLocaleDateString('en-US')}</strong><br>
+                • Service: <strong>${services.find(s => s.serviceId === selectedService)?.serviceName}</strong>
               </p>
             </div>
           </div>
         `,
         icon: 'success',
-        confirmButtonText: 'Xem lịch hẹn',
+        confirmButtonText: 'View Appointments',
         confirmButtonColor: '#3b82f6',
         showConfirmButton: true,
         allowOutsideClick: false,
@@ -351,23 +351,23 @@ export default function BookingPage() {
       
       // Show SweetAlert error notification
       await Swal.fire({
-        title: '❌ Lỗi đặt lịch',
+        title: '❌ Booking Error',
         html: `
           <div class="text-center">
-            <p class="mb-3">Đã xảy ra lỗi khi đặt lịch hẹn.</p>
-            <p class="text-sm text-gray-600 mb-3">${err.response?.data?.message || "Vui lòng thử lại sau."}</p>
+            <p class="mb-3">An error occurred while booking the appointment.</p>
+            <p class="text-sm text-gray-600 mb-3">${err.response?.data?.message || "Please try again later."}</p>
             <div class="bg-red-50 border border-red-200 rounded-lg p-3">
               <p class="text-sm text-red-700">
-                <strong>Gợi ý:</strong><br>
-                • Kiểm tra kết nối internet<br>
-                • Thử lại sau vài phút<br>
-                • Liên hệ garage trực tiếp nếu cần
+                <strong>Suggestions:</strong><br>
+                • Check your internet connection<br>
+                • Try again in a few minutes<br>
+                • Contact the garage directly if needed
               </p>
             </div>
           </div>
         `,
         icon: 'error',
-        confirmButtonText: 'Thử lại',
+        confirmButtonText: 'Try Again',
         confirmButtonColor: '#ef4444',
         showConfirmButton: true,
         allowOutsideClick: true,

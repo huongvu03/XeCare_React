@@ -33,6 +33,7 @@ import {
 } from "lucide-react"
 import { getPublicGarageById, type PublicGarageInfo } from "@/lib/api/UserApi"
 import { getFullImageUrl, isPlaceholderImage } from "@/utils/imageUtils"
+import Swal from 'sweetalert2'
 
 export default function PublicGarageDetailPage() {
   const router = useRouter()
@@ -220,12 +221,24 @@ export default function PublicGarageDetailPage() {
   // Handle review form submission
   const handleReviewSubmit = async () => {
     if (reviewFormData.rating === 0) {
-      alert("Please select a rating!")
+      await Swal.fire({
+        title: '⚠️ Rating Required',
+        text: 'Please select a rating before submitting your review.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b'
+      })
       return
     }
 
     if (!reviewFormData.comment.trim()) {
-      alert("Please enter a comment!")
+      await Swal.fire({
+        title: '⚠️ Comment Required',
+        text: 'Please enter a comment before submitting your review.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b'
+      })
       return
     }
 
@@ -247,7 +260,28 @@ export default function PublicGarageDetailPage() {
       if (response.ok) {
         // Success response - backend returns plain text
         const successMessage = await response.text()
-        alert(successMessage || "Your review has been submitted successfully!")
+        await Swal.fire({
+          title: '🎉 Review Submitted Successfully!',
+          html: `
+            <div class="text-center">
+              <p class="text-lg mb-4">Thank you for your review!</p>
+              <p class="text-sm text-gray-600 mb-4">Your feedback helps other customers make informed decisions.</p>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                <p class="text-sm text-green-700">
+                  <strong>Note:</strong> Your review will be visible to other customers.
+                </p>
+              </div>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonText: 'Great!',
+          confirmButtonColor: '#10b981',
+          showConfirmButton: true,
+          timer: 4000,
+          timerProgressBar: true,
+          allowOutsideClick: true,
+          allowEscapeKey: true
+        })
         setShowReviewForm(false)
         setReviewFormData({ rating: 0, comment: '' })
         
@@ -273,11 +307,55 @@ export default function PublicGarageDetailPage() {
           console.error('Error parsing error response:', parseError)
           // Use default error message if parsing fails
         }
-        alert(`Lỗi: ${errorMessage}`)
+        await Swal.fire({
+          title: '❌ Review Submission Failed',
+          html: `
+            <div class="text-center">
+              <p class="mb-3">Unable to submit your review</p>
+              <p class="text-sm text-gray-600 mb-3">${errorMessage}</p>
+              <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p class="text-sm text-red-700">
+                  <strong>Suggestions:</strong><br>
+                  • Check your internet connection<br>
+                  • Try again in a few minutes<br>
+                  • Contact support if the problem persists
+                </p>
+              </div>
+            </div>
+          `,
+          icon: 'error',
+          confirmButtonText: 'Try Again',
+          confirmButtonColor: '#ef4444',
+          showConfirmButton: true,
+          allowOutsideClick: true,
+          allowEscapeKey: true
+        })
       }
     } catch (error) {
       console.error('Error submitting review:', error)
-      alert("An error occurred while submitting the review. Please try again!")
+      await Swal.fire({
+        title: '❌ Review Submission Error',
+        html: `
+          <div class="text-center">
+            <p class="mb-3">An error occurred while submitting the review</p>
+            <p class="text-sm text-gray-600 mb-3">Please try again later</p>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p class="text-sm text-red-700">
+                <strong>Suggestions:</strong><br>
+                • Check your internet connection<br>
+                • Try again in a few minutes<br>
+                • Contact support if the problem persists
+              </p>
+            </div>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonText: 'Try Again',
+        confirmButtonColor: '#ef4444',
+        showConfirmButton: true,
+        allowOutsideClick: true,
+        allowEscapeKey: true
+      })
     } finally {
       setSubmitLoading(false)
     }

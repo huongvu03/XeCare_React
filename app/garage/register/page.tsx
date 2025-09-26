@@ -416,8 +416,8 @@ export default function GarageRegistrationPage() {
     // Validation
     if (!garageName || !address || !phone || !email || !description) {
       await Swal.fire({
-        title: 'Thiếu thông tin!',
-        text: 'Vui lòng điền đầy đủ tất cả thông tin bắt buộc.',
+        title: 'Missing Information!',
+        text: 'Please fill in all required information.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b',
@@ -429,8 +429,8 @@ export default function GarageRegistrationPage() {
 
     if (selectedServices.length === 0) {
       await Swal.fire({
-        title: 'Thiếu dịch vụ!',
-        text: 'Vui lòng chọn ít nhất một dịch vụ.',
+        title: 'Missing Services!',
+        text: 'Please select at least one service.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b',
@@ -442,8 +442,8 @@ export default function GarageRegistrationPage() {
 
     if (selectedVehicleTypes.length === 0) {
       await Swal.fire({
-        title: 'Thiếu loại xe!',
-        text: 'Vui lòng chọn ít nhất một loại xe.',
+        title: 'Missing Vehicle Types!',
+        text: 'Please select at least one vehicle type.',
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f59e0b',
@@ -456,8 +456,8 @@ export default function GarageRegistrationPage() {
     // Check if address is already taken
     if (addressValidation.isTaken) {
       await Swal.fire({
-        title: 'Địa chỉ đã được sử dụng!',
-        text: 'Địa chỉ này đã được sử dụng bởi garage khác. Vui lòng chọn địa chỉ khác.',
+        title: 'Address Already Used!',
+        text: 'This address is already used by another garage. Please choose a different address.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#ef4444',
@@ -535,20 +535,20 @@ export default function GarageRegistrationPage() {
       
       // Show SweetAlert success notification
       await Swal.fire({
-        title: '🎉 Đăng ký thành công!',
+        title: '🎉 Registration Successful!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Garage <strong>"${garageName}"</strong> đã được đăng ký thành công!</p>
-            <p class="text-sm text-gray-600 mb-4">Vui lòng chờ admin phê duyệt để bắt đầu nhận lịch hẹn từ khách hàng.</p>
+            <p class="text-lg mb-4">Garage <strong>"${garageName}"</strong> has been registered successfully!</p>
+            <p class="text-sm text-gray-600 mb-4">Please wait for admin approval to start receiving appointments from customers.</p>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-blue-700">
-                <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến dashboard garage trong vài giây...
+                <strong>Note:</strong> You will be redirected to the garage dashboard in a few seconds...
               </p>
             </div>
           </div>
         `,
         icon: 'success',
-        confirmButtonText: 'Tuyệt vời!',
+        confirmButtonText: 'Great!',
         confirmButtonColor: '#3b82f6',
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -574,20 +574,20 @@ export default function GarageRegistrationPage() {
       
       // Show SweetAlert error notification
       await Swal.fire({
-        title: '❌ Đăng ký thất bại!',
+        title: '❌ Registration Failed!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Không thể đăng ký garage</p>
+            <p class="text-lg mb-4">Cannot register garage</p>
             <p class="text-sm text-gray-600 mb-4">${errorMessage}</p>
             <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-red-700">
-                <strong>Gợi ý:</strong> Vui lòng kiểm tra lại thông tin và thử lại.
+                <strong>Suggestion:</strong> Please check the information and try again.
               </p>
             </div>
           </div>
         `,
         icon: 'error',
-        confirmButtonText: 'Thử lại',
+        confirmButtonText: 'Try Again',
         confirmButtonColor: '#ef4444',
         allowOutsideClick: true,
         allowEscapeKey: true

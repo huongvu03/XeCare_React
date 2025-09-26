@@ -83,7 +83,7 @@ export default function AppointmentDetailPage() {
 
       const response = await updateAppointmentStatus(appointmentId, updateData)
       setAppointment(response.data)
-      setSuccess(status === "CONFIRMED" ? "Appointment confirmed successfully!" : "Appointment rejected!")
+      setSuccess(status === "CONFIRMED" ? "Appointment confirmed successfully!" : "Appointment cancelled!")
       setShowRejectionForm(false)
       setRejectionReason("")
     } catch (err: any) {
@@ -343,19 +343,13 @@ export default function AppointmentDetailPage() {
                   </div>
                 )}
 
-                {/* Rejection/Cancellation Reason */}
+                {/* Cancellation Reason */}
                 {appointment.rejectionReason && (
                   <div>
-                    <label className={`text-sm font-medium ${
-                      appointment.status === "REJECTED" ? "text-red-600" : "text-orange-600"
-                    }`}>
-                      {appointment.status === "REJECTED" ? "Rejection Reason" : "Cancellation Reason"}
+                    <label className="text-sm font-medium text-orange-600">
+                      Cancellation Reason
                     </label>
-                    <p className={`p-3 rounded-md border ${
-                      appointment.status === "REJECTED" 
-                        ? "text-red-700 bg-red-50 border-red-200" 
-                        : "text-orange-700 bg-orange-50 border-orange-200"
-                    }`}>
+                    <p className="p-3 rounded-md border text-orange-700 bg-orange-50 border-orange-200">
                       {appointment.rejectionReason}
                     </p>
                   </div>
@@ -405,7 +399,7 @@ export default function AppointmentDetailPage() {
                       onClick={() => setShowRejectionForm(true)}
                     >
                       <XCircle className="h-4 w-4 mr-2" />
-                      Reject Appointment
+                      Cancel Appointment
                     </Button>
                   </div>
                 )}
@@ -460,12 +454,11 @@ export default function AppointmentDetailPage() {
                   </div>
                 )}
 
-                {/* Read-only for COMPLETED, REJECTED, CANCELLED */}
-                {(appointment.status === "COMPLETED" || appointment.status === "REJECTED" || appointment.status === "CANCELLED") && (
+                {/* Read-only for COMPLETED, CANCELLED */}
+                {(appointment.status === "COMPLETED" || appointment.status === "CANCELLED") && (
                   <div className="text-center py-4">
                     <p className="text-slate-500 text-sm">
                       {appointment.status === "COMPLETED" && "Appointment completed"}
-                      {appointment.status === "REJECTED" && "Appointment rejected"}
                       {appointment.status === "CANCELLED" && "Appointment cancelled"}
                     </p>
                   </div>
@@ -475,12 +468,12 @@ export default function AppointmentDetailPage() {
                 {showRejectionForm && (
                   <div className="space-y-3 p-4 border border-red-200 rounded-md bg-red-50">
                     <label className="text-sm font-medium text-red-700">
-                      Rejection Reason <span className="text-red-500">*</span>
+                      Cancellation Reason <span className="text-red-500">*</span>
                     </label>
                     <Textarea
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
-                      placeholder="Please enter the reason for rejecting the appointment..."
+                      placeholder="Please enter the reason for cancelling the appointment..."
                       className="border-red-300 focus:border-red-500"
                       rows={3}
                     />
@@ -496,7 +489,7 @@ export default function AppointmentDetailPage() {
                         ) : (
                           <XCircle className="h-4 w-4 mr-2" />
                         )}
-                        Confirm Rejection
+                        Confirm Cancellation
                       </Button>
                       <Button 
                         variant="outline"

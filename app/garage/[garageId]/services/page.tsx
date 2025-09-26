@@ -248,8 +248,8 @@ export default function GarageServicesPage() {
         
         // Show SweetAlert validation error
         await Swal.fire({
-          title: '⚠️ Thông tin không hợp lệ!',
-          text: 'Vui lòng kiểm tra lại thông tin đã nhập.',
+          title: '⚠️ Invalid Information!',
+          text: 'Please check the information you entered.',
           icon: 'warning',
           confirmButtonText: 'OK',
           confirmButtonColor: '#f59e0b',
@@ -286,10 +286,10 @@ export default function GarageServicesPage() {
         
         // Show SweetAlert success notification for update
         await Swal.fire({
-          title: '✅ Cập nhật service thành công!',
-          text: 'Service đã được cập nhật thành công!',
+          title: '✅ Service Updated Successfully!',
+          text: 'Service has been updated successfully!',
           icon: 'success',
-          confirmButtonText: 'Tuyệt vời!',
+          confirmButtonText: 'Great!',
           confirmButtonColor: '#10b981',
           showConfirmButton: true,
           timer: 3000,
@@ -354,20 +354,20 @@ export default function GarageServicesPage() {
         // Show SweetAlert success notification
         console.log("🎉 About to show SweetAlert success notification")
         const result = await Swal.fire({
-          title: '🎉 Thêm service thành công!',
+          title: '🎉 Service Added Successfully!',
           html: `
             <div class="text-center">
-              <p class="text-lg mb-4">Service đã được thêm thành công!</p>
-              <p class="text-sm text-gray-600 mb-4">Service đã được kích hoạt và sẵn sàng sử dụng.</p>
+              <p class="text-lg mb-4">Service has been added successfully!</p>
+              <p class="text-sm text-gray-600 mb-4">Service is now activated and ready to use.</p>
               <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
                 <p class="text-sm text-green-700">
-                  <strong>Lưu ý:</strong> Service sẽ xuất hiện trong danh sách ngay lập tức.
+                  <strong>Note:</strong> Service will appear in the list immediately.
                 </p>
               </div>
             </div>
           `,
           icon: 'success',
-          confirmButtonText: 'Tuyệt vời!',
+          confirmButtonText: 'Great!',
           confirmButtonColor: '#10b981',
           showConfirmButton: true,
           timer: 3000,
@@ -407,20 +407,20 @@ export default function GarageServicesPage() {
       
       // Show SweetAlert error notification
       await Swal.fire({
-        title: '❌ Lỗi khi thêm service!',
+        title: '❌ Error Adding Service!',
         html: `
           <div class="text-center">
-            <p class="text-lg mb-4">Không thể thêm service</p>
-            <p class="text-sm text-gray-600 mb-4">${err.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại."}</p>
+            <p class="text-lg mb-4">Cannot add service</p>
+            <p class="text-sm text-gray-600 mb-4">${err.response?.data?.message || "An error occurred. Please try again."}</p>
             <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
               <p class="text-sm text-red-700">
-                <strong>Gợi ý:</strong> Vui lòng kiểm tra lại thông tin và thử lại.
+                <strong>Suggestion:</strong> Please check the information and try again.
               </p>
             </div>
           </div>
         `,
         icon: 'error',
-        confirmButtonText: 'Thử lại',
+        confirmButtonText: 'Try Again',
         confirmButtonColor: '#ef4444',
         showConfirmButton: true,
         timer: 5000,

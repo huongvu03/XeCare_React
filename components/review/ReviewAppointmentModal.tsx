@@ -36,17 +36,17 @@ export function ReviewAppointmentModal({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      toast.error("Vui lòng chọn số sao đánh giá")
+      toast.error("Please select a rating")
       return
     }
 
     if (comment.trim().length < 10) {
-      toast.error("Nhận xét phải có ít nhất 10 ký tự")
+      toast.error("Comment must be at least 10 characters")
       return
     }
 
     if (comment.trim().length > 500) {
-      toast.error("Nhận xét không được vượt quá 500 ký tự")
+      toast.error("Comment cannot exceed 500 characters")
       return
     }
 
@@ -61,12 +61,12 @@ export function ReviewAppointmentModal({
 
       await createReviewAppointment(request)
       
-      toast.success("Đánh giá thành công!")
+      toast.success("Review submitted successfully!")
       onReviewSubmitted?.()
       handleClose()
     } catch (error: any) {
       console.error("Error submitting review:", error)
-      toast.error(error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá")
+      toast.error(error.response?.data?.message || "An error occurred while submitting the review")
     } finally {
       setIsSubmitting(false)
     }
@@ -108,15 +108,15 @@ export function ReviewAppointmentModal({
   const getRatingText = (rating: number) => {
     switch (rating) {
       case 1:
-        return "Rất tệ"
+        return "Very Poor"
       case 2:
-        return "Tệ"
+        return "Poor"
       case 3:
-        return "Trung bình"
+        return "Average"
       case 4:
-        return "Tốt"
+        return "Good"
       case 5:
-        return "Tuyệt vời"
+        return "Excellent"
       default:
         return ""
     }
@@ -126,7 +126,7 @@ export function ReviewAppointmentModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-lg font-semibold">Đánh giá dịch vụ</CardTitle>
+          <CardTitle className="text-lg font-semibold">Service Review</CardTitle>
           <Button
             variant="ghost"
             size="sm"
@@ -144,14 +144,14 @@ export function ReviewAppointmentModal({
             <h3 className="font-medium text-blue-900">{garageName}</h3>
             <p className="text-sm text-blue-700">{serviceName}</p>
             <p className="text-sm text-blue-600">
-              {new Date(appointmentDate).toLocaleDateString('vi-VN')}
+              {new Date(appointmentDate).toLocaleDateString('en-US')}
             </p>
           </div>
 
           {/* Rating */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">
-              Đánh giá chất lượng dịch vụ *
+              Service Quality Rating *
             </label>
             <div className="flex items-center space-x-3">
               {renderStars()}
@@ -166,10 +166,10 @@ export function ReviewAppointmentModal({
           {/* Comment */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-gray-700">
-              Nhận xét của bạn *
+              Your Comment *
             </label>
             <Textarea
-              placeholder="Hãy chia sẻ trải nghiệm của bạn về dịch vụ này... (tối thiểu 10 ký tự, tối đa 500 ký tự)"
+              placeholder="Please share your experience about this service... (minimum 10 characters, maximum 500 characters)"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               disabled={isSubmitting}
@@ -177,7 +177,7 @@ export function ReviewAppointmentModal({
               maxLength={500}
             />
             <div className="text-xs text-gray-500 text-right">
-              {comment.length}/500 ký tự
+              {comment.length}/500 characters
             </div>
           </div>
 
@@ -189,7 +189,7 @@ export function ReviewAppointmentModal({
               disabled={isSubmitting}
               className="flex-1"
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               onClick={handleSubmit}
@@ -199,10 +199,10 @@ export function ReviewAppointmentModal({
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Đang gửi...
+                  Submitting...
                 </>
               ) : (
-                "Gửi đánh giá"
+                "Submit Review"
               )}
             </Button>
           </div>
