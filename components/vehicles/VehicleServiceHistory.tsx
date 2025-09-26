@@ -87,8 +87,8 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
       } catch (error) {
         console.error("Error loading vehicle service history:", error)
         toast({
-          title: "Lỗi",
-          description: "Không thể tải lịch sử sửa xe",
+          title: "Error",
+          description: "Cannot load service history",
           variant: "destructive",
         })
       } finally {
@@ -156,30 +156,30 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
       )
     }
     
-    return service?.description || "Dịch vụ sửa chữa và bảo dưỡng xe"
+    return service?.description || "Vehicle repair and maintenance service"
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return <Badge className="bg-green-100 text-green-700">Hoàn thành</Badge>
+        return <Badge className="bg-green-100 text-green-700">Completed</Badge>
       case "IN_PROGRESS":
-        return <Badge className="bg-orange-100 text-orange-700">Đang thực hiện</Badge>
+        return <Badge className="bg-orange-100 text-orange-700">In Progress</Badge>
       case "CONFIRMED":
-        return <Badge className="bg-blue-100 text-blue-700">Đã xác nhận</Badge>
+        return <Badge className="bg-blue-100 text-blue-700">Confirmed</Badge>
       case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-700">Chờ xác nhận</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>
       case "CANCELLED":
-        return <Badge className="bg-gray-100 text-gray-700">Đã hủy</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Cancelled</Badge>
       case "REJECTED":
-        return <Badge className="bg-red-100 text-red-700">Đã từ chối</Badge>
+        return <Badge className="bg-red-100 text-red-700">Rejected</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-700">Không xác định</Badge>
+        return <Badge className="bg-gray-100 text-gray-700">Unknown</Badge>
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -195,7 +195,7 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-blue-600 mr-2" />
-        <span className="text-slate-600">Đang tải lịch sử sửa xe...</span>
+        <span className="text-slate-600">Loading service history...</span>
       </div>
     )
   }
@@ -205,12 +205,12 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
       <div className="text-center py-8">
         <Wrench className="h-12 w-12 text-slate-300 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-slate-900 mb-2">
-          {vehicle ? `Chưa có lịch sử sửa xe cho ${vehicle.vehicleName}` : "Chưa có lịch sử sửa xe"}
+          {vehicle ? `No service history for ${vehicle.vehicleName}` : "No service history"}
         </h3>
         <p className="text-slate-500 text-sm">
           {vehicle 
-            ? `Xe ${vehicle.vehicleName} (${vehicle.licensePlate}) chưa có lịch sử sửa chữa nào được hoàn thành.`
-            : "Bạn chưa có lịch sử sửa xe nào được hoàn thành."
+            ? `Vehicle ${vehicle.vehicleName} (${vehicle.licensePlate}) has no completed service history.`
+            : "You have no completed service history."
           }
         </p>
       </div>
@@ -221,14 +221,14 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-900">
-          {vehicle ? `Lịch sử sửa xe - ${vehicle.vehicleName}` : "Lịch sử sửa xe gần nhất"}
+          {vehicle ? `Service History - ${vehicle.vehicleName}` : "Recent Service History"}
         </h3>
         <Button 
           variant="outline" 
           size="sm"
           onClick={() => window.location.href = '/user/appointments'}
         >
-          Xem tất cả
+          View All
         </Button>
       </div>
       
@@ -250,7 +250,7 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
                   {appointment.finalPrice && (
                     <div className="flex items-center text-sm text-green-600">
                       <DollarSign className="h-4 w-4 mr-1" />
-                      {appointment.finalPrice.toLocaleString('vi-VN')} VNĐ
+                      {appointment.finalPrice.toLocaleString('en-US')} VND
                     </div>
                   )}
                 </div>
@@ -263,7 +263,7 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
                     <div className="flex items-center space-x-2">
                       <Star className="h-4 w-4 text-blue-600" />
                       <span className="text-sm font-medium text-blue-900">
-                        Đánh giá dịch vụ
+                        Rate Service
                       </span>
                     </div>
                     {appointmentReviewStatus[appointment.id].canReview ? (
@@ -273,16 +273,16 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         <Star className="h-4 w-4 mr-1" />
-                        Đánh giá
+                        Rate
                       </Button>
                     ) : appointmentReviewStatus[appointment.id].hasReviewed ? (
                       <div className="flex items-center text-green-600 text-sm">
                         <Star className="h-4 w-4 mr-1 fill-current" />
-                        <span>Đã đánh giá</span>
+                        <span>Rated</span>
                       </div>
                     ) : (
                       <div className="flex items-center text-gray-500 text-sm">
-                        <span>Không thể đánh giá</span>
+                        <span>Cannot rate</span>
                       </div>
                     )}
                   </div>
@@ -318,7 +318,7 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
                 {appointment.estimatedPrice && !appointment.finalPrice && (
                   <div className="flex items-center text-slate-600">
                     <Clock className="h-4 w-4 mr-2 text-yellow-500" />
-                    <span>Dự kiến: {appointment.estimatedPrice.toLocaleString('vi-VN')} VNĐ</span>
+                    <span>Estimated: {appointment.estimatedPrice.toLocaleString('en-US')} VND</span>
                   </div>
                 )}
               </div>
@@ -326,7 +326,7 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
               {appointment.description && (
                 <div className="mt-3 p-3 bg-slate-50 rounded-lg">
                   <p className="text-sm text-slate-700">
-                    <strong>Mô tả:</strong> {appointment.description}
+                    <strong>Description:</strong> {appointment.description}
                   </p>
                 </div>
               )}
@@ -334,7 +334,7 @@ export function VehicleServiceHistory({ vehicleId, vehicle, limit = 5 }: Vehicle
               {appointment.notes && (
                 <div className="mt-2 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    <strong>Ghi chú:</strong> {appointment.notes}
+                    <strong>Notes:</strong> {appointment.notes}
                   </p>
                 </div>
               )}

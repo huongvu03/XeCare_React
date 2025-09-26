@@ -17,6 +17,7 @@ interface VehicleCardProps {
   onViewDetail: (vehicle: Vehicle) => void
   allowDelete?: boolean
   allowLock?: boolean
+  hasAppointments?: boolean
 }
 
 const VehicleCard: React.FC<VehicleCardProps> = ({
@@ -26,16 +27,17 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
   onLock,
   onViewDetail,
   onUnlock,
+  hasAppointments = false,
 }) => {
   const [lockDialogOpen, setLockDialogOpen] = useState(false)
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
   const [selectedReason, setSelectedReason] = useState<string>("")
 
   const lockReasons = [
-    "Vi phạm nội quy",
-    "Hết hạn đăng ký",
-    "Xe báo mất",
-    "Khác"
+    "Policy violation",
+    "Registration expired",
+    "Vehicle reported stolen",
+    "Other"
   ]
 
   const handleConfirmLock = () => {
@@ -62,32 +64,37 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
                   <h3 className="font-semibold text-slate-900 truncate">{vehicle.vehicleName}</h3>
                   {vehicle.locked && (
                     <Badge variant="destructive" className="text-xs shrink-0">
-                      🔒 Đã khóa
+                      🔒 Locked
+                    </Badge>
+                  )}
+                  {hasAppointments && (
+                    <Badge variant="secondary" className="text-xs shrink-0 bg-blue-100 text-blue-700">
+                      📅 Has History
                     </Badge>
                   )}
                 </div>
 
                 {vehicle.locked && vehicle.lockReason && (
                   <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-                    <strong>Lý do khóa:</strong> {vehicle.lockReason}
+                    <strong>Lock reason:</strong> {vehicle.lockReason}
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-slate-600 mb-3">
                   <div>
-                    <p className="font-medium text-slate-800">Hãng xe</p>
+                    <p className="font-medium text-slate-800">Brand</p>
                     <p className="truncate">{vehicle.brand} {vehicle.model}</p>
                   </div>
                   <div>
-                    <p className="font-medium text-slate-800">Biển số</p>
+                    <p className="font-medium text-slate-800">License Plate</p>
                     <p className="font-mono font-medium text-slate-900">{vehicle.licensePlate}</p>
                   </div>
                   <div>
-                    <p className="font-medium text-slate-800">Loại xe</p>
-                    <p className="truncate">{vehicle.vehicleTypeName || "Chưa cập nhật"}</p>
+                    <p className="font-medium text-slate-800">Vehicle Type</p>
+                    <p className="truncate">{vehicle.vehicleTypeName || "Not updated"}</p>
                   </div>
                   <div>
-                    <p className="font-medium text-slate-800">Năm SX</p>
+                    <p className="font-medium text-slate-800">Year</p>
                     <p>{vehicle.year}</p>
                   </div>
                 </div>
@@ -100,11 +107,17 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
                 variant="outline" 
                 onClick={() => setHistoryDialogOpen(true)} 
                 className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                title="Xem lịch sử sửa xe"
+                title="View service history"
               >
                 <History className="h-4 w-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => onViewDetail(vehicle)} className="h-8 w-8 p-0">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onViewDetail(vehicle)} 
+                className="h-8 w-8 p-0"
+                title="View vehicle details"
+              >
                 <Eye className="h-4 w-4" />
               </Button>
               {!vehicle.locked && (
@@ -116,7 +129,13 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
                     size="sm"
                     variant="outline"
                     onClick={() => onDelete(vehicle.id)}
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    disabled={hasAppointments}
+                    className={`h-8 w-8 p-0 ${
+                      hasAppointments 
+                        ? "text-gray-400 cursor-not-allowed" 
+                        : "text-red-600 hover:text-red-700 hover:bg-red-50"
+                    }`}
+                    title={hasAppointments ? "Cannot delete: Vehicle has appointment history" : "Delete vehicle"}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -145,15 +164,15 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
         </CardContent>
       </Card>
 
-      {/* Dialog chọn lý do khóa */}
+      {/* Lock reason selection dialog */}
       <Dialog open={lockDialogOpen} onOpenChange={setLockDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Chọn lý do khóa xe</DialogTitle>
+            <DialogTitle>Select lock reason</DialogTitle>
           </DialogHeader>
           <Select value={selectedReason} onValueChange={setSelectedReason}>
             <SelectTrigger>
-              <SelectValue placeholder="Chọn lý do..." />
+              <SelectValue placeholder="Select reason..." />
             </SelectTrigger>
             <SelectContent>
               {lockReasons.map((reason, idx) => (
@@ -165,25 +184,25 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
           </Select>
 
           <div className="flex justify-end space-x-3 mt-4">
-            <Button variant="outline" onClick={() => setLockDialogOpen(false)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setLockDialogOpen(false)}>Cancel</Button>
             <Button
               onClick={handleConfirmLock}
               disabled={!selectedReason}
               className="bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Xác nhận
+              Confirm
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog lịch sử sửa xe */}
+      {/* Service history dialog */}
       <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <History className="h-5 w-5 text-blue-600" />
-              <span>Lịch sử sửa xe - {vehicle.vehicleName}</span>
+              <span>Service History - {vehicle.vehicleName}</span>
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4">

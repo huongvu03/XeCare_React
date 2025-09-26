@@ -13,12 +13,12 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import axiosClient from "@/lib/axiosClient"
 
-import {Vehicle,VehicleType, Category, UserVehicleTypeCreateDto, UserVehicleTypeUpdateDto } from "@/types/users/userVehicle";
+import {Vehicle,VehicleType, Category, UserVehicleTypeCreateDto, UserVehicleTypeUpdateDto, VehicleFormData } from "@/types/users/userVehicle";
 import { VehicleApi } from "@/lib/api/userVehicleApi";
+import { getUserAppointments } from "@/lib/api/AppointmentApi";
 import VehicleForm from "@/components/vehicles/VehicleForm";
 import VehicleCard from "@/components/vehicles/VehicleCard";
 import VehicleDetailView from "@/components/vehicles/VehicleDetailView";
-import { VehicleServiceHistory } from "@/components/vehicles/VehicleServiceHistory";
 
 interface ApiResponse<T> {
   content: T[]
@@ -34,9 +34,6 @@ interface ApiResponse<T> {
 export function VehicleManagement(
 ) {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [search, setSearch] = useState("");
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
@@ -47,7 +44,6 @@ export function VehicleManagement(
   useEffect(() => {
     console.log('🔍 [VehicleManagement] vehicleTypes state changed:', vehicleTypes);
   }, [vehicleTypes]);
-  const [submitting, setSubmitting] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(0)
@@ -63,6 +59,8 @@ export function VehicleManagement(
   const [viewingVehicle, setViewingVehicle] = useState<Vehicle | null>(null)
   const [lockingVehicle, setLockingVehicle] = useState<Vehicle | null>(null)
   const [lockReason, setLockReason] = useState("")
+  // Track which vehicles have appointments (cannot be deleted)
+  const [vehiclesWithAppointments, setVehiclesWithAppointments] = useState<Set<number>>(new Set())
 
   // Form state
   const [formData, setFormData] = useState({
@@ -72,8 +70,8 @@ export function VehicleManagement(
     year: new Date().getFullYear(),
     licensePlate: "",
     color: "",
-    categoryId: "0", // Updated default value to be a non-empty string
-    vehicleTypeId: "0", // Updated default value to be a non-empty string
+    categoryId: 0, // Updated default value to be a number
+    vehicleTypeId: 0, // Updated default value to be a number
   })
 
   // Filter and sort states
@@ -84,6 +82,42 @@ export function VehicleManagement(
 
   const { user } = useAuth()
   const { toast } = useToast()
+
+  // Check if vehicle has appointment history
+  const checkVehicleHasAppointments = async (vehicle: Vehicle): Promise<boolean> => {
+    try {
+      const appointmentsResponse = await getUserAppointments({
+        page: 0,
+        size: 100, // Get more appointments to check thoroughly
+        status: "ALL" // Check all statuses, not just completed
+      })
+      
+      const appointments = appointmentsResponse.data.content
+      
+      // Check if any appointment matches this vehicle
+      const hasAppointments = appointments.some(appointment => {
+        // Match by license plate (most reliable)
+        if (appointment.licensePlate && vehicle.licensePlate) {
+          return appointment.licensePlate.toLowerCase().trim() === vehicle.licensePlate.toLowerCase().trim()
+        }
+        
+        // Fallback: match by brand, model and vehicle type
+        if (appointment.vehicleBrand && appointment.vehicleModel && vehicle.brand && vehicle.model) {
+          return appointment.vehicleBrand.toLowerCase().trim() === vehicle.brand.toLowerCase().trim() &&
+                 appointment.vehicleModel.toLowerCase().trim() === vehicle.model.toLowerCase().trim() &&
+                 appointment.vehicleTypeId === vehicle.id
+        }
+        
+        return false
+      })
+      
+      return hasAppointments
+    } catch (error) {
+      console.error("Error checking vehicle appointments:", error)
+      // If there's an error checking, assume it has appointments to be safe
+      return true
+    }
+  }
 
   // Fetch vehicles with pagination and search
   const fetchVehicles = async (
@@ -114,6 +148,11 @@ const response = res.data;
     setTotalElements(response.totalElements || 0);
     setCurrentPage(response.number || 0);
     console.log("Fetched vehicles:", response);
+    
+    // Check appointment history for all vehicles
+    if (response.content && response.content.length > 0) {
+      checkAllVehiclesAppointments(response.content);
+    }
   } catch (error) {
     console.error("Error fetching vehicles:", error);
     setVehicles([]);
@@ -156,6 +195,26 @@ const response = res.data;
       }
     }
 
+  // Check appointment history for all vehicles
+  const checkAllVehiclesAppointments = async (vehiclesList: Vehicle[]) => {
+    const vehiclesWithAppts = new Set<number>();
+    
+    for (const vehicle of vehiclesList) {
+      try {
+        const hasAppointments = await checkVehicleHasAppointments(vehicle);
+        if (hasAppointments) {
+          vehiclesWithAppts.add(vehicle.id);
+        }
+      } catch (error) {
+        console.error(`Error checking appointments for vehicle ${vehicle.id}:`, error);
+        // If error, assume it has appointments to be safe
+        vehiclesWithAppts.add(vehicle.id);
+      }
+    }
+    
+    setVehiclesWithAppointments(vehiclesWithAppts);
+  };
+
   // Initial data load
   useEffect(() => {
     if (user) {
@@ -185,8 +244,8 @@ const response = res.data;
       year: new Date().getFullYear(),
       licensePlate: "",
       color: "",
-      categoryId: "0", // Updated default value to be a non-empty string
-      vehicleTypeId: "0", // Updated default value to be a non-empty string
+      categoryId: 0, // Updated default value to be a number
+      vehicleTypeId: 0, // Updated default value to be a number
     })
   }
   const handleConfirmLock = async () => {
@@ -278,16 +337,54 @@ const response = res.data;
   }
 
 // 📌 Tạo mới
-  const handleCreate = async (dto: UserVehicleTypeCreateDto) => {
-    await VehicleApi.create(dto);
-    setIsAddDialogOpen(false);
-    fetchVehicles();
+  const handleCreate = async (formData: VehicleFormData) => {
+    try {
+      // Convert VehicleFormData to UserVehicleTypeCreateDto
+      const dto: UserVehicleTypeCreateDto = {
+        vehicleName: formData.vehicleName,
+        brand: formData.brand,
+        model: formData.model,
+        licensePlate: formData.licensePlate,
+        year: formData.year,
+        color: formData.color,
+        categoryId: formData.categoryId,
+        vehicleTypeId: formData.vehicleTypeId
+      };
+      
+      await VehicleApi.create(dto);
+      setIsAddDialogOpen(false);
+      fetchVehicles();
+      
+      toast({
+        title: "Thành công",
+        description: "Tạo xe mới thành công!",
+      });
+    } catch (error: any) {
+      console.error('❌ [VehicleManagement] Error creating vehicle:', error);
+      toast({
+        title: "Lỗi",
+        description: error.response?.data?.message || "Không thể tạo xe mới. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
   };
 
   // 📌 Cập nhật
-  const handleUpdate = async (id: number, dto: UserVehicleTypeUpdateDto) => {
+  const handleUpdate = async (id: number, formData: VehicleFormData) => {
     try {
-      console.log('🔍 [handleUpdate] Starting update:', { id, dto });
+      // Convert VehicleFormData to UserVehicleTypeUpdateDto
+      const dto: UserVehicleTypeUpdateDto = {
+        vehicleName: formData.vehicleName,
+        brand: formData.brand,
+        model: formData.model,
+        licensePlate: formData.licensePlate,
+        year: formData.year,
+        color: formData.color,
+        categoryId: formData.categoryId,
+        vehicleTypeId: formData.vehicleTypeId
+      };
+      
+      console.log('🔍 [handleUpdate] Starting update:', { id, formData, dto });
       console.log('🔍 [handleUpdate] User:', user);
       const token = localStorage.getItem('token');
       console.log('🔍 [handleUpdate] Token exists:', !!token);
@@ -313,10 +410,48 @@ const response = res.data;
     }
   };
 
-  // 📌 Xóa
+  // 📌 Delete vehicle
   const handleDelete = async (id: number) => {
-    await VehicleApi.remove(id);
-    fetchVehicles();
+    try {
+      // Find the vehicle to check for appointments
+      const vehicle = vehicles.find(v => v.id === id);
+      if (!vehicle) {
+        toast({
+          title: "Error",
+          description: "Vehicle not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if vehicle has appointment history
+      const hasAppointments = await checkVehicleHasAppointments(vehicle);
+      
+      if (hasAppointments) {
+        toast({
+          title: "Cannot Delete Vehicle",
+          description: "This vehicle has appointment history and cannot be deleted. Please contact support if you need assistance.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Proceed with deletion if no appointments found
+      await VehicleApi.remove(id);
+      fetchVehicles();
+      
+      toast({
+        title: "Success",
+        description: "Vehicle deleted successfully",
+      });
+    } catch (error: any) {
+      console.error("Error deleting vehicle:", error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Cannot delete vehicle. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // 📌 Lock/Unlock
@@ -353,15 +488,13 @@ const response = res.data;
             </DialogTrigger>
             <DialogContent className="max-w-3xl">
               <DialogHeader>
-                <DialogTitle>{editingVehicle ? "Edit Vehicle" : "Add Vehicle"}</DialogTitle>
+                <DialogTitle>Add Vehicle</DialogTitle>
               </DialogHeader>
               <VehicleForm
-            initialData={editingVehicle || undefined}
-            onSubmit={(dto) => handleCreate(dto)
-            }
+            initialData={undefined}
+            onSubmit={(formData) => handleCreate(formData)}
             onCancel={() => {
               setIsAddDialogOpen(false);
-              setEditingVehicle(null);
             }}
             categories={categories}
             vehicleTypes={vehicleTypes}
@@ -503,6 +636,7 @@ const response = res.data;
           setSelectedVehicle(vehicle);
           setIsViewDialogOpen(true);
         }}
+        hasAppointments={vehiclesWithAppointments.has(vehicle.id)}
       />
     ))
   ) : (
@@ -579,8 +713,8 @@ const response = res.data;
           </DialogHeader>
           <VehicleForm
             initialData={editingVehicle || undefined}
-            onSubmit={(dto) =>
-              editingVehicle ? handleUpdate(editingVehicle.id, dto) : handleCreate(dto)
+            onSubmit={(formData) =>
+              editingVehicle ? handleUpdate(editingVehicle.id, formData) : handleCreate(formData)
             }
             onCancel={() => {
               setIsEditDialogOpen(false);
@@ -593,14 +727,7 @@ const response = res.data;
       </Dialog>
 
       {/* View Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Vehicle Details</DialogTitle>
-          </DialogHeader>
-          {selectedVehicle && <VehicleDetailView vehicle={selectedVehicle} open={isDetailOpen} onClose={() => setIsDetailOpen(false)} />}
-        </DialogContent>
-      </Dialog>
+      {selectedVehicle && <VehicleDetailView vehicle={selectedVehicle} open={isViewDialogOpen} onClose={() => setIsViewDialogOpen(false)} />}
 
       {/* Lock Dialog */}
       <Dialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>

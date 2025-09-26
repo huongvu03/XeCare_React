@@ -22,14 +22,14 @@ interface VehicleDetailViewProps {
 //     <Dialog open={open} onOpenChange={onClose}>
 //       <DialogContent className="max-w-lg">
 //         <DialogHeader>
-//           <DialogTitle>Chi tiết xe</DialogTitle>
+//           <DialogTitle>Vehicle Details</DialogTitle>
 //         </DialogHeader>
 //         <div className="space-y-2">
-//           <p><strong>Tên xe:</strong> {vehicle.vehicleName}</p>
-//           <p><strong>Biển số:</strong> {vehicle.licensePlate}</p>
-//           <p><strong>Loại xe ID:</strong> {vehicle.vehicleTypeId}</p>
-//           <p><strong>Trạng thái:</strong> {vehicle.locked ? "Đã khóa" : "Đang hoạt động"}</p>
-//           <p><strong>Ngày tạo:</strong> {vehicle.createdAt}</p>
+//           <p><strong>Vehicle Name:</strong> {vehicle.vehicleName}</p>
+//           <p><strong>License Plate:</strong> {vehicle.licensePlate}</p>
+//           <p><strong>Vehicle Type ID:</strong> {vehicle.vehicleTypeId}</p>
+//           <p><strong>Status:</strong> {vehicle.locked ? "Locked" : "Active"}</p>
+//           <p><strong>Created Date:</strong> {vehicle.createdAt}</p>
 //         </div>
 //       </DialogContent>
 //     </Dialog>
@@ -38,10 +38,14 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, open, on
 if (!vehicle) return null
     return (
       <Dialog open={open} onOpenChange={onClose}>
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
+          <DialogHeader>
+            <DialogTitle>Vehicle Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
           <div className="text-4xl p-3 bg-slate-50 rounded-xl">🚗</div>
-          <div>
+          <div className="flex-1">
             <h2 className="text-xl font-semibold text-slate-900">{vehicle.vehicleName}</h2>
             <div className="flex items-center space-x-2 mt-1">
               {/* {category && (
@@ -50,64 +54,64 @@ if (!vehicle) return null
                   {category.name}
                 </Badge>
               )} */}
-              {vehicle.locked && <Badge variant="destructive">🔒 Đã khóa</Badge>}
+              {vehicle.locked && <Badge variant="destructive">🔒 Locked</Badge>}
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h3 className="font-semibold text-slate-900 border-b pb-2">Thông tin cơ bản</h3>
+            <h3 className="font-semibold text-slate-900 border-b pb-2">Basic Information</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-slate-600">Hãng xe:</span>
+                <span className="text-slate-600">Brand:</span>
                 <span className="font-medium">{vehicle.brand}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Dòng xe:</span>
-                <span className="font-medium">{vehicle.model || "Chưa cập nhật"}</span>
+                <span className="text-slate-600">Model:</span>
+                <span className="font-medium">{vehicle.model || "Not updated"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Năm sản xuất:</span>
+                <span className="text-slate-600">Year of Manufacture:</span>
                 <span className="font-medium">{vehicle.year}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Biển số:</span>
+                <span className="text-slate-600">License Plate:</span>
                 <span className="font-mono font-medium">{vehicle.licensePlate}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Màu sắc:</span>
-                <span className="font-medium">{vehicle.color || "Chưa cập nhật"}</span>
+                <span className="text-slate-600">Color:</span>
+                <span className="font-medium">{vehicle.color || "Not updated"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Loại xe:</span>
-                <span className="font-medium">{vehicle.vehicleTypeName || "Chưa cập nhật"}</span>
+                <span className="text-slate-600">Vehicle Type:</span>
+                <span className="font-medium">{vehicle.vehicleTypeName || "Not updated"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Danh mục:</span>
-                <span className="font-medium">{vehicle.categoryName || "Chưa cập nhật"}</span>
+                <span className="text-slate-600">Category:</span>
+                <span className="font-medium">{vehicle.categoryName || "Not updated"}</span>
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-slate-900 border-b pb-2">Thông tin khác</h3>
+            <h3 className="font-semibold text-slate-900 border-b pb-2">Additional Information</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-slate-600">Ngày tạo:</span>
+                <span className="text-slate-600">Created Date:</span>
                 <span className="font-medium">
-                  {vehicle.createdAt ? new Date(vehicle.createdAt).toLocaleDateString("vi-VN") : "Chưa có"}
+                  {vehicle.createdAt ? new Date(vehicle.createdAt).toLocaleDateString("en-US") : "Not available"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Cập nhật cuối:</span>
+                <span className="text-slate-600">Last Updated:</span>
                 <span className="font-medium">
-                  {vehicle.updatedAt ? new Date(vehicle.updatedAt).toLocaleDateString("vi-VN") : "Chưa có"}
+                  {vehicle.updatedAt ? new Date(vehicle.updatedAt).toLocaleDateString("en-US") : "Not available"}
                 </span>
               </div>
               {vehicle.locked && vehicle.lockReason && (
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Lý do khóa:</span>
+                  <span className="text-slate-600">Lock Reason:</span>
                   <span className="font-medium text-red-600">{vehicle.lockReason}</span>
                 </div>
               )}
@@ -115,7 +119,8 @@ if (!vehicle) return null
           </div>
         </div>
       </div>
-   </Dialog>
+        </DialogContent>
+      </Dialog>
     )
 }
 

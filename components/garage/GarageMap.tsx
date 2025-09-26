@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PublicGarageResponseDto } from '@/services/api';
-import { UserLocation } from '@/utils/geolocation';
+import { UserLocation, calculateDistance } from '@/utils/geolocation';
 import { MapPin, Navigation, Phone, Mail, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,15 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage, userLocatio
     ? { lat: propUserLocation.latitude, lng: propUserLocation.longitude }
     : internalUserLocation;
 
+  // Sort garages by distance when user location is available
+  const sortedGarages = userLocation 
+    ? [...garages].sort((a, b) => {
+        const distanceA = calculateDistance(userLocation.lat, userLocation.lng, a.latitude, a.longitude);
+        const distanceB = calculateDistance(userLocation.lat, userLocation.lng, b.latitude, b.longitude);
+        return distanceA - distanceB;
+      })
+    : garages;
+
   // Get user location if not provided via props
   useEffect(() => {
     if (!propUserLocation && navigator.geolocation) {
@@ -55,14 +64,12 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage, userLocatio
   const getDistance = (garage: PublicGarageResponseDto) => {
     if (!userLocation) return null;
     
-    const R = 6371; // Earth's radius in km
-    const dLat = (garage.latitude - userLocation.lat) * Math.PI / 180;
-    const dLon = (garage.longitude - userLocation.lng) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(garage.latitude * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c;
+    const distance = calculateDistance(
+      userLocation.lat,
+      userLocation.lng,
+      garage.latitude,
+      garage.longitude
+    );
     
     return distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)}km`;
   };
@@ -125,7 +132,7 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage, userLocatio
               )}
               
               {/* Garage Markers */}
-              {garages.map((garage, index) => {
+              {sortedGarages.map((garage, index) => {
                 const distance = getDistance(garage);
                 const isSelected = selectedGarage?.id === garage.id;
                 
@@ -211,7 +218,7 @@ export function GarageMap({ garages, onGarageSelect, selectedGarage, userLocatio
         <div className="p-4">
           <h4 className="font-medium mb-3">Garage gần đây</h4>
           <div className="space-y-2 max-h-48 overflow-y-auto">
-            {garages.slice(0, 5).map((garage) => {
+            {sortedGarages.slice(0, 5).map((garage) => {
               const distance = getDistance(garage);
               const isSelected = selectedGarage?.id === garage.id;
               
