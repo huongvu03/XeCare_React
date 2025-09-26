@@ -14,6 +14,7 @@ import { User, Mail, Phone, MapPin, Calendar, Shield, Edit, Save, X, Camera } fr
 import { updateUserInfoApi, updateUserImageApi, getUserProfile } from "@/lib/api/UserApi"
 import { getImageUrl } from "@/utils/getImageUrl"
 import { getMyNotifications } from "@/lib/api/NotificationApi"
+import { ChangePasswordModal } from "@/components/ChangePasswordModal"
 
 
 export default function ProfilePage() {
@@ -487,9 +488,11 @@ export default function ProfilePage() {
 
                 <div className="space-y-2">
                   <Label>Security</Label>
-                  <Button variant="outline" size="sm" className="border-blue-200 text-blue-600">
-                    Change Password
-                  </Button>
+                  <ChangePasswordModal>
+                    <Button variant="outline" size="sm" className="border-blue-200 text-blue-600">
+                      Change Password
+                    </Button>
+                  </ChangePasswordModal>
                 </div>
               </div>
             </CardContent>

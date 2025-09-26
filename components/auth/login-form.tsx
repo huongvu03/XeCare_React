@@ -32,6 +32,27 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
     setIsLoading(true)
     setError("")
 
+    // Client-side validation
+    if (!email.trim()) {
+      setError("Please enter your email.")
+      setIsLoading(false)
+      return
+    }
+    
+    if (!password.trim()) {
+      setError("Please enter your password.")
+      setIsLoading(false)
+      return
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.")
+      setIsLoading(false)
+      return
+    }
+
     try {
       const response = await loginApi({ email, password })
       const user = response.data
@@ -80,10 +101,26 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       console.log("Debug - Redirect completed")
     } catch (err: any) {
       console.error("Debug - Login error:", err)
+      
+      // Handle different error types with English messages
       if (err.response?.status === 403) {
-        setError("Email or password is incorrect.")
+        setError("Email or password is incorrect. Please check your credentials.")
+      } else if (err.response?.status === 401) {
+        setError("Account not verified. Please check your email.")
+      } else if (err.response?.status === 400) {
+        setError("Invalid data. Please check your information.")
+      } else if (err.response?.status === 404) {
+        setError("Account does not exist.")
+      } else if (err.response?.status === 500) {
+        setError("Server error. Please try again later.")
+      } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        setError("Cannot connect to server. Please check your network connection.")
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message)
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error)
       } else {
-        setError("Server error. Please try again.")
+        setError("An error occurred. Please try again.")
       }
     } finally {
       setIsLoading(false)
@@ -163,15 +200,18 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Email Address</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Enter your email address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (error) setError("") // Clear error when user starts typing
+              }}
               className="pl-10"
               required
             />
@@ -185,9 +225,12 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
+              placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                if (error) setError("") // Clear error when user starts typing
+              }}
               className="pl-10 pr-10"
               required
             />
@@ -209,12 +252,12 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           {isLoading ? (
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Logging in...</span>
+              <span>Signing in...</span>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
               <LogIn className="h-4 w-4" />
-              <span>Login</span>
+              <span>Sign In</span>
             </div>
           )}
         </Button>
@@ -222,7 +265,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
 
         <div className="text-center">
           <a href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
-            Forgot password?
+            Forgot your password?
           </a>
         </div>
       </form>

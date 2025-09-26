@@ -103,3 +103,41 @@ export const updateUserImageApi = (id: number, image: File) => {
     headers: { "Content-Type": "multipart/form-data" }
   })
 }
+
+// Change user password - try multiple endpoints
+export const changePasswordApi = async (data: {
+  oldPassword: string
+  newPassword: string
+  confirmPassword: string
+}) => {
+  // Try different possible endpoints
+  const endpoints = [
+    "/apis/v1/auth/change-password",
+    "/apis/user/change-password", 
+    "/apis/auth/change-password",
+    "/apis/user/password",
+    "/apis/v1/user/change-password"
+  ]
+  
+  let lastError: any = null
+  
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`Trying password change endpoint: ${endpoint}`)
+      const response = await axiosClient.put(endpoint, data)
+      console.log(`Password change successful with endpoint: ${endpoint}`)
+      return response
+    } catch (error: any) {
+      console.log(`Endpoint ${endpoint} failed:`, error.response?.status || error.message)
+      lastError = error
+      
+      // If it's not a 404, don't try other endpoints
+      if (error.response?.status !== 404) {
+        throw error
+      }
+    }
+  }
+  
+  // If all endpoints failed with 404, throw the last error
+  throw lastError
+}

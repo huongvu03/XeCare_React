@@ -92,7 +92,7 @@ function AuthButtons() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/garage/appointments" className="flex items-center space-x-2">
+                      <Link href="/dashboard?tab=garage" className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4" />
                         <span>Manage Appointments</span>
                       </Link>
