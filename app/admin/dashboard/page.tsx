@@ -407,34 +407,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Emergency Management Card */}
-        <Card className="border-red-100 hover:shadow-lg transition-shadow">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center space-x-2 text-lg">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              <span>Emergency Management</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-slate-600 text-sm mb-4">
-              Manage emergency rescue requests
-              {emergencyStats.pending > 0 && (
-                <span className="text-orange-600 font-medium">
-                  {" "}- {emergencyStats.pending} requests pending
-                </span>
-              )}
-            </p>
-            <Button 
-              variant={emergencyStats.pending > 0 ? "default" : "outline"} 
-              className={`w-full ${emergencyStats.pending > 0 ? "bg-red-600 hover:bg-red-700" : "border-red-200 text-red-600"}`} 
-              asChild
-            >
-              <Link href="/admin/emergency">
-                {emergencyStats.pending > 0 ? `Process ${emergencyStats.pending} requests` : "Emergency Management"}
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Recent Activities */}

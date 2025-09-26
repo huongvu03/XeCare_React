@@ -42,8 +42,8 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
     {
       id: 1,
       type: 'EMERGENCY_REQUEST_CREATED',
-      title: 'Yêu cầu cứu hộ mới',
-      message: 'Yêu cầu cứu hộ của bạn đã được tạo thành công. ID: #1',
+      title: 'New Emergency Request',
+      message: 'Your emergency request has been created successfully. ID: #1',
       timestamp: new Date().toISOString(),
       read: false,
       relatedId: 1
@@ -51,8 +51,8 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
     {
       id: 2,
       type: 'EMERGENCY_QUOTE_RECEIVED',
-      title: 'Báo giá cứu hộ mới',
-      message: 'Bạn nhận được báo giá mới cho yêu cầu cứu hộ #1 từ garage Lê Lợi',
+      title: 'New Emergency Quote',
+      message: 'You received a new quote for emergency request #1 from Lê Lợi garage',
       timestamp: new Date(Date.now() - 1800000).toISOString(),
       read: false,
       relatedId: 1
@@ -60,8 +60,8 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
     {
       id: 3,
       type: 'EMERGENCY_STATUS_UPDATED',
-      title: 'Cập nhật trạng thái cứu hộ',
-      message: 'Yêu cầu cứu hộ #2: Garage đang trên đường đến vị trí của bạn',
+      title: 'Emergency Status Updated',
+      message: 'Emergency request #2: Garage is on the way to your location',
       timestamp: new Date(Date.now() - 3600000).toISOString(),
       read: true,
       relatedId: 2
@@ -102,16 +102,16 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
   const dismissNotification = (notificationId: number) => {
     setNotifications(prev => prev.filter(notif => notif.id !== notificationId))
     toast({
-      title: "Thông báo",
-      description: "Đã ẩn thông báo",
+      title: "Notification",
+      description: "Notification dismissed",
     })
   }
 
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(notif => ({ ...notif, read: true })))
     toast({
-      title: "Thành công",
-      description: "Đã đánh dấu tất cả thông báo là đã đọc",
+      title: "Success",
+      description: "All notifications marked as read",
     })
   }
 
@@ -152,10 +152,10 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
     const hours = Math.floor(diff / (1000 * 60 * 60))
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     
-    if (days > 0) return `${days} ngày trước`
-    if (hours > 0) return `${hours} giờ trước`
-    if (minutes > 0) return `${minutes} phút trước`
-    return 'Vừa xong'
+    if (days > 0) return `${days} days ago`
+    if (hours > 0) return `${hours} hours ago`
+    if (minutes > 0) return `${minutes} minutes ago`
+    return 'Just now'
   }
 
   const unreadCount = notifications.filter(n => !n.read).length
@@ -165,7 +165,7 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
       <Card>
         <CardContent className="p-6 text-center">
           <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="mt-2 text-sm text-gray-600">Đang tải thông báo...</p>
+          <p className="mt-2 text-sm text-gray-600">Loading notifications...</p>
         </CardContent>
       </Card>
     )
@@ -177,7 +177,7 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-2">
             <Bell className="h-5 w-5 text-blue-600" />
-            <span>Thông báo cứu hộ</span>
+            <span>Emergency Notifications</span>
             {unreadCount > 0 && (
               <Badge variant="destructive" className="text-xs">
                 {unreadCount}
@@ -191,7 +191,7 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
               onClick={markAllAsRead}
               className="text-xs"
             >
-              Đánh dấu đã đọc
+              Mark as Read
             </Button>
           )}
         </div>
@@ -202,7 +202,7 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
           <Alert>
             <Bell className="h-4 w-4" />
             <AlertDescription>
-              Chưa có thông báo nào về dịch vụ cứu hộ.
+              No emergency service notifications yet.
             </AlertDescription>
           </Alert>
         ) : (
@@ -249,7 +249,7 @@ export function EmergencyNotifications({ userId, onNotificationClick }: Emergenc
                     <span>{formatTimestamp(notification.timestamp)}</span>
                     {!notification.read && (
                       <Badge variant="secondary" className="text-xs">
-                        Mới
+                        New
                       </Badge>
                     )}
                   </div>

@@ -110,12 +110,12 @@ export default function NotificationsPage() {
       
       console.log('📊 [NotificationsPage] Updated unread count:', newUnreadCount);
       
-      // Trigger animation cho chuông thông báo ngay lập tức
+      // Trigger animation for notification bell immediately
       window.dispatchEvent(new CustomEvent('newNotification', {
         detail: { count: newUnreadCount }
       }));
       
-      // Trigger refresh cho NotificationBell component
+      // Trigger refresh for NotificationBell component
       window.dispatchEvent(new Event('refreshNotifications'));
       
       toast({
@@ -123,13 +123,13 @@ export default function NotificationsPage() {
         description: "Notification marked as read",
       });
       
-      // Gọi API ở background
+      // Call API in background
       try {
         await markNotificationAsRead(notificationId);
         console.log('✅ [NotificationsPage] API call successful');
       } catch (apiError) {
         console.error('❌ [NotificationsPage] API call failed:', apiError);
-        // Không revert UI vì user đã thấy thay đổi
+        // Don't revert UI because user has already seen the change
       }
       
     } catch (error: any) {
@@ -146,7 +146,7 @@ export default function NotificationsPage() {
     try {
       setIsMarkingAll(true);
       
-      // Update all notifications to read immediately (giống handleMarkAsRead)
+      // Update all notifications to read immediately (similar to handleMarkAsRead)
       setNotifications(prev => 
         prev.map(n => ({ ...n, isRead: true }))
       );
@@ -159,19 +159,19 @@ export default function NotificationsPage() {
       // Reset unread count
       setUnreadCount(0);
       
-      // Trigger animation cho chuông thông báo
+      // Trigger animation for notification bell
       window.dispatchEvent(new CustomEvent('newNotification', {
         detail: { count: 0 }
       }));
       
       toast({
-        title: "Thành công",
-        description: "Đã đánh dấu tất cả thông báo là đã đọc",
+        title: "Success",
+        description: "All notifications marked as read",
       });
       
-      // Gọi API ở background (không cần await)
+      // Call API in background (no need to await)
       markAllNotificationsAsRead().catch(() => {
-        // Không revert UI vì user đã thấy thay đổi
+        // Don't revert UI because user has already seen the change
       });
       
     } catch (error) {
@@ -213,7 +213,7 @@ export default function NotificationsPage() {
     }
     
     if (!notification.isRead) {
-      // Gọi handleMarkAsRead để update UI ngay lập tức
+      // Call handleMarkAsRead to update UI immediately
       handleMarkAsRead(notification.id);
     }
   };
@@ -492,8 +492,8 @@ export default function NotificationsPage() {
             <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl inline-block rounded-2xl overflow-hidden">
               <CardContent className="p-6">
                 <p className="text-sm text-gray-700 font-medium">
-                  📊 Hiển thị {filteredNotifications.length} / {notifications.length} thông báo
-                  {unreadCount > 0 && ` • ${unreadCount} chưa đọc`}
+                  📊 Showing {filteredNotifications.length} / {notifications.length} notifications
+                  {unreadCount > 0 && ` • ${unreadCount} unread`}
                 </p>
               </CardContent>
             </Card>
