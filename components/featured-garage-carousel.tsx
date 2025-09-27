@@ -17,15 +17,27 @@ interface EnhancedGarage extends PublicGarageResponseDto {
   logo: string;
   logoColor: string;
   distance?: number;
-  openHours: string;
-  isOpen: boolean;
   isFavorite: boolean;
   isPopular: boolean;
   services: Array<{ name: string; color: string }>;
 }
 
+// Hàm tính khoảng cách Haversine (km)
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371 // Bán kính Trái Đất (km)
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  const distance = R * c
+  return Math.round(distance * 100) / 100 // Làm tròn 2 số thập phân
+}
+
 // Helper function to convert backend data to enhanced format
-const convertToEnhancedGarage = (garage: PublicGarageResponseDto): EnhancedGarage => {
+const convertToEnhancedGarage = (garage: PublicGarageResponseDto, userLat?: number, userLon?: number): EnhancedGarage => {
   // Generate slug from name
   const slug = garage.name
     .toLowerCase()
@@ -61,12 +73,12 @@ const convertToEnhancedGarage = (garage: PublicGarageResponseDto): EnhancedGarag
     color: serviceColors[index % serviceColors.length]
   }));
 
-  // Mock distance (in real app, this would be calculated based on user location)
-  const distance = Math.random() * 5 + 0.5; // Random distance between 0.5-5.5 km
+  // Tính khoảng cách thực tế nếu có tọa độ user
+  let distance = Math.random() * 5 + 0.5; // Fallback distance
+  if (userLat && userLon && garage.latitude && garage.longitude) {
+    distance = calculateDistance(userLat, userLon, garage.latitude, garage.longitude)
+  }
 
-  // Mock open hours and status
-  const openHours = "7:00 - 19:00";
-  const isOpen = Math.random() > 0.2; // 80% chance of being open
 
   // Mock favorite status (in real app, this would come from user's favorites)
   const isFavorite = Math.random() > 0.7; // 30% chance of being favorite
@@ -80,8 +92,6 @@ const convertToEnhancedGarage = (garage: PublicGarageResponseDto): EnhancedGarag
     logo,
     logoColor,
     distance,
-    openHours,
-    isOpen,
     isFavorite,
     isPopular,
     services
@@ -93,12 +103,90 @@ export function FeaturedGarageCarousel() {
   const [garages, setGarages] = useState<EnhancedGarage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null)
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
   const { user } = useAuth()
   const isAuthenticated = !!user
   const router = useRouter()
 
   // Get the 3 garages to display
   const displayGarages = garages.slice(0, 3)
+
+  // Function to get user location
+  const getUserLocation = async (): Promise<{lat: number, lon: number} | null> => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser')
+      return null
+    }
+
+    try {
+      setIsGettingLocation(true)
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 10000,
+          enableHighAccuracy: true
+        })
+      })
+      
+      const location = {
+        lat: position.coords.latitude,
+        lon: position.coords.longitude
+      }
+      
+      console.log('📍 User location obtained:', location)
+      setUserLocation(location)
+      return location
+    } catch (error: any) {
+      console.warn('⚠️ Geolocation failed:', error.message)
+      return null
+    } finally {
+      setIsGettingLocation(false)
+    }
+  }
+
+  // Function to reload garages with new location
+  const reloadGaragesWithLocation = async (location: {lat: number, lon: number}) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      // Get active garages from backend
+      const response = await apiWrapper.searchGaragesAdvanced({
+        status: 'ACTIVE',
+        isVerified: true
+      })
+      
+      console.log('✅ Featured garages reloaded with new location:', response.length)
+      
+      // Convert to enhanced format with new user coordinates
+      const enhancedGarages = response.map(garage => convertToEnhancedGarage(garage, location.lat, location.lon))
+      
+      // Sort garages: ưu tiên gần nhất, tiếp theo là yêu thích
+      const sortedGarages = enhancedGarages.sort((a, b) => {
+        // Ưu tiên garage yêu thích trước
+        if (a.isFavorite && !b.isFavorite) return -1
+        if (!a.isFavorite && b.isFavorite) return 1
+        
+        // Nếu cùng trạng thái yêu thích, sắp xếp theo khoảng cách
+        return (a.distance || 0) - (b.distance || 0)
+      })
+      
+      setGarages(sortedGarages)
+    } catch (err) {
+      console.error('❌ Error reloading garages:', err)
+      setError('Cannot reload garage list')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Handle location button click
+  const handleLocationClick = async () => {
+    const location = await getUserLocation()
+    if (location) {
+      await reloadGaragesWithLocation(location)
+    }
+  }
 
   // Load garages from backend
   useEffect(() => {
@@ -109,6 +197,18 @@ export function FeaturedGarageCarousel() {
         
         console.log('🔄 Loading featured garages from backend...')
         
+        // Sử dụng vị trí đã lưu hoặc lấy mới
+        let userLat: number | undefined, userLon: number | undefined
+        
+        if (userLocation) {
+          userLat = userLocation.lat
+          userLon = userLocation.lon
+        } else if (isAuthenticated) {
+          // Use default coordinates (Ho Chi Minh City) for initial load
+          userLat = 10.8231
+          userLon = 106.6297
+        }
+        
         // Get active garages from backend
         const response = await apiWrapper.searchGaragesAdvanced({
           status: 'ACTIVE',
@@ -117,39 +217,18 @@ export function FeaturedGarageCarousel() {
         
         console.log('✅ Featured garages loaded:', response.length)
         
-        // Convert to enhanced format
-        const enhancedGarages = response.map(convertToEnhancedGarage)
+        // Convert to enhanced format with user coordinates
+        const enhancedGarages = response.map(garage => convertToEnhancedGarage(garage, userLat, userLon))
         
-        // Sort garages based on user authentication status
-        let sortedGarages: EnhancedGarage[]
-        
-        if (isAuthenticated) {
-          // If user is logged in, prioritize nearest garages
-          // If distance is similar (within 0.5km), prioritize favorites
-          sortedGarages = enhancedGarages.sort((a, b) => {
-            const distanceDiff = Math.abs((a.distance || 0) - (b.distance || 0))
-
-            if (distanceDiff <= 0.5) {
-              // If distance is similar, prioritize favorites
-              if (a.isFavorite && !b.isFavorite) return -1
-              if (!a.isFavorite && b.isFavorite) return 1
-            }
-
-            // Otherwise sort by distance
-            return (a.distance || 0) - (b.distance || 0)
-          })
-        } else {
-          // If user is not logged in, prioritize favorites, then popular, then rating
-          sortedGarages = enhancedGarages.sort((a, b) => {
-            if (a.isFavorite && !b.isFavorite) return -1
-            if (!a.isFavorite && b.isFavorite) return 1
-
-            if (a.isPopular && !b.isPopular) return -1
-            if (!a.isPopular && b.isPopular) return 1
-
-            return b.averageRating - a.averageRating
-          })
-        }
+        // Sort garages: ưu tiên gần nhất, tiếp theo là yêu thích
+        const sortedGarages = enhancedGarages.sort((a, b) => {
+          // Ưu tiên garage yêu thích trước
+          if (a.isFavorite && !b.isFavorite) return -1
+          if (!a.isFavorite && b.isFavorite) return 1
+          
+          // Nếu cùng trạng thái yêu thích, sắp xếp theo khoảng cách
+          return (a.distance || 0) - (b.distance || 0)
+        })
         
         setGarages(sortedGarages)
       } catch (err) {
@@ -164,7 +243,7 @@ export function FeaturedGarageCarousel() {
     }
 
     loadGarages()
-  }, [isAuthenticated])
+  }, [isAuthenticated, userLocation])
 
   // Auto-play carousel
   useEffect(() => {
@@ -306,15 +385,7 @@ export function FeaturedGarageCarousel() {
                   <div className="flex items-center space-x-2 text-sm text-slate-600">
                     <MapPin className="h-4 w-4" />
                     <span>
-                      {garage.address} {isAuthenticated && `- ${garage.distance}km`}
-                    </span>
-                  </div>
-                  <div
-                    className={`flex items-center space-x-2 text-sm ${garage.isOpen ? "text-green-600" : "text-red-600"}`}
-                  >
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      Open: {garage.openHours} • {garage.isOpen ? "Open now" : "Closed"}
+                      {garage.address} {isAuthenticated && `- ${garage.distance?.toFixed(2)}km`}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-slate-600">
@@ -390,9 +461,20 @@ export function FeaturedGarageCarousel() {
         ))}
       </div>
 
-      {/* Floating elements */}
-      <div className="absolute -top-4 -right-4 bg-white rounded-full p-3 shadow-lg animate-bounce">
-        <MapPin className="h-6 w-6 text-blue-600" />
+      {/* Location button */}
+      <div className="absolute -top-4 -right-4">
+        <button
+          onClick={handleLocationClick}
+          disabled={isGettingLocation}
+          className="bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Get current location"
+        >
+          {isGettingLocation ? (
+            <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+          ) : (
+            <MapPin className="h-6 w-6 text-blue-600" />
+          )}
+        </button>
       </div>
       <div className="absolute -bottom-4 -left-4 bg-white rounded-full p-3 shadow-lg">
         <Clock className="h-6 w-6 text-cyan-600" />

@@ -24,8 +24,22 @@ export function EmergencyRescueSlider() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Hàm tính khoảng cách Haversine (km)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371 // Bán kính Trái Đất (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+    const distance = R * c
+    return Math.round(distance * 100) / 100 // Làm tròn 2 số thập phân
+  }
+
   // Hàm chuyển đổi garage từ API sang format hiển thị
-  const transformGarage = (garage: Garage): EmergencyGarage => {
+  const transformGarage = (garage: Garage, userLat?: number, userLon?: number): EmergencyGarage => {
     // Tạo logo từ tên garage
     const words = garage.name.split(' ')
     const logo = words.length > 1 
@@ -43,20 +57,28 @@ export function EmergencyRescueSlider() {
     ]
     const logoColor = colors[garage.id % colors.length]
 
-    // Ước tính thời gian phản hồi dựa trên khoảng cách
-    const responseTime = garage.distance && garage.distance < 1 
+    // Tính khoảng cách thực tế nếu có tọa độ user
+    let distance = garage.distance || 0
+    if (userLat && userLon && garage.latitude && garage.longitude) {
+      distance = calculateDistance(userLat, userLon, garage.latitude, garage.longitude)
+    }
+
+    // Ước tính thời gian phản hồi dựa trên khoảng cách thực tế
+    const responseTime = distance < 1 
       ? "2-3 min" 
-      : garage.distance && garage.distance < 2 
+      : distance < 2 
         ? "3-5 min" 
-        : "5-10 min"
+        : distance < 5
+          ? "5-10 min"
+          : "10-15 min"
 
     return {
       id: garage.id,
       name: garage.name,
       logo: logo.toUpperCase(),
       logoColor,
-      distance: garage.distance || 0,
-      rating: 4.5 + (Math.random() * 0.5), // Rating giả lập
+      distance: distance,
+      rating: Math.round((4.5 + (Math.random() * 0.5)) * 10) / 10, // Rating giả lập, làm tròn 1 số thập phân
       responseTime,
       phone: garage.phone,
       status: garage.status === "ACTIVE" ? "online" : "offline"
@@ -98,22 +120,27 @@ export function EmergencyRescueSlider() {
         // Get nearest emergency rescue garages
         const garages = await getEmergencyRescueGarages(latitude, longitude, 15)
         
-        // Transform and limit quantity
-        const transformedGarages = garages.slice(0, 5).map(transformGarage)
+        // Transform and limit quantity with user coordinates for distance calculation
+        const transformedGarages = garages.slice(0, 5).map(garage => transformGarage(garage, latitude, longitude))
+        
+        // Sort by calculated distance
+        transformedGarages.sort((a, b) => a.distance - b.distance)
+        
         setEmergencyGarages(transformedGarages)
 
         // If no emergency garages, use sample data
         if (transformedGarages.length === 0) {
           console.log('⚠️ No emergency garages found, using fallback data')
+          // Create fallback garages with calculated distances from user location
           const fallbackGarages: EmergencyGarage[] = [
             {
               id: 1,
               name: "Garage 24/7 Express",
               logo: "24",
               logoColor: "from-green-600 to-emerald-600",
-              distance: 0.8,
+              distance: calculateDistance(latitude, longitude, 10.8231, 106.6297), // Distance to HCMC center
               rating: 4.9,
-              responseTime: "2 min",
+              responseTime: "2-3 min",
               phone: "1900 1234",
               status: "online",
             },
@@ -122,13 +149,15 @@ export function EmergencyRescueSlider() {
               name: "Garage SOS Auto", 
               logo: "SOS",
               logoColor: "from-blue-600 to-cyan-600",
-              distance: 1.2,
+              distance: calculateDistance(latitude, longitude, 10.8331, 106.6397), // Slightly different location
               rating: 4.8,
-              responseTime: "3 min",
+              responseTime: "3-5 min",
               phone: "1900 5678",
               status: "online",
             }
           ]
+          // Sort fallback garages by distance
+          fallbackGarages.sort((a, b) => a.distance - b.distance)
           setEmergencyGarages(fallbackGarages)
         }
 
@@ -158,16 +187,16 @@ export function EmergencyRescueSlider() {
         
         setError(errorMessage)
         
-        // Use sample data when there's an error
+        // Use sample data when there's an error with calculated distances
         const fallbackGarages: EmergencyGarage[] = [
           {
             id: 1,
             name: "Garage 24/7 Express",
             logo: "24",
             logoColor: "from-green-600 to-emerald-600",
-            distance: 0.8,
+            distance: calculateDistance(10.8231, 106.6297, 10.8231, 106.6297),
             rating: 4.9,
-            responseTime: "2 min",
+            responseTime: "2-3 min",
             phone: "1900 1234",
             status: "online",
           },
@@ -176,13 +205,15 @@ export function EmergencyRescueSlider() {
             name: "Garage SOS Auto", 
             logo: "SOS",
             logoColor: "from-blue-600 to-cyan-600",
-            distance: 1.2,
+            distance: calculateDistance(10.8231, 106.6297, 10.8331, 106.6397),
             rating: 4.8,
-            responseTime: "3 min",
+            responseTime: "3-5 min",
             phone: "1900 5678",
             status: "online",
           }
         ]
+        // Sort error fallback garages by distance
+        fallbackGarages.sort((a, b) => a.distance - b.distance)
         setEmergencyGarages(fallbackGarages)
       } finally {
         setLoading(false)
@@ -240,12 +271,25 @@ export function EmergencyRescueSlider() {
           <p className="text-white/90 text-sm mb-2">No emergency garages found near you</p>
           <p className="text-white/70 text-xs">Please call emergency hotline</p>
         </div>
-        <div className="border-t border-white/20 pt-2 md:pt-3 mt-2">
+        <div className="border-t border-white/20 pt-2 md:pt-3 mt-2 space-y-2">
+          {/* Emergency page button */}
+          <Button
+            className="w-full bg-white text-blue-600 hover:bg-blue-50 font-bold text-xs md:text-sm py-2 md:py-3"
+            asChild
+          >
+            <Link href="/emergency">
+              <AlertTriangle className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Call Emergency</span>
+              <span className="sm:hidden">Call Emergency</span>
+            </Link>
+          </Button>
+          
+          {/* Default hotline */}
           <Button
             className="w-full bg-white text-red-600 hover:bg-red-50 font-bold text-xs md:text-sm py-2 md:py-3"
             asChild
           >
-            <Link href="/emergency">
+            <Link href="tel:1900 1234">
               <Phone className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Hotline: </span>1900 1234
             </Link>
@@ -307,10 +351,6 @@ export function EmergencyRescueSlider() {
             </Link>
           </Button>
         </div>
-        <div className="text-white/90 text-xs">
-          <span className="hidden sm:inline">Response in </span>
-          <span className="font-semibold">{currentGarage.responseTime}</span>
-        </div>
       </div>
 
       {/* Indicators - responsive */}
@@ -328,15 +368,29 @@ export function EmergencyRescueSlider() {
         </div>
       )}
 
-      {/* Emergency hotline - responsive */}
-      <div className="border-t border-white/20 pt-2 md:pt-3">
+      {/* Emergency actions - responsive */}
+      <div className="border-t border-white/20 pt-2 md:pt-3 space-y-2">
+        {/* Emergency page button */}
+        <Button
+          className="w-full bg-white text-blue-600 hover:bg-blue-50 font-bold text-xs md:text-sm py-2 md:py-3"
+          asChild
+        >
+          <Link href="/emergency">
+            <AlertTriangle className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Call Emergency</span>
+            <span className="sm:hidden">Emergency</span>
+          </Link>
+        </Button>
+        
+        {/* Dynamic hotline from current garage */}
         <Button
           className="w-full bg-white text-red-600 hover:bg-red-50 font-bold text-xs md:text-sm py-2 md:py-3"
           asChild
         >
-          <Link href="/emergency">
+          <Link href={`tel:${currentGarage?.phone || '1900 1234'}`}>
             <Phone className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">Hotline: </span>1900 1234
+            <span className="hidden sm:inline">Hotline: </span>
+            {currentGarage?.phone || '1900 1234'}
           </Link>
         </Button>
       </div>
