@@ -24,8 +24,8 @@ export const getCurrentLocation = (): Promise<UserLocation> => {
 
     const options: PositionOptions = {
       enableHighAccuracy: true,
-      timeout: 10000, // 10 seconds
-      maximumAge: 300000 // 5 minutes
+      timeout: 15000, // 15 seconds - increased timeout
+      maximumAge: 60000 // 1 minute - shorter cache to get fresh location
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -37,17 +37,20 @@ export const getCurrentLocation = (): Promise<UserLocation> => {
         });
       },
       (error) => {
-        let message = 'Không thể lấy vị trí hiện tại';
+        let message = 'Unable to get current location';
         
         switch (error.code) {
-          case error.PERMISSION_DENIED:
-            message = 'Bạn đã từ chối quyền truy cập vị trí. Vui lòng bật định vị trong cài đặt trình duyệt.';
+          case 1: // PERMISSION_DENIED
+            message = 'Location access denied. Please click "Allow" in the browser permission popup or enable location access in browser settings.';
             break;
-          case error.POSITION_UNAVAILABLE:
-            message = 'Thông tin vị trí không khả dụng';
+          case 2: // POSITION_UNAVAILABLE
+            message = 'Location information is unavailable. Please check if location services are enabled on your device.';
             break;
-          case error.TIMEOUT:
-            message = 'Yêu cầu lấy vị trí đã hết thời gian chờ';
+          case 3: // TIMEOUT
+            message = 'Location request timed out. Please make sure you are in an area with good GPS signal and try again.';
+            break;
+          default:
+            message = `Location request failed: ${error.message}`;
             break;
         }
         
@@ -108,4 +111,59 @@ export const formatDistance = (distance: number): string => {
  */
 export const isGeolocationSupported = (): boolean => {
   return 'geolocation' in navigator;
+};
+
+/**
+ * Force get user's current location with fresh settings (no cache)
+ */
+export const getFreshLocation = (): Promise<UserLocation> => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject({
+        code: 0,
+        message: 'Browser does not support geolocation'
+      });
+      return;
+    }
+
+    const options: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 20000, // 20 seconds for fresh location
+      maximumAge: 0 // No cache - force fresh location
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        });
+      },
+      (error) => {
+        let message = 'Unable to get fresh location';
+        
+        switch (error.code) {
+          case 1: // PERMISSION_DENIED
+            message = 'Location access denied. Please enable location permission in browser settings and try again.';
+            break;
+          case 2: // POSITION_UNAVAILABLE
+            message = 'Location information is unavailable. Please check device location services.';
+            break;
+          case 3: // TIMEOUT
+            message = 'Location request timed out. Please try again in an area with better GPS signal.';
+            break;
+          default:
+            message = `Fresh location request failed: ${error.message}`;
+            break;
+        }
+        
+        reject({
+          code: error.code,
+          message
+        });
+      },
+      options
+    );
+  });
 };
