@@ -211,8 +211,8 @@ export default function EmergencyDetailPage() {
       if (progress > 0 && elapsedSeconds > 0) {
         const distanceTraveled = (progress / 100) * distanceKm
         const speedKmh = (distanceTraveled / elapsedSeconds) * 3600 // km/h
-        // Đảm bảo tốc độ tối thiểu 50km/h khi đang di chuyển
-        currentSpeed = Math.max(50, Math.round(speedKmh))
+        // Giới hạn tốc độ trong khoảng 30-60 km/h khi đang di chuyển
+        currentSpeed = Math.round(Math.min(Math.max(30, speedKmh), 60))
       }
       
       setCarProgress(prev => ({

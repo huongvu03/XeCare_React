@@ -285,9 +285,20 @@ export default function GarageServicesPage() {
         await updateGarageService(editingService.id, formData)
         
         // Show SweetAlert success notification for update
-        await Swal.fire({
-          title: '✅ Service Updated Successfully!',
-          text: 'Service has been updated successfully!',
+        console.log("🎉 About to show SweetAlert success notification for update")
+        const result = await Swal.fire({
+          title: '🎉 Service Updated Successfully!',
+          html: `
+            <div class="text-center">
+              <p class="text-lg mb-4">Service has been updated successfully!</p>
+              <p class="text-sm text-gray-600 mb-4">Service is now updated and ready to use.</p>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                <p class="text-sm text-green-700">
+                  <strong>Note:</strong> Changes will be reflected immediately.
+                </p>
+              </div>
+            </div>
+          `,
           icon: 'success',
           confirmButtonText: 'Great!',
           confirmButtonColor: '#10b981',
@@ -299,6 +310,8 @@ export default function GarageServicesPage() {
           allowEnterKey: true,
           stopKeydownPropagation: false
         })
+        
+        console.log("SweetAlert result:", result)
         
         // Reset form and close dialog
         setFormData({
@@ -911,7 +924,8 @@ export default function GarageServicesPage() {
                     >
                       Select from List
                     </Button>
-                    <Button
+                    {/* Create Custom button hidden as requested */}
+                    {/* <Button
                       type="button"
                       variant={isCustomServiceMode ? "default" : "outline"}
                       onClick={() => {
@@ -920,7 +934,7 @@ export default function GarageServicesPage() {
                       }}
                     >
                       Create Custom
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
 

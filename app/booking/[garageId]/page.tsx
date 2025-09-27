@@ -691,8 +691,8 @@ export default function BookingPage() {
                   />
                 </div>
 
-                {/* Image Upload */}
-                <div className="space-y-2">
+                {/* Image Upload - Hidden as requested */}
+                {/* <div className="space-y-2">
                   <Label>Vehicle Images (optional)</Label>
                   <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
                     <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
@@ -716,7 +716,7 @@ export default function BookingPage() {
                   </div>
 
                   {/* Preview Images */}
-                  {images.length > 0 && (
+                  {/* {images.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
                       {images.map((image, index) => (
                         <div key={index} className="relative">
@@ -736,7 +736,7 @@ export default function BookingPage() {
                       ))}
                     </div>
                   )}
-                </div>
+                </div> */}
 
                 {/* Submit Button */}
                 <div className="flex items-center space-x-4 pt-4">
