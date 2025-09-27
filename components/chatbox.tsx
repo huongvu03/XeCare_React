@@ -24,6 +24,7 @@ import {
   Navigation,
   HelpCircle,
   Zap,
+  RefreshCw,
 } from "lucide-react"
 
 interface Message {
@@ -76,44 +77,9 @@ const initialSuggestions: Suggestion[] = [
     color: "bg-blue-500",
   },
   {
-    id: "5",
-    text: "Show garage ratings",
-    icon: <Star className="h-4 w-4" />,
-    category: "search",
-    color: "bg-blue-500",
-  },
-  {
     id: "6",
-    text: "Enable location for better search",
+    text: "Enable location",
     icon: <Navigation className="h-4 w-4" />,
-    category: "search",
-    color: "bg-blue-500",
-  },
-  {
-    id: "19",
-    text: "How to enable location permission",
-    icon: <Settings className="h-4 w-4" />,
-    category: "search",
-    color: "bg-blue-500",
-  },
-  {
-    id: "20",
-    text: "Force location permission popup",
-    icon: <Zap className="h-4 w-4" />,
-    category: "search",
-    color: "bg-blue-500",
-  },
-  {
-    id: "21",
-    text: "Location access denied - how to fix",
-    icon: <Settings className="h-4 w-4" />,
-    category: "search",
-    color: "bg-blue-500",
-  },
-  {
-    id: "22",
-    text: "I need location permission to help you",
-    icon: <MapPin className="h-4 w-4" />,
     category: "search",
     color: "bg-blue-500",
   },
@@ -134,7 +100,6 @@ const initialSuggestions: Suggestion[] = [
     color: "bg-green-500",
   },
   { id: "9", text: "Cancel appointment", icon: <X className="h-4 w-4" />, category: "booking", color: "bg-green-500" },
-  { id: "10", text: "Reschedule appointment", icon: <Settings className="h-4 w-4" />, category: "booking", color: "bg-green-500" },
 
   // Cứu hộ
   {
@@ -146,22 +111,8 @@ const initialSuggestions: Suggestion[] = [
   },
   {
     id: "12",
-    text: "Car broke down on road",
+    text: "Car broke down",
     icon: <AlertTriangle className="h-4 w-4" />,
-    category: "emergency",
-    color: "bg-red-500",
-  },
-  {
-    id: "13",
-    text: "Call nearest rescue",
-    icon: <Phone className="h-4 w-4" />,
-    category: "emergency",
-    color: "bg-red-500",
-  },
-  {
-    id: "14",
-    text: "Emergency service quote",
-    icon: <DollarSign className="h-4 w-4" />,
     category: "emergency",
     color: "bg-red-500",
   },
@@ -175,15 +126,8 @@ const initialSuggestions: Suggestion[] = [
     color: "bg-purple-500",
   },
   {
-    id: "16",
-    text: "Repair time estimate",
-    icon: <Clock className="h-4 w-4" />,
-    category: "service",
-    color: "bg-purple-500",
-  },
-  {
     id: "17",
-    text: "Oil change service",
+    text: "Oil change",
     icon: <Wrench className="h-4 w-4" />,
     category: "service",
     color: "bg-purple-500",
@@ -205,12 +149,34 @@ export function Chatbox() {
   const [isLoading, setIsLoading] = useState(false)
   const [currentSuggestions, setCurrentSuggestions] = useState<Suggestion[]>(initialSuggestions)
   const [showSuggestions, setShowSuggestions] = useState(true)
+  const [suggestionOffset, setSuggestionOffset] = useState(0)
   const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null)
   const [locationPermission, setLocationPermission] = useState<"granted" | "denied" | "prompt">("prompt")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  // Function to shuffle array
+  const shuffleArray = (array: Suggestion[]): Suggestion[] => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
+  // Function to get random suggestions
+  const getRandomSuggestions = (count: number = 4): Suggestion[] => {
+    const shuffled = shuffleArray(initialSuggestions)
+    return shuffled.slice(0, count)
+  }
+
+  // Function to refresh suggestions
+  const refreshSuggestions = () => {
+    setCurrentSuggestions(getRandomSuggestions(4))
   }
 
   // Function to check location permission status
@@ -390,11 +356,16 @@ Error details: ${errorMessage_text}`
     scrollToBottom()
   }, [messages])
 
+  // Initialize with random suggestions
+  useEffect(() => {
+    setCurrentSuggestions(getRandomSuggestions(4))
+  }, [])
+
   const getContextualSuggestions = (lastMessage: string): Suggestion[] => {
     const lowerMessage = lastMessage.toLowerCase()
 
     if (lowerMessage.includes("garage") || lowerMessage.includes("find") || lowerMessage.includes("search") || lowerMessage.includes("nearest") || lowerMessage.includes("highest") || lowerMessage.includes("rating")) {
-      return initialSuggestions.filter((s) => s.category === "search").slice(0, 4)
+      return initialSuggestions.filter((s) => s.category === "search").slice(0, 3)
     }
 
     if (lowerMessage.includes("book") || lowerMessage.includes("appointment") || lowerMessage.includes("schedule")) {
@@ -409,13 +380,8 @@ Error details: ${errorMessage_text}`
       return initialSuggestions.filter((s) => s.category === "service").slice(0, 3)
     }
 
-    // Default: mix of popular suggestions
-    return [
-      initialSuggestions[0], // Find nearest garage
-      initialSuggestions[1], // Find highest rated garage
-      initialSuggestions[6], // Book car service
-      initialSuggestions[10], // Emergency rescue
-    ]
+    // Default: random 4 suggestions
+    return getRandomSuggestions(4)
   }
 
   const handleSendMessage = async (content: string) => {
@@ -744,30 +710,34 @@ After enabling, try the location button (🧭) again!`,
                   I can help you find garages, book car services, or call emergency rescue.
                 </p>
 
-                {/* Initial Suggestions by Category */}
-                {showSuggestions && (
-                  <div className="space-y-4">
-                    {Object.entries(groupedSuggestions).map(([category, suggestions]) => (
-                      <div key={category} className="text-left">
-                        <h5 className="text-sm font-medium text-slate-700 mb-2 flex items-center">
-                          {categoryLabels[category as keyof typeof categoryLabels]}
-                        </h5>
-                        <div className="grid grid-cols-1 gap-2">
-                          {suggestions.slice(0, 2).map((suggestion) => (
-                            <button
-                              key={suggestion.id}
-                              onClick={() => handleSuggestionClick(suggestion)}
-                              className="flex items-center space-x-2 p-2 text-left text-sm bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
-                            >
-                              <div className={`p-1 rounded ${suggestion.color} text-white`}>{suggestion.icon}</div>
-                              <span className="text-slate-700">{suggestion.text}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                       {/* Initial Suggestions */}
+                       {showSuggestions && (
+                         <div className="space-y-3">
+                           <div className="flex items-center justify-between">
+                             <h5 className="text-sm font-medium text-slate-700">Suggestions for you:</h5>
+                             <button
+                               onClick={refreshSuggestions}
+                               className="text-xs text-blue-600 hover:text-blue-800 flex items-center space-x-1 transition-colors"
+                               title="Get new suggestions"
+                             >
+                               <RefreshCw className="h-3 w-3" />
+                               <span>Refresh</span>
+                             </button>
+                           </div>
+                           <div className="grid grid-cols-1 gap-2">
+                             {currentSuggestions.slice(0, 4).map((suggestion) => (
+                               <button
+                                 key={suggestion.id}
+                                 onClick={() => handleSuggestionClick(suggestion)}
+                                 className="flex items-center space-x-2 p-2 text-left text-sm bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
+                               >
+                                 <div className={`p-1 rounded ${suggestion.color} text-white`}>{suggestion.icon}</div>
+                                 <span className="text-slate-700">{suggestion.text}</span>
+                               </button>
+                             ))}
+                           </div>
+                         </div>
+                       )}
               </div>
             ) : (
               <>
@@ -823,24 +793,34 @@ After enabling, try the location button (🧭) again!`,
                   </div>
                 )}
 
-                {/* Contextual Suggestions */}
-                {showSuggestions && messages.length > 0 && !isLoading && (
-                  <div className="border-t pt-4">
-                    <p className="text-xs text-slate-500 mb-2">Suggestions for you:</p>
-                    <div className="space-y-2">
-                      {currentSuggestions.map((suggestion) => (
-                        <button
-                          key={suggestion.id}
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          className="flex items-center space-x-2 p-2 text-left text-sm bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors w-full"
-                        >
-                          <div className={`p-1 rounded ${suggestion.color} text-white`}>{suggestion.icon}</div>
-                          <span className="text-slate-700">{suggestion.text}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                       {/* Contextual Suggestions */}
+                       {showSuggestions && messages.length > 0 && !isLoading && (
+                         <div className="border-t pt-4">
+                           <div className="flex items-center justify-between mb-2">
+                             <p className="text-xs text-slate-500">Suggestions for you:</p>
+                             <button
+                               onClick={refreshSuggestions}
+                               className="text-xs text-blue-600 hover:text-blue-800 flex items-center space-x-1 transition-colors"
+                               title="Get new suggestions"
+                             >
+                               <RefreshCw className="h-3 w-3" />
+                               <span>Refresh</span>
+                             </button>
+                           </div>
+                           <div className="space-y-2">
+                             {currentSuggestions.slice(0, 4).map((suggestion) => (
+                               <button
+                                 key={suggestion.id}
+                                 onClick={() => handleSuggestionClick(suggestion)}
+                                 className="flex items-center space-x-2 p-2 text-left text-sm bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors w-full"
+                               >
+                                 <div className={`p-1 rounded ${suggestion.color} text-white`}>{suggestion.icon}</div>
+                                 <span className="text-slate-700">{suggestion.text}</span>
+                               </button>
+                             ))}
+                           </div>
+                         </div>
+                       )}
               </>
             )}
             <div ref={messagesEndRef} />
