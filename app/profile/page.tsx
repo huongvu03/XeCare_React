@@ -486,14 +486,14 @@ export default function ProfilePage() {
                   <Badge className="bg-green-100 text-green-700">Verified</Badge>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label>Security</Label>
                   <ChangePasswordModal>
                     <Button variant="outline" size="sm" className="border-blue-200 text-blue-600">
                       Change Password
                     </Button>
                   </ChangePasswordModal>
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>

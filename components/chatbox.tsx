@@ -837,7 +837,7 @@ After enabling, try the location button (🧭) again!`,
                 disabled={isLoading}
                 className="flex-1"
               />
-              <Button
+              {/* <Button
                 onClick={showLocationGuide}
                 disabled={isLoading}
                 size="icon"
@@ -866,7 +866,7 @@ After enabling, try the location button (🧭) again!`,
                 title="Request location"
               >
                 <Navigation className="h-4 w-4" />
-              </Button>
+              </Button> */}
               <Button
                 onClick={() => handleSendMessage(inputValue)}
                 disabled={isLoading || !inputValue.trim()}

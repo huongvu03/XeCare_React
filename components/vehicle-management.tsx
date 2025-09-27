@@ -646,7 +646,7 @@ const response = res.data;
       </div>
 
       {/* Service History Section - Show summary for all vehicles */}
-      {vehicles.length > 0 && (
+      {/* {vehicles.length > 0 && (
         <Card className="border-blue-100">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -676,7 +676,7 @@ const response = res.data;
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
 
       {/* Pagination */}
       {totalPages > 1 && (
